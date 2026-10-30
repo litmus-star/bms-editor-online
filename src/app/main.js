@@ -29,6 +29,7 @@ function init() {
   $('#volR').addEventListener('input', (e) => { cfg.volume = +e.target.value; saveCfg(); if (Au.master) Au.master.gain.value = cfg.volume; });
   const opt = (id, key, after) => $(id).addEventListener('change', (e) => { cfg[key] = e.target.checked; saveCfg(); if (after) after(); });
   opt('#oName', 'showName', draw); opt('#oFollow', 'follow'); opt('#oBgm', 'playBgm'); opt('#oKeys', 'playKeys'); opt('#oBackup', 'backup'); opt('#oConfirm', 'confirmSave');
+  $('#oOpenMode').addEventListener('change', (e) => { cfg.openMode = e.target.value; saveCfg(); });
 
   $('#fileSel').addEventListener('change', async (e) => {
     const name = e.target.value;
@@ -49,7 +50,7 @@ function init() {
     const root = (files[0].webkitRelativePath || '').split('/')[0];
     const entries = files.map((f) => ({ path: (f.webkitRelativePath || f.name).split('/').slice(1).join('/') || f.name, file: f }));
     await useProvider(makeListProvider(entries, root));
-    toast('이 브라우저에서는 폴더에 바로 저장할 수 없어 저장 시 다운로드됩니다', 4500);
+    toast(canPickDir() ? '처음 저장할 때 같은 폴더를 한 번 더 고르면 그 폴더에 바로 저장합니다' : '이 브라우저에서는 폴더에 바로 저장할 수 없어 저장 시 다운로드됩니다', 4500);
   });
 
   $('#filesIn').addEventListener('change', async (e) => {

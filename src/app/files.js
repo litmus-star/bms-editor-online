@@ -94,16 +94,47 @@ async function makeEntryProvider(root) {
   return makeListProvider(entries, root.name);
 }
 
+// 안드로이드 크롬의 '폴더 직접 접근'은 파일 하나 여는 데 0.2~0.3초씩 한 줄로 걸려서 키음 1000개면 3~4분이 걸린다.
+// '폴더 고르기'(파일 목록) 방식은 같은 폴더를 10여 초에 읽으므로 안드로이드에서는 이쪽으로 열고,
+// 저장할 때만 같은 폴더를 직접 접근으로 한 번 더 골라 받아서 그 폴더에 쓴다.
+// (태블릿의 '데스크톱 사이트 보기'는 UA가 Linux로 바뀌므로 터치 가능한 Linux도 안드로이드로 본다)
+function isAndroidLike() {
+  const ua = navigator.userAgent;
+  if (/Android/i.test(ua)) return true;
+  if (navigator.userAgentData && navigator.userAgentData.platform === 'Android') return true;
+  return /Linux/.test(ua) && !/CrOS/.test(ua) && navigator.maxTouchPoints > 0;
+}
+function inIframe() { try { return window.self !== window.top; } catch (e) { return true; } }
+function openMode() { return cfg.openMode === 'direct' || cfg.openMode === 'pick' ? cfg.openMode : (isAndroidLike() ? 'pick' : 'direct'); }
+const canPickDir = () => !!window.showDirectoryPicker && !inIframe();
 async function openFolder() {
   if (!(await confirmDiscard())) return;
-  let inFrame = false;
-  try { inFrame = window.self !== window.top; } catch (e) { inFrame = true; }
-  if (window.showDirectoryPicker && !inFrame) {
+  if (canPickDir() && openMode() === 'pick') { $('#dirIn').click(); return; }
+  if (canPickDir()) {
     let dir;
     try { dir = await window.showDirectoryPicker({ id: 'bms-folder', mode: 'readwrite' }); }
     catch (e) { if (e.name === 'AbortError') return; fallbackPick(e.message); return; }
     await useProvider(makeDirProvider(dir));
   } else fallbackPick();
+}
+// 파일 목록 방식으로 연 폴더에 저장할 수 있게, 같은 폴더를 직접 접근으로 한 번 골라 받는다
+async function attachWriteDir(P) {
+  const pick = await modal('저장할 폴더 고르기', `<p>빠른 방식으로 연 폴더라서 바로 저장하려면 폴더 접근 권한이 한 번 필요합니다. 다음 창에서 <b>${esc(P.name || '이 곡')}</b> 폴더를 골라 주세요.</p><p class="dim">한 번 고르면 이 폴더를 닫을 때까지 다시 묻지 않습니다. 취소하면 이번 저장은 다운로드로 합니다.</p>`, [
+    { label: '다운로드로 저장', value: null },
+    { label: '폴더 고르기', primary: true, value: () => window.showDirectoryPicker({ id: 'bms-folder', mode: 'readwrite' }).catch(() => null) },
+  ]);
+  if (!pick) return false;
+  const D = makeDirProvider(pick);
+  const same = pick.name === P.name && (!A.fileName || !!(await D.find(A.fileName)));
+  if (!same) {
+    const go = await modal('다른 폴더인 것 같습니다', `<p>고른 폴더 <b>${esc(pick.name)}</b>가 지금 연 폴더 <b>${esc(P.name || '')}</b>와 다르거나, 그 안에 <b>${esc(A.fileName || '')}</b> 파일이 없습니다.</p><p>그래도 이 폴더에 저장할까요?</p>`, [
+      { label: '취소', value: false, primary: true }, { label: '이 폴더에 저장', value: true }]);
+    if (!go) return false;
+  }
+  P.writer = D; P.canWrite = true;
+  P.ensureWrite = () => D.ensureWrite();
+  P.write = (name, bytes) => D.write(name, bytes);
+  return true;
 }
 // 폴더 선택 창을 쓸 수 없는 환경(다른 페이지 안에 띄워진 경우, 모바일 등): 일반 파일 선택으로 대신
 function fallbackPick(why) {

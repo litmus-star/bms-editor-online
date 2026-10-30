@@ -73,14 +73,16 @@ function download(name, bytes) {
 async function writeOut(name, res, enc) {
   const P = A.fs.provider;
   let wrote = false, backup = '';
+  if (P && P.kind === 'list' && !P.canWrite && canPickDir()) { try { await attachWriteDir(P); } catch (e) { /* 다운로드로 */ } }
+  const isDir = P && (P.kind === 'dir' || !!P.writer);
   if (P && P.canWrite) {
     try {
       if (!(await P.ensureWrite())) throw new Error('쓰기 권한을 받지 못했습니다');
       const lower = name.toLowerCase();
-      if (cfg.backup && P.kind === 'dir' && A.fileName && lower === A.fileName.toLowerCase() && A.doc.bytes.length && !A.backedUp.has(lower)) {
+      if (cfg.backup && isDir && A.fileName && lower === A.fileName.toLowerCase() && A.doc.bytes.length && !A.backedUp.has(lower)) {
         await P.write(name + '.bak', A.doc.bytes); A.backedUp.add(lower); backup = ` (원본은 ${name}.bak)`;
       }
-      if (P.kind === 'dir' && lower !== (A.fileName || '').toLowerCase() && A.fs.files.some((f) => f.toLowerCase() === lower)) {
+      if (isDir && lower !== (A.fileName || '').toLowerCase() && A.fs.files.some((f) => f.toLowerCase() === lower)) {
         const ok = await modal('덮어쓰기', `<p>폴더에 <b>${esc(name)}</b> 파일이 이미 있습니다. 덮어쓸까요?</p>`, [{ label: '취소', value: false }, { label: '덮어쓰기', value: true, primary: true }]);
         if (!ok) return;
       }

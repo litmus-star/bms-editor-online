@@ -250,6 +250,7 @@ body.side-off #side { display: none; }
         <label class="chk"><input type="checkbox" id="oKeys"> 재생: 키 레인 소리</label>
         <label class="chk"><input type="checkbox" id="oBackup"> 처음 덮어쓸 때 원본을 .bak으로 백업</label>
         <label class="chk"><input type="checkbox" id="oConfirm"> 저장할 때 바뀐 줄 확인 창 보기</label>
+        <label title="안드로이드 크롬은 '폴더 직접 접근'으로 열면 키음을 읽는 데 몇 분씩 걸려서, 자동이면 '폴더 고르기' 방식으로 엽니다(10여 초). 이 방식은 처음 저장할 때 같은 폴더를 한 번 더 고릅니다.">폴더 열기 방식 <select id="oOpenMode"><option value="auto">자동 (안드로이드는 빠른 방식)</option><option value="direct">폴더 직접 접근</option><option value="pick">폴더 고르기 (빠름, 저장 시 폴더 한 번 더 선택)</option></select></label>
       </div></details>
       <details id="pnInfo" open><summary>정보</summary><div class="bd" id="infoBd"></div></details>
       <details id="pnDiag"><summary>키음 로딩 측정</summary><div class="bd">
@@ -2337,7 +2338,7 @@ function renderInfo() {
 }
 function syncOptions() {
   $('#oName').checked = cfg.showName; $('#oFollow').checked = cfg.follow; $('#oBgm').checked = cfg.playBgm;
-  $('#oKeys').checked = cfg.playKeys; $('#oBackup').checked = cfg.backup; $('#oConfirm').checked = cfg.confirmSave;
+  $('#oKeys').checked = cfg.playKeys; $('#oBackup').checked = cfg.backup; $('#oConfirm').checked = cfg.confirmSave; $('#oOpenMode').value = cfg.openMode || 'auto';
   $('#snapChk').checked = cfg.snap; $('#lockChk').checked = !!cfg.lockH; $('#gridSel').value = String(cfg.grid); $('#zoomR').value = cfg.zoom; $('#zoomXR').value = cfg.zoomX || 1; $('#volR').value = cfg.volume;
 }
 function renderAllPanels() { renderHeader(); renderWavList(); renderBmpList(); renderBeatList(); renderBlocks(); renderInfo(); }
@@ -2470,7 +2471,7 @@ function showHelp() {
 <tr><td>+ − · Ctrl+휠</td><td>세로 확대 축소</td></tr>
 <tr><td>[ ] · Ctrl+Shift+휠</td><td>가로 확대 축소</td></tr></table>
 <h4>DP · BGA · 숨김 · 지뢰</h4><p>#PLAYER 3이거나 2P 노트가 있으면 DP 화면으로 엽니다. 툴바의 SP/DP 버튼으로 바꿀 수 있습니다. 가로 스크롤하면 플레이 영역은 고정되고 BGA·LAYER·POOR와 BGM 칼럼이 함께 움직입니다. BGA 레인에는 BMP 목록에서 고른 번호가 찍히고, BGA 노트는 BGA 레인끼리만 옮겨집니다. 숨김 노트는 흐리게, 지뢰는 진한 빨강(✕)으로 보이며 키 레인 안에서만 옮길 수 있습니다.</p>
-<h4>태블릿 (손가락 · S펜)</h4><ul><li>손가락: 노트를 끌면 이동, 빈 곳을 끌면 화면 이동, 두 손가락을 벌리고 오므리면 확대·축소(세로로 벌리면 세로, 가로로 벌리면 가로)</li><li>탭: 노트 선택 · 빈 곳은 선택 해제 · 쓰기 모드에서는 노트 찍기</li><li>길게 누르기: 빈 곳은 범위 선택 시작, 노트는 메뉴(삭제 · 값 바꾸기 · 복사)</li><li>S펜: 마우스와 똑같이 편집합니다(펜 옆 버튼 = 오른쪽 클릭 = 삭제). 펜을 한 번 쓰면 그 뒤로 손가락은 화면 이동·확대만 합니다(손바닥 오작동 방지).</li><li>아래 도구 막대: 실행 취소 · ▲▼◀▶ 한 칸 옮기기 · 복사 · 붙여넣기 · 삭제 · 복사 모드(끌면 복사, Ctrl 대신) · 그리드 무시(Shift 대신)</li></ul><h4>재생</h4><p>마디 번호 칸을 클릭하면 재생 시작선(초록)이 생깁니다. F6·Space는 시작선부터, 시작선이 없으면 화면 맨 아래 마디부터 재생합니다. 같은 키음이 다시 울리면 앞 소리는 끊깁니다(BMS 플레이어와 같은 방식). BPM 변화와 STOP도 반영합니다.</p>
+<h4>태블릿 (손가락 · S펜)</h4><ul><li>손가락: 노트를 끌면 이동, 빈 곳을 끌면 화면 이동, 두 손가락을 벌리고 오므리면 확대·축소(세로로 벌리면 세로, 가로로 벌리면 가로)</li><li>탭: 노트 선택 · 빈 곳은 선택 해제 · 쓰기 모드에서는 노트 찍기</li><li>길게 누르기: 빈 곳은 범위 선택 시작, 노트는 메뉴(삭제 · 값 바꾸기 · 복사)</li><li>안드로이드에서는 폴더를 빠른 방식(폴더 고르기)으로 엽니다. 처음 저장할 때 같은 폴더를 한 번 더 골라 주면 그 뒤로는 그 폴더에 바로 저장합니다. '보기 · 재생 · 저장' 칸에서 방식을 바꿀 수 있습니다.</li><li>S펜: 마우스와 똑같이 편집합니다(펜 옆 버튼 = 오른쪽 클릭 = 삭제). 펜을 한 번 쓰면 그 뒤로 손가락은 화면 이동·확대만 합니다(손바닥 오작동 방지).</li><li>아래 도구 막대: 실행 취소 · ▲▼◀▶ 한 칸 옮기기 · 복사 · 붙여넣기 · 삭제 · 복사 모드(끌면 복사, Ctrl 대신) · 그리드 무시(Shift 대신)</li></ul><h4>재생</h4><p>마디 번호 칸을 클릭하면 재생 시작선(초록)이 생깁니다. F6·Space는 시작선부터, 시작선이 없으면 화면 맨 아래 마디부터 재생합니다. 같은 키음이 다시 울리면 앞 소리는 끊깁니다(BMS 플레이어와 같은 방식). BPM 변화와 STOP도 반영합니다.</p>
 <h4>저장</h4><p>편집한 채널(BGM · BPM · STOP · 1P 키 · 롱노트 · 마디 길이)과 고친 헤더 · WAV 줄만 다시 쓰고, 나머지 줄(BGA, 2P, 숨김 노트, 지뢰, 주석, 모르는 명령, #RANDOM 블록)은 원본 바이트 그대로 둡니다. 저장 직전에 결과를 다시 읽어 편집 내용과 일치하는지 확인하고, 바뀐 줄을 보여 줍니다. 기본 인코딩은 Shift-JIS입니다.</p>
 <h4>복사 · 붙여넣기</h4><p>iBMSC 클립보드 형식("iBMSC Clipboard Data")을 씁니다. iBMSC에서 복사한 노트나 ibmsc_clip.py가 만든 텍스트를 붙여넣을 수 있고, 여기서 복사한 노트를 iBMSC에 붙여넣을 수도 있습니다. 위치는 마우스가 있는 마디의 시작점 기준입니다.</p>
 <h4>로컬 전용</h4><p>이 페이지는 파일 하나로 동작하며 서버가 없습니다. 패턴과 키음은 브라우저 안에서만 읽고 쓰고, 외부로 나가는 통신은 페이지의 보안 정책(CSP)으로 막혀 있습니다. 폴더에 바로 저장하려면 크롬이나 엣지를 쓰세요. 다른 브라우저에서는 저장할 때 파일이 다운로드됩니다.</p>
@@ -2574,16 +2575,47 @@ async function makeEntryProvider(root) {
   return makeListProvider(entries, root.name);
 }
 
+// 안드로이드 크롬의 '폴더 직접 접근'은 파일 하나 여는 데 0.2~0.3초씩 한 줄로 걸려서 키음 1000개면 3~4분이 걸린다.
+// '폴더 고르기'(파일 목록) 방식은 같은 폴더를 10여 초에 읽으므로 안드로이드에서는 이쪽으로 열고,
+// 저장할 때만 같은 폴더를 직접 접근으로 한 번 더 골라 받아서 그 폴더에 쓴다.
+// (태블릿의 '데스크톱 사이트 보기'는 UA가 Linux로 바뀌므로 터치 가능한 Linux도 안드로이드로 본다)
+function isAndroidLike() {
+  const ua = navigator.userAgent;
+  if (/Android/i.test(ua)) return true;
+  if (navigator.userAgentData && navigator.userAgentData.platform === 'Android') return true;
+  return /Linux/.test(ua) && !/CrOS/.test(ua) && navigator.maxTouchPoints > 0;
+}
+function inIframe() { try { return window.self !== window.top; } catch (e) { return true; } }
+function openMode() { return cfg.openMode === 'direct' || cfg.openMode === 'pick' ? cfg.openMode : (isAndroidLike() ? 'pick' : 'direct'); }
+const canPickDir = () => !!window.showDirectoryPicker && !inIframe();
 async function openFolder() {
   if (!(await confirmDiscard())) return;
-  let inFrame = false;
-  try { inFrame = window.self !== window.top; } catch (e) { inFrame = true; }
-  if (window.showDirectoryPicker && !inFrame) {
+  if (canPickDir() && openMode() === 'pick') { $('#dirIn').click(); return; }
+  if (canPickDir()) {
     let dir;
     try { dir = await window.showDirectoryPicker({ id: 'bms-folder', mode: 'readwrite' }); }
     catch (e) { if (e.name === 'AbortError') return; fallbackPick(e.message); return; }
     await useProvider(makeDirProvider(dir));
   } else fallbackPick();
+}
+// 파일 목록 방식으로 연 폴더에 저장할 수 있게, 같은 폴더를 직접 접근으로 한 번 골라 받는다
+async function attachWriteDir(P) {
+  const pick = await modal('저장할 폴더 고르기', `<p>빠른 방식으로 연 폴더라서 바로 저장하려면 폴더 접근 권한이 한 번 필요합니다. 다음 창에서 <b>${esc(P.name || '이 곡')}</b> 폴더를 골라 주세요.</p><p class="dim">한 번 고르면 이 폴더를 닫을 때까지 다시 묻지 않습니다. 취소하면 이번 저장은 다운로드로 합니다.</p>`, [
+    { label: '다운로드로 저장', value: null },
+    { label: '폴더 고르기', primary: true, value: () => window.showDirectoryPicker({ id: 'bms-folder', mode: 'readwrite' }).catch(() => null) },
+  ]);
+  if (!pick) return false;
+  const D = makeDirProvider(pick);
+  const same = pick.name === P.name && (!A.fileName || !!(await D.find(A.fileName)));
+  if (!same) {
+    const go = await modal('다른 폴더인 것 같습니다', `<p>고른 폴더 <b>${esc(pick.name)}</b>가 지금 연 폴더 <b>${esc(P.name || '')}</b>와 다르거나, 그 안에 <b>${esc(A.fileName || '')}</b> 파일이 없습니다.</p><p>그래도 이 폴더에 저장할까요?</p>`, [
+      { label: '취소', value: false, primary: true }, { label: '이 폴더에 저장', value: true }]);
+    if (!go) return false;
+  }
+  P.writer = D; P.canWrite = true;
+  P.ensureWrite = () => D.ensureWrite();
+  P.write = (name, bytes) => D.write(name, bytes);
+  return true;
 }
 // 폴더 선택 창을 쓸 수 없는 환경(다른 페이지 안에 띄워진 경우, 모바일 등): 일반 파일 선택으로 대신
 function fallbackPick(why) {
@@ -2733,14 +2765,16 @@ function download(name, bytes) {
 async function writeOut(name, res, enc) {
   const P = A.fs.provider;
   let wrote = false, backup = '';
+  if (P && P.kind === 'list' && !P.canWrite && canPickDir()) { try { await attachWriteDir(P); } catch (e) { /* 다운로드로 */ } }
+  const isDir = P && (P.kind === 'dir' || !!P.writer);
   if (P && P.canWrite) {
     try {
       if (!(await P.ensureWrite())) throw new Error('쓰기 권한을 받지 못했습니다');
       const lower = name.toLowerCase();
-      if (cfg.backup && P.kind === 'dir' && A.fileName && lower === A.fileName.toLowerCase() && A.doc.bytes.length && !A.backedUp.has(lower)) {
+      if (cfg.backup && isDir && A.fileName && lower === A.fileName.toLowerCase() && A.doc.bytes.length && !A.backedUp.has(lower)) {
         await P.write(name + '.bak', A.doc.bytes); A.backedUp.add(lower); backup = ` (원본은 ${name}.bak)`;
       }
-      if (P.kind === 'dir' && lower !== (A.fileName || '').toLowerCase() && A.fs.files.some((f) => f.toLowerCase() === lower)) {
+      if (isDir && lower !== (A.fileName || '').toLowerCase() && A.fs.files.some((f) => f.toLowerCase() === lower)) {
         const ok = await modal('덮어쓰기', `<p>폴더에 <b>${esc(name)}</b> 파일이 이미 있습니다. 덮어쓸까요?</p>`, [{ label: '취소', value: false }, { label: '덮어쓰기', value: true, primary: true }]);
         if (!ok) return;
       }
@@ -3268,6 +3302,7 @@ function init() {
   $('#volR').addEventListener('input', (e) => { cfg.volume = +e.target.value; saveCfg(); if (Au.master) Au.master.gain.value = cfg.volume; });
   const opt = (id, key, after) => $(id).addEventListener('change', (e) => { cfg[key] = e.target.checked; saveCfg(); if (after) after(); });
   opt('#oName', 'showName', draw); opt('#oFollow', 'follow'); opt('#oBgm', 'playBgm'); opt('#oKeys', 'playKeys'); opt('#oBackup', 'backup'); opt('#oConfirm', 'confirmSave');
+  $('#oOpenMode').addEventListener('change', (e) => { cfg.openMode = e.target.value; saveCfg(); });
 
   $('#fileSel').addEventListener('change', async (e) => {
     const name = e.target.value;
@@ -3288,7 +3323,7 @@ function init() {
     const root = (files[0].webkitRelativePath || '').split('/')[0];
     const entries = files.map((f) => ({ path: (f.webkitRelativePath || f.name).split('/').slice(1).join('/') || f.name, file: f }));
     await useProvider(makeListProvider(entries, root));
-    toast('이 브라우저에서는 폴더에 바로 저장할 수 없어 저장 시 다운로드됩니다', 4500);
+    toast(canPickDir() ? '처음 저장할 때 같은 폴더를 한 번 더 고르면 그 폴더에 바로 저장합니다' : '이 브라우저에서는 폴더에 바로 저장할 수 없어 저장 시 다운로드됩니다', 4500);
   });
 
   $('#filesIn').addEventListener('change', async (e) => {
