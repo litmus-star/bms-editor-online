@@ -1,3 +1,5 @@
+disclaimer : THIS IS AN AI SLOP!! I made this cuz... I needed this thing but nobody made it.
+
 # BMS 웹 에디터 (index.html)
 
 iBMSC를 참고해 만든 7키 SP·DP용 BMS 패턴 편집기. HTML 파일 하나로 동작하며 모든 처리는 이 컴퓨터의 브라우저 안에서만 이루어진다(서버 없음, 외부 통신은 CSP로 차단).
