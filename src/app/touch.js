@@ -2,7 +2,8 @@
    마우스·S펜: 기존 마우스 동작 그대로 (펜 옆 버튼 = 오른쪽 클릭 = 삭제)
    손가락: 노트 끌기 = 이동, 빈 곳 끌기 = 화면 이동, 두 손가락 = 확대/축소,
            탭 = 선택(쓰기 모드는 찍기), 길게 누르기 = 빈 곳: 범위 선택 / 노트: 메뉴
-   펜을 한 번이라도 쓰면: 펜은 편집, 손가락은 화면 이동·확대만 */
+   펜과 손가락은 따로 모드가 없다: 손가락은 늘 위의 동작, 펜은 그 위에 마우스처럼 얹힌다.
+   펜이 화면에 닿아 있는 동안만 새로 닿는 손가락을 무시한다(펜 쥔 손바닥 오작동 방지). */
 const T = { pts: new Map(), st: null, pinch: null, lp: 0, mousePid: null };
 const TAP_MOVE = 8, LONG_MS = 500;
 
@@ -46,9 +47,15 @@ function onPointerDown(e) {
   A.lastPtr = e.pointerType;
   if (e.pointerType !== 'touch') stopFling();
   if (e.pointerType === 'touch') { touchDown(e); return; }
-  if (e.pointerType === 'pen') { A.penMode = true; setTouchUI(true); }
+  if (e.pointerType === 'pen') setTouchUI(true);
   if (T.mousePid !== null) return;
   T.mousePid = e.pointerId;
+  if (e.pointerType === 'pen') { // 펜이 닿으면 진행 중이던 손가락 동작은 끝냄
+    A.penDown = true; clearTimeout(T.lp); hideCtx();
+    if (T.st && (T.st.phase === 'note' || T.st.phase === 'band')) { A.drag = null; }
+    if (T.st && T.st.phase === 'pan') A.userScroll = false;
+    T.st = null; T.pinch = null; T.pts.clear();
+  }
   try { A.sc.setPointerCapture(e.pointerId); } catch (err) { /* 무시 */ }
   A.slop = e.pointerType === 'pen' ? 4 : 0;
   onDown(e);
@@ -62,13 +69,14 @@ function onPointerMove(e) {
 function onPointerUp(e) {
   if (e.pointerType === 'touch') { touchUp(e); return; }
   if (e.pointerId !== T.mousePid) return;
-  T.mousePid = null;
+  T.mousePid = null; A.penDown = false;
   onUp(e);
 }
 
 /* 손가락 */
 function touchDown(e) {
   e.preventDefault();
+  if (A.penDown) return; // 펜으로 편집하는 중에 닿은 손가락(손바닥)은 무시
   setTouchUI(true);
   T.pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
   try { A.sc.setPointerCapture(e.pointerId); } catch (err) { /* 무시 */ }
@@ -78,13 +86,13 @@ function touchDown(e) {
   hideCtx();
   const h = hitAt(e);
   if (!A.st || !h.inArea || h.head) { T.st = null; return; }
-  A.slop = 12; const n = A.penMode || wasFling ? null : noteAt(h); A.slop = 0;
+  A.slop = 12; const n = wasFling ? null : noteAt(h); A.slop = 0;
   A.hover = { note: null, ghost: null, h }; // 붙여넣기 위치 기준
   const t0 = e.timeStamp || performance.now();
   T.st = { x: e.clientX, y: e.clientY, ev: e, h, note: n, phase: 'pending', b0: A.view.bottom, l0: A.view.left, stopTap: wasFling,
     px: e.clientX, py: e.clientY, hist: [{ t: t0, x: e.clientX, y: e.clientY }] };
   clearTimeout(T.lp);
-  if (!A.penMode && !wasFling) T.lp = setTimeout(longPress, LONG_MS);
+  if (!wasFling) T.lp = setTimeout(longPress, LONG_MS);
   if (n && !(h.lane && h.lane.type === 'meas')) { // 노트를 잡으면 바로 선택·이동 준비 (마우스와 같은 경로)
     T.st.phase = 'note';
     A.slop = 12; onDown(fakeMouse(e)); A.slop = 0;
@@ -117,12 +125,12 @@ function touchUp(e) {
   if (!s) return;
   if (s.phase === 'note' || s.phase === 'band') { onUp(fakeMouse(e)); return; }
   if (s.phase === 'pan') { A.userScroll = false; if (e.type !== 'pointercancel') startFling(s, e.timeStamp || performance.now()); return; }
-  if (s.phase === 'pending' && !A.penMode && !s.stopTap) { // 빈 곳 탭: 선택 해제 / 쓰기 모드는 노트 찍기 / 마디 칸은 재생 시작선
+  if (s.phase === 'pending' && !s.stopTap) { // 빈 곳 탭: 선택 해제 / 쓰기 모드는 노트 찍기 / 마디 칸은 재생 시작선
     onDown(fakeMouse(s.ev)); onUp(fakeMouse(s.ev));
   }
 }
 function longPress() {
-  const s = T.st; if (!s || A.penMode) return;
+  const s = T.st; if (!s) return;
   if (s.phase === 'note') { // 노트 길게 누르기: 이동을 취소하고 메뉴
     if (A.drag && A.drag.moved) return;
     A.drag = null; s.phase = 'menu'; draw();

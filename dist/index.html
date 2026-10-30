@@ -2472,7 +2472,7 @@ function showHelp() {
 <tr><td>+ − · Ctrl+휠</td><td>세로 확대 축소</td></tr>
 <tr><td>[ ] · Ctrl+Shift+휠</td><td>가로 확대 축소</td></tr></table>
 <h4>DP · BGA · 숨김 · 지뢰</h4><p>#PLAYER 3이거나 2P 노트가 있으면 DP 화면으로 엽니다. 툴바의 SP/DP 버튼으로 바꿀 수 있습니다. 가로 스크롤하면 플레이 영역은 고정되고 BGA·LAYER·POOR와 BGM 칼럼이 함께 움직입니다. BGA 레인에는 BMP 목록에서 고른 번호가 찍히고, BGA 노트는 BGA 레인끼리만 옮겨집니다. 숨김 노트는 흐리게, 지뢰는 진한 빨강(✕)으로 보이며 키 레인 안에서만 옮길 수 있습니다.</p>
-<h4>태블릿 (손가락 · S펜)</h4><ul><li>손가락: 노트를 끌면 이동, 빈 곳을 끌면 화면 이동(빠르게 쓸고 놓으면 관성으로 미끄러지고, 그때 탭하면 멈춤), 두 손가락을 벌리고 오므리면 확대·축소(세로로 벌리면 세로, 가로로 벌리면 가로)</li><li>탭: 노트 선택 · 빈 곳은 선택 해제 · 쓰기 모드에서는 노트 찍기</li><li>길게 누르기: 빈 곳은 범위 선택 시작, 노트는 메뉴(삭제 · 값 바꾸기 · 복사)</li><li>안드로이드에서는 폴더를 빠른 방식(폴더 고르기)으로 엽니다. 처음 저장할 때 같은 폴더를 한 번 더 골라 주면 그 뒤로는 그 폴더에 바로 저장합니다. '보기 · 재생 · 저장' 칸에서 방식을 바꿀 수 있습니다.</li><li>S펜: 마우스와 똑같이 편집합니다(펜 옆 버튼 = 오른쪽 클릭 = 삭제). 펜을 한 번 쓰면 그 뒤로 손가락은 화면 이동·확대만 합니다(손바닥 오작동 방지).</li><li>아래 도구 막대: 실행 취소 · ▲▼◀▶ 한 칸 옮기기 · 복사 · 붙여넣기 · 삭제 · 복사 모드(끌면 복사, Ctrl 대신) · 그리드 무시(Shift 대신)</li></ul><h4>재생</h4><p>마디 번호 칸을 클릭하면 재생 시작선(초록)이 생깁니다. F6·Space는 시작선부터, 시작선이 없으면 화면 맨 아래 마디부터 재생합니다. 같은 키음이 다시 울리면 앞 소리는 끊깁니다(BMS 플레이어와 같은 방식). BPM 변화와 STOP도 반영합니다.</p>
+<h4>태블릿 (손가락 · S펜)</h4><ul><li>손가락: 노트를 끌면 이동, 빈 곳을 끌면 화면 이동(빠르게 쓸고 놓으면 관성으로 미끄러지고, 그때 탭하면 멈춤), 두 손가락을 벌리고 오므리면 확대·축소(세로로 벌리면 세로, 가로로 벌리면 가로)</li><li>탭: 노트 선택 · 빈 곳은 선택 해제 · 쓰기 모드에서는 노트 찍기</li><li>길게 누르기: 빈 곳은 범위 선택 시작, 노트는 메뉴(삭제 · 값 바꾸기 · 복사)</li><li>안드로이드에서는 폴더를 빠른 방식(폴더 고르기)으로 엽니다. 처음 저장할 때 같은 폴더를 한 번 더 골라 주면 그 뒤로는 그 폴더에 바로 저장합니다. '보기 · 재생 · 저장' 칸에서 방식을 바꿀 수 있습니다.</li><li>S펜: 마우스와 똑같이 편집합니다(펜 옆 버튼 = 오른쪽 클릭 = 삭제). 손가락 조작은 펜을 쓴 뒤에도 그대로이고, 펜이 화면에 닿아 있는 동안만 손가락을 무시합니다(손바닥 오작동 방지).</li><li>아래 도구 막대: 실행 취소 · ▲▼◀▶ 한 칸 옮기기 · 복사 · 붙여넣기 · 삭제 · 복사 모드(끌면 복사, Ctrl 대신) · 그리드 무시(Shift 대신)</li></ul><h4>재생</h4><p>마디 번호 칸을 클릭하면 재생 시작선(초록)이 생깁니다. F6·Space는 시작선부터, 시작선이 없으면 화면 맨 아래 마디부터 재생합니다. 같은 키음이 다시 울리면 앞 소리는 끊깁니다(BMS 플레이어와 같은 방식). BPM 변화와 STOP도 반영합니다.</p>
 <h4>저장</h4><p>편집한 채널(BGM · BPM · STOP · 1P 키 · 롱노트 · 마디 길이)과 고친 헤더 · WAV 줄만 다시 쓰고, 나머지 줄(BGA, 2P, 숨김 노트, 지뢰, 주석, 모르는 명령, #RANDOM 블록)은 원본 바이트 그대로 둡니다. 저장 직전에 결과를 다시 읽어 편집 내용과 일치하는지 확인하고, 바뀐 줄을 보여 줍니다. 기본 인코딩은 Shift-JIS입니다.</p>
 <h4>복사 · 붙여넣기</h4><p>iBMSC 클립보드 형식("iBMSC Clipboard Data")을 씁니다. iBMSC에서 복사한 노트나 ibmsc_clip.py가 만든 텍스트를 붙여넣을 수 있고, 여기서 복사한 노트를 iBMSC에 붙여넣을 수도 있습니다. 위치는 마우스가 있는 마디의 시작점 기준입니다.</p>
 <h4>로컬 전용</h4><p>이 페이지는 파일 하나로 동작하며 서버가 없습니다. 패턴과 키음은 브라우저 안에서만 읽고 쓰고, 외부로 나가는 통신은 페이지의 보안 정책(CSP)으로 막혀 있습니다. 폴더에 바로 저장하려면 크롬이나 엣지를 쓰세요. 다른 브라우저에서는 저장할 때 파일이 다운로드됩니다.</p>
@@ -3017,7 +3017,8 @@ function toast(msg, ms) {
    마우스·S펜: 기존 마우스 동작 그대로 (펜 옆 버튼 = 오른쪽 클릭 = 삭제)
    손가락: 노트 끌기 = 이동, 빈 곳 끌기 = 화면 이동, 두 손가락 = 확대/축소,
            탭 = 선택(쓰기 모드는 찍기), 길게 누르기 = 빈 곳: 범위 선택 / 노트: 메뉴
-   펜을 한 번이라도 쓰면: 펜은 편집, 손가락은 화면 이동·확대만 */
+   펜과 손가락은 따로 모드가 없다: 손가락은 늘 위의 동작, 펜은 그 위에 마우스처럼 얹힌다.
+   펜이 화면에 닿아 있는 동안만 새로 닿는 손가락을 무시한다(펜 쥔 손바닥 오작동 방지). */
 const T = { pts: new Map(), st: null, pinch: null, lp: 0, mousePid: null };
 const TAP_MOVE = 8, LONG_MS = 500;
 
@@ -3061,9 +3062,15 @@ function onPointerDown(e) {
   A.lastPtr = e.pointerType;
   if (e.pointerType !== 'touch') stopFling();
   if (e.pointerType === 'touch') { touchDown(e); return; }
-  if (e.pointerType === 'pen') { A.penMode = true; setTouchUI(true); }
+  if (e.pointerType === 'pen') setTouchUI(true);
   if (T.mousePid !== null) return;
   T.mousePid = e.pointerId;
+  if (e.pointerType === 'pen') { // 펜이 닿으면 진행 중이던 손가락 동작은 끝냄
+    A.penDown = true; clearTimeout(T.lp); hideCtx();
+    if (T.st && (T.st.phase === 'note' || T.st.phase === 'band')) { A.drag = null; }
+    if (T.st && T.st.phase === 'pan') A.userScroll = false;
+    T.st = null; T.pinch = null; T.pts.clear();
+  }
   try { A.sc.setPointerCapture(e.pointerId); } catch (err) { /* 무시 */ }
   A.slop = e.pointerType === 'pen' ? 4 : 0;
   onDown(e);
@@ -3077,13 +3084,14 @@ function onPointerMove(e) {
 function onPointerUp(e) {
   if (e.pointerType === 'touch') { touchUp(e); return; }
   if (e.pointerId !== T.mousePid) return;
-  T.mousePid = null;
+  T.mousePid = null; A.penDown = false;
   onUp(e);
 }
 
 /* 손가락 */
 function touchDown(e) {
   e.preventDefault();
+  if (A.penDown) return; // 펜으로 편집하는 중에 닿은 손가락(손바닥)은 무시
   setTouchUI(true);
   T.pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
   try { A.sc.setPointerCapture(e.pointerId); } catch (err) { /* 무시 */ }
@@ -3093,13 +3101,13 @@ function touchDown(e) {
   hideCtx();
   const h = hitAt(e);
   if (!A.st || !h.inArea || h.head) { T.st = null; return; }
-  A.slop = 12; const n = A.penMode || wasFling ? null : noteAt(h); A.slop = 0;
+  A.slop = 12; const n = wasFling ? null : noteAt(h); A.slop = 0;
   A.hover = { note: null, ghost: null, h }; // 붙여넣기 위치 기준
   const t0 = e.timeStamp || performance.now();
   T.st = { x: e.clientX, y: e.clientY, ev: e, h, note: n, phase: 'pending', b0: A.view.bottom, l0: A.view.left, stopTap: wasFling,
     px: e.clientX, py: e.clientY, hist: [{ t: t0, x: e.clientX, y: e.clientY }] };
   clearTimeout(T.lp);
-  if (!A.penMode && !wasFling) T.lp = setTimeout(longPress, LONG_MS);
+  if (!wasFling) T.lp = setTimeout(longPress, LONG_MS);
   if (n && !(h.lane && h.lane.type === 'meas')) { // 노트를 잡으면 바로 선택·이동 준비 (마우스와 같은 경로)
     T.st.phase = 'note';
     A.slop = 12; onDown(fakeMouse(e)); A.slop = 0;
@@ -3132,12 +3140,12 @@ function touchUp(e) {
   if (!s) return;
   if (s.phase === 'note' || s.phase === 'band') { onUp(fakeMouse(e)); return; }
   if (s.phase === 'pan') { A.userScroll = false; if (e.type !== 'pointercancel') startFling(s, e.timeStamp || performance.now()); return; }
-  if (s.phase === 'pending' && !A.penMode && !s.stopTap) { // 빈 곳 탭: 선택 해제 / 쓰기 모드는 노트 찍기 / 마디 칸은 재생 시작선
+  if (s.phase === 'pending' && !s.stopTap) { // 빈 곳 탭: 선택 해제 / 쓰기 모드는 노트 찍기 / 마디 칸은 재생 시작선
     onDown(fakeMouse(s.ev)); onUp(fakeMouse(s.ev));
   }
 }
 function longPress() {
-  const s = T.st; if (!s || A.penMode) return;
+  const s = T.st; if (!s) return;
   if (s.phase === 'note') { // 노트 길게 누르기: 이동을 취소하고 메뉴
     if (A.drag && A.drag.moved) return;
     A.drag = null; s.phase = 'menu'; draw();
