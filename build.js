@@ -2,7 +2,7 @@
 const fs = require('fs'), path = require('path');
 const rd = (...p) => fs.readFileSync(path.join(__dirname, 'src', ...p), 'utf8');
 const CORE = ['rational', 'ids', 'encoding', 'lines', 'channels', 'parse', 'serialize', 'timing', '_export'];
-const APP = ['state', 'layout', 'view', 'history', 'mouse', 'edit', 'clipboard', 'keyboard', 'status', 'panels', 'dialogs', 'files', 'save', 'audio', 'drop', 'main', '_export'];
+const APP = ['state', 'layout', 'view', 'history', 'mouse', 'edit', 'clipboard', 'keyboard', 'status', 'panels', 'dialogs', 'files', 'save', 'audio', 'drop', 'touch', 'main', '_export'];
 const join = (dir, list) => list.map((f) => `/* ── ${dir}/${f}.js ── */\n` + rd(dir, f + '.js')).join('\n');
 const core = `/* BMS Web Editor — core (DOM 없음) */\n(function (G) {\n'use strict';\n${join('core', CORE)}\n})(typeof window !== 'undefined' ? window : globalThis);\n`;
 const app = `/* BMS Web Editor — UI */\n(function () {\n'use strict';\n${join('app', APP)}\n})();\n`;

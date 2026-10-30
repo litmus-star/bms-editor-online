@@ -11,13 +11,16 @@ function hitAt(e) {
 function noteAt(h) {
   if (!h.lane || h.lane.type === 'meas') return null;
   const arr = A.by.get(h.lane.key); if (!arr) return null;
-  const nhb = noteH() / A.ppb, capb = capH() / A.ppb;
-  let found = null;
-  for (let i = lowerBound(arr, h.beat - (A.maxLen.get(h.lane.key) || 0) - nhb - capb - 0.01); i < arr.length; i++) {
+  const nhb = noteH() / A.ppb, capb = capH() / A.ppb, sl = (A.slop || 0) / A.ppb; // 터치는 잡는 범위를 넓힘
+  let found = null, best = Infinity;
+  for (let i = lowerBound(arr, h.beat - (A.maxLen.get(h.lane.key) || 0) - nhb - capb - sl - 0.01); i < arr.length; i++) {
     const n = arr[i];
-    if (n.b > h.beat + 1 / A.ppb) break;
+    if (n.b > h.beat + 1 / A.ppb + sl) break;
     const top = n.lb > 0 ? Math.max(n.b + n.lb + capb, n.b + nhb) : n.b + nhb;
-    if (h.beat >= n.b - 1 / A.ppb && h.beat <= top) found = n;
+    if (h.beat >= n.b - 1 / A.ppb - sl && h.beat <= top + sl) {
+      const dist = h.beat < n.b ? n.b - h.beat : h.beat > top ? h.beat - top : 0;
+      if (dist <= best) { best = dist; found = n; }
+    }
   }
   return found;
 }
@@ -133,7 +136,7 @@ function onMove(e) {
     const kMin = Math.ceil(-minB / sf - 1e-9), kMax = Math.floor((A.ms.Sf[1000] - maxE) / sf - 1e-9);
     if (k < kMin) k = kMin;
     if (k > kMax) k = kMax;
-    d.delta = rmul(st, R(k)); d.dSi = dSi; d.moved = true; d.copy = e.ctrlKey || e.altKey || e.metaKey;
+    d.delta = rmul(st, R(k)); d.dSi = dSi; d.moved = true; d.copy = e.ctrlKey || e.altKey || e.metaKey || !!A.copyMode;
     d.preview = sel.map((n) => movedNote(n, d.delta, dSi, grp));
     d.hide = d.copy ? null : new Set(sel);
     A.sc.style.cursor = d.copy ? 'copy' : 'move';

@@ -31,7 +31,7 @@ function measureAt(beat) {
   while (lo < hi) { const mid = (lo + hi + 1) >> 1; if (Sf[mid] <= beat + 1e-9) lo = mid; else hi = mid - 1; }
   return lo;
 }
-function stepR(noSnap) { return (noSnap || !cfg.snap) ? R(1, 48) : R(4, cfg.grid); }
+function stepR(noSnap) { return (noSnap || A.noSnap || !cfg.snap) ? R(1, 48) : R(4, cfg.grid); }
 function snap(beat, mode, noSnap) {
   beat = Math.max(0, beat);
   const S = A.ms.S, Sf = A.ms.Sf, m = Math.min(999, measureAt(beat));

@@ -70,15 +70,15 @@ function init() {
   applySide();
   A.toggleSide = toggleSide;
   $('#sideTgl').addEventListener('click', (e) => { e.stopPropagation(); toggleSide(); A.sc.focus({ preventScroll: true }); });
-  $('#sideTgl').addEventListener('mousedown', (e) => e.stopPropagation());
+  $('#sideTgl').addEventListener('pointerdown', (e) => e.stopPropagation());
   split.addEventListener('dblclick', toggleSide);
-  split.addEventListener('mousedown', (e) => {
+  split.addEventListener('pointerdown', (e) => {
     if (cfg.sideOff || e.button !== 0) return;
     e.preventDefault(); split.classList.add('drag');
     const x0 = e.clientX, w0 = side.getBoundingClientRect().width;
     const mv = (ev) => { cfg.sideW = Math.round(Math.min(Math.max(220, w0 - (ev.clientX - x0)), Math.max(260, window.innerWidth - 400))); side.style.width = cfg.sideW + 'px'; };
-    const up = () => { split.classList.remove('drag'); window.removeEventListener('mousemove', mv); window.removeEventListener('mouseup', up); saveCfg(); };
-    window.addEventListener('mousemove', mv); window.addEventListener('mouseup', up);
+    const up = () => { split.classList.remove('drag'); window.removeEventListener('pointermove', mv); window.removeEventListener('pointerup', up); saveCfg(); };
+    window.addEventListener('pointermove', mv); window.addEventListener('pointerup', up); window.addEventListener('pointercancel', up, { once: true });
   });
   $('#bmpList').addEventListener('click', (e) => { const r = e.target.closest('.wr'); if (!r || e.target.tagName === 'INPUT') return; A.curBmp = +r.dataset.id; markCurBmp(false); });
   $('#bmpList').addEventListener('dblclick', (e) => { const r = e.target.closest('.wr'); if (r && A.st && e.target.tagName !== 'INPUT') editBmpName(+r.dataset.id, r); });
@@ -121,10 +121,10 @@ function init() {
   });
 
   A.sc.addEventListener('scroll', onScroll);
-  A.sc.addEventListener('mousedown', onDown);
   A.sc.addEventListener('contextmenu', (e) => e.preventDefault());
   A.sc.addEventListener('auxclick', (e) => { if (e.button === 1) e.preventDefault(); });
   A.sc.addEventListener('dblclick', (e) => {
+    if (A.lastPtr === 'touch') return; // 손가락 두 번 탭은 값 바꾸기 안 함
     if (!A.st || A.mode !== 'select') return;
     const n = noteAt(hitAt(e)); if (!n) return;
     const kind = (x) => (isSound(x.lane) ? 's' : x.lane);
@@ -132,9 +132,8 @@ function init() {
     editValue(targets);
   });
   A.sc.addEventListener('wheel', onWheel, { passive: false });
-  A.sc.addEventListener('mouseleave', () => { if (!A.drag && A.hover) { A.hover = null; statusPos(null); statusNote(); draw(); } });
-  window.addEventListener('mousemove', onMove);
-  window.addEventListener('mouseup', onUp);
+  bindTouch();
+  if (cfg.sideOff === undefined && window.innerWidth < 1100) { cfg.sideOff = true; applySide(); } // 좁은 화면은 패널을 접고 시작
   document.addEventListener('keydown', onKey);
   document.addEventListener('copy', (e) => {
     if (isTyping(document.activeElement) || !$('#modal').hidden || !A.st || !A.sel.size) return;

@@ -197,4 +197,5 @@ function paint() {
   }
   ctx.fillStyle = '#1a1b1f'; ctx.fillRect(0, 0, MEAS_W, HEAD_H - 1);
   ctx.fillStyle = '#9a9a9a'; ctx.fillText('마디', MEAS_W / 2, HEAD_H / 2);
+  updateSelBar();
 }

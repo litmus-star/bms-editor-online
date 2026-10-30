@@ -56,10 +56,21 @@ main { flex: 1; display: flex; min-height: 0; }
 #empty h2 { margin: 0 0 4px; font-size: 22px; }
 #empty .row { justify-content: center; margin: 10px 0; }
 #empty button { padding: 7px 16px; font-size: 14px; }
+#sc { touch-action: none; }
+#selBar { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); display: flex; gap: 4px; align-items: center;
+  background: rgba(29, 31, 36, .96); border: 1px solid #454a54; border-radius: 10px; padding: 6px 8px; box-shadow: 0 6px 24px rgba(0,0,0,.5); z-index: 5; max-width: calc(100% - 20px); flex-wrap: wrap; justify-content: center; }
+#selBar button { min-width: 40px; min-height: 38px; padding: 4px 10px; font-size: 14px; }
+#selBar button.danger { color: #ffb0b0; }
+#selBar .sep { width: 1px; height: 26px; background: #454a54; margin: 0 2px; }
+#tbCount { font-size: 12px; min-width: 52px; text-align: center; }
+#ctxMenu { position: fixed; z-index: 15; display: flex; gap: 4px; background: #24272d; border: 1px solid #555b66; border-radius: 10px; padding: 6px; box-shadow: 0 8px 28px rgba(0,0,0,.6); }
+#ctxMenu button { min-height: 42px; min-width: 64px; font-size: 15px; }
+body.touch #tb button, body.touch #tb select { min-height: 36px; }
+body.touch #split { width: 14px; }
 #drop { position: absolute; inset: 10px; border: 2px dashed var(--acc); border-radius: 10px; background: rgba(20, 18, 5, .85);
   display: flex; align-items: center; justify-content: center; font-size: 18px; color: var(--acc); pointer-events: none; }
 
-#split { flex: none; width: 7px; cursor: col-resize; background: var(--panel); border-left: 1px solid var(--line); position: relative; }
+#split { flex: none; width: 7px; cursor: col-resize; touch-action: none; background: var(--panel); border-left: 1px solid var(--line); position: relative; }
 #split:hover, #split.drag { background: #2f3540; }
 #split button { position: absolute; top: 50%; left: -7px; transform: translateY(-50%); width: 20px; height: 44px; padding: 0; font-size: 10px; z-index: 2; }
 body.side-off #side { display: none; }
@@ -191,6 +202,20 @@ body.side-off #side { display: none; }
         <p class="dim">파일은 이 컴퓨터 안에서만 처리되고, 어디에도 업로드되지 않습니다.</p>
         <p class="dim" id="eNote"></p>
       </div>
+      <div id="selBar" hidden>
+        <button id="tbUndo" title="실행 취소">↶</button><button id="tbRedo" title="다시 실행">↷</button>
+        <span class="sep"></span>
+        <button id="tbUp" data-need-sel title="한 칸 위로">▲</button><button id="tbDown" data-need-sel title="한 칸 아래로">▼</button>
+        <button id="tbLeft" data-need-sel title="왼쪽 레인으로">◀</button><button id="tbRight" data-need-sel title="오른쪽 레인으로">▶</button>
+        <span class="sep"></span>
+        <button id="tbCopy" data-need-sel>복사</button><button id="tbPaste">붙여넣기</button><button id="tbDel" data-need-sel class="danger">삭제</button>
+        <span class="sep"></span>
+        <button id="tbCopyMode" title="켜면 노트를 끌 때 복사 (Ctrl+드래그 대신)">복사 모드</button>
+        <button id="tbNoSnap" title="켜면 그리드를 무시하고 1/192 단위로 (Shift 대신)">그리드 무시</button>
+        <span id="tbCount" class="dim"></span>
+        <button id="tbTouchOff" title="이 막대 숨기기 (다시 터치하면 나타남)">✕</button>
+      </div>
+      <div id="ctxMenu" hidden></div>
       <div id="drop" hidden>여기에 놓으면 폴더를 엽니다</div>
     </section>
     <div id="split" title="끌어서 패널 너비 조절 · 더블클릭: 접기/펼치기"><button id="sideTgl" title="오른쪽 패널 접기/펼치기 (\\)">▶</button></div>
@@ -1324,7 +1349,7 @@ function measureAt(beat) {
   while (lo < hi) { const mid = (lo + hi + 1) >> 1; if (Sf[mid] <= beat + 1e-9) lo = mid; else hi = mid - 1; }
   return lo;
 }
-function stepR(noSnap) { return (noSnap || !cfg.snap) ? R(1, 48) : R(4, cfg.grid); }
+function stepR(noSnap) { return (noSnap || A.noSnap || !cfg.snap) ? R(1, 48) : R(4, cfg.grid); }
 function snap(beat, mode, noSnap) {
   beat = Math.max(0, beat);
   const S = A.ms.S, Sf = A.ms.Sf, m = Math.min(999, measureAt(beat));
@@ -1585,6 +1610,7 @@ function paint() {
   }
   ctx.fillStyle = '#1a1b1f'; ctx.fillRect(0, 0, MEAS_W, HEAD_H - 1);
   ctx.fillStyle = '#9a9a9a'; ctx.fillText('마디', MEAS_W / 2, HEAD_H / 2);
+  updateSelBar();
 }
 
 /* ── app/history.js ── */
@@ -1681,13 +1707,16 @@ function hitAt(e) {
 function noteAt(h) {
   if (!h.lane || h.lane.type === 'meas') return null;
   const arr = A.by.get(h.lane.key); if (!arr) return null;
-  const nhb = noteH() / A.ppb, capb = capH() / A.ppb;
-  let found = null;
-  for (let i = lowerBound(arr, h.beat - (A.maxLen.get(h.lane.key) || 0) - nhb - capb - 0.01); i < arr.length; i++) {
+  const nhb = noteH() / A.ppb, capb = capH() / A.ppb, sl = (A.slop || 0) / A.ppb; // 터치는 잡는 범위를 넓힘
+  let found = null, best = Infinity;
+  for (let i = lowerBound(arr, h.beat - (A.maxLen.get(h.lane.key) || 0) - nhb - capb - sl - 0.01); i < arr.length; i++) {
     const n = arr[i];
-    if (n.b > h.beat + 1 / A.ppb) break;
+    if (n.b > h.beat + 1 / A.ppb + sl) break;
     const top = n.lb > 0 ? Math.max(n.b + n.lb + capb, n.b + nhb) : n.b + nhb;
-    if (h.beat >= n.b - 1 / A.ppb && h.beat <= top) found = n;
+    if (h.beat >= n.b - 1 / A.ppb - sl && h.beat <= top + sl) {
+      const dist = h.beat < n.b ? n.b - h.beat : h.beat > top ? h.beat - top : 0;
+      if (dist <= best) { best = dist; found = n; }
+    }
   }
   return found;
 }
@@ -1803,7 +1832,7 @@ function onMove(e) {
     const kMin = Math.ceil(-minB / sf - 1e-9), kMax = Math.floor((A.ms.Sf[1000] - maxE) / sf - 1e-9);
     if (k < kMin) k = kMin;
     if (k > kMax) k = kMax;
-    d.delta = rmul(st, R(k)); d.dSi = dSi; d.moved = true; d.copy = e.ctrlKey || e.altKey || e.metaKey;
+    d.delta = rmul(st, R(k)); d.dSi = dSi; d.moved = true; d.copy = e.ctrlKey || e.altKey || e.metaKey || !!A.copyMode;
     d.preview = sel.map((n) => movedNote(n, d.delta, dSi, grp));
     d.hide = d.copy ? null : new Set(sel);
     A.sc.style.cursor = d.copy ? 'copy' : 'move';
@@ -2435,7 +2464,7 @@ function showHelp() {
 <tr><td>+ − · Ctrl+휠</td><td>세로 확대 축소</td></tr>
 <tr><td>[ ] · Ctrl+Shift+휠</td><td>가로 확대 축소</td></tr></table>
 <h4>DP · BGA · 숨김 · 지뢰</h4><p>#PLAYER 3이거나 2P 노트가 있으면 DP 화면으로 엽니다. 툴바의 SP/DP 버튼으로 바꿀 수 있습니다. 가로 스크롤하면 플레이 영역은 고정되고 BGA·LAYER·POOR와 BGM 칼럼이 함께 움직입니다. BGA 레인에는 BMP 목록에서 고른 번호가 찍히고, BGA 노트는 BGA 레인끼리만 옮겨집니다. 숨김 노트는 흐리게, 지뢰는 진한 빨강(✕)으로 보이며 키 레인 안에서만 옮길 수 있습니다.</p>
-<h4>재생</h4><p>마디 번호 칸을 클릭하면 재생 시작선(초록)이 생깁니다. F6·Space는 시작선부터, 시작선이 없으면 화면 맨 아래 마디부터 재생합니다. 같은 키음이 다시 울리면 앞 소리는 끊깁니다(BMS 플레이어와 같은 방식). BPM 변화와 STOP도 반영합니다.</p>
+<h4>태블릿 (손가락 · S펜)</h4><ul><li>손가락: 노트를 끌면 이동, 빈 곳을 끌면 화면 이동, 두 손가락을 벌리고 오므리면 확대·축소(세로로 벌리면 세로, 가로로 벌리면 가로)</li><li>탭: 노트 선택 · 빈 곳은 선택 해제 · 쓰기 모드에서는 노트 찍기</li><li>길게 누르기: 빈 곳은 범위 선택 시작, 노트는 메뉴(삭제 · 값 바꾸기 · 복사)</li><li>S펜: 마우스와 똑같이 편집합니다(펜 옆 버튼 = 오른쪽 클릭 = 삭제). 펜을 한 번 쓰면 그 뒤로 손가락은 화면 이동·확대만 합니다(손바닥 오작동 방지).</li><li>아래 도구 막대: 실행 취소 · ▲▼◀▶ 한 칸 옮기기 · 복사 · 붙여넣기 · 삭제 · 복사 모드(끌면 복사, Ctrl 대신) · 그리드 무시(Shift 대신)</li></ul><h4>재생</h4><p>마디 번호 칸을 클릭하면 재생 시작선(초록)이 생깁니다. F6·Space는 시작선부터, 시작선이 없으면 화면 맨 아래 마디부터 재생합니다. 같은 키음이 다시 울리면 앞 소리는 끊깁니다(BMS 플레이어와 같은 방식). BPM 변화와 STOP도 반영합니다.</p>
 <h4>저장</h4><p>편집한 채널(BGM · BPM · STOP · 1P 키 · 롱노트 · 마디 길이)과 고친 헤더 · WAV 줄만 다시 쓰고, 나머지 줄(BGA, 2P, 숨김 노트, 지뢰, 주석, 모르는 명령, #RANDOM 블록)은 원본 바이트 그대로 둡니다. 저장 직전에 결과를 다시 읽어 편집 내용과 일치하는지 확인하고, 바뀐 줄을 보여 줍니다. 기본 인코딩은 Shift-JIS입니다.</p>
 <h4>복사 · 붙여넣기</h4><p>iBMSC 클립보드 형식("iBMSC Clipboard Data")을 씁니다. iBMSC에서 복사한 노트나 ibmsc_clip.py가 만든 텍스트를 붙여넣을 수 있고, 여기서 복사한 노트를 iBMSC에 붙여넣을 수도 있습니다. 위치는 마우스가 있는 마디의 시작점 기준입니다.</p>
 <h4>로컬 전용</h4><p>이 페이지는 파일 하나로 동작하며 서버가 없습니다. 패턴과 키음은 브라우저 안에서만 읽고 쓰고, 외부로 나가는 통신은 페이지의 보안 정책(CSP)으로 막혀 있습니다. 폴더에 바로 저장하려면 크롬이나 엣지를 쓰세요. 다른 브라우저에서는 저장할 때 파일이 다운로드됩니다.</p>
@@ -2924,6 +2953,184 @@ function toast(msg, ms) {
   clearTimeout(toastT); toastT = setTimeout(() => el.classList.remove('on'), ms || 2600);
 }
 
+/* ── app/touch.js ── */
+/* ───────── 터치 · 펜 (Pointer Events) ─────────
+   마우스·S펜: 기존 마우스 동작 그대로 (펜 옆 버튼 = 오른쪽 클릭 = 삭제)
+   손가락: 노트 끌기 = 이동, 빈 곳 끌기 = 화면 이동, 두 손가락 = 확대/축소,
+           탭 = 선택(쓰기 모드는 찍기), 길게 누르기 = 빈 곳: 범위 선택 / 노트: 메뉴
+   펜을 한 번이라도 쓰면: 펜은 편집, 손가락은 화면 이동·확대만 */
+const T = { pts: new Map(), st: null, pinch: null, lp: 0, mousePid: null };
+const TAP_MOVE = 8, LONG_MS = 500;
+
+function onPointerDown(e) {
+  A.lastPtr = e.pointerType;
+  if (e.pointerType === 'touch') { touchDown(e); return; }
+  if (e.pointerType === 'pen') { A.penMode = true; setTouchUI(true); }
+  if (T.mousePid !== null) return;
+  T.mousePid = e.pointerId;
+  try { A.sc.setPointerCapture(e.pointerId); } catch (err) { /* 무시 */ }
+  A.slop = e.pointerType === 'pen' ? 4 : 0;
+  onDown(e);
+  A.slop = 0;
+}
+function onPointerMove(e) {
+  if (e.pointerType === 'touch') { touchMove(e); return; }
+  if (T.mousePid !== null && e.pointerId !== T.mousePid) return;
+  onMove(e);
+}
+function onPointerUp(e) {
+  if (e.pointerType === 'touch') { touchUp(e); return; }
+  if (e.pointerId !== T.mousePid) return;
+  T.mousePid = null;
+  onUp(e);
+}
+
+/* 손가락 */
+function touchDown(e) {
+  e.preventDefault();
+  setTouchUI(true);
+  T.pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  try { A.sc.setPointerCapture(e.pointerId); } catch (err) { /* 무시 */ }
+  if (T.pts.size === 2) { startPinch(); return; }
+  if (T.pts.size > 2 || T.pinch) return;
+  hideCtx();
+  const h = hitAt(e);
+  if (!A.st || !h.inArea || h.head) { T.st = null; return; }
+  A.slop = 12; const n = A.penMode ? null : noteAt(h); A.slop = 0;
+  A.hover = { note: null, ghost: null, h }; // 붙여넣기 위치 기준
+  T.st = { x: e.clientX, y: e.clientY, ev: e, h, note: n, phase: 'pending', b0: A.view.bottom, l0: A.view.left };
+  clearTimeout(T.lp);
+  if (!A.penMode) T.lp = setTimeout(longPress, LONG_MS);
+  if (n && !(h.lane && h.lane.type === 'meas')) { // 노트를 잡으면 바로 선택·이동 준비 (마우스와 같은 경로)
+    T.st.phase = 'note';
+    A.slop = 12; onDown(fakeMouse(e)); A.slop = 0;
+  }
+}
+function touchMove(e) {
+  if (!T.pts.has(e.pointerId)) return;
+  e.preventDefault();
+  T.pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  if (T.pinch) { movePinch(); return; }
+  const s = T.st; if (!s) return;
+  const moved = Math.hypot(e.clientX - s.x, e.clientY - s.y) > TAP_MOVE;
+  if (moved) clearTimeout(T.lp);
+  if (s.phase === 'note' || s.phase === 'band') { onMove(fakeMouse(e)); return; }
+  if (s.phase === 'pending' && moved) s.phase = 'pan';
+  if (s.phase === 'pan') {
+    setBottom(s.b0 + (e.clientY - s.y) / A.ppb);
+    const maxL = Math.max(0, A.sc.scrollWidth - A.sc.clientWidth);
+    A.view.left = Math.min(maxL, Math.max(0, s.l0 - (e.clientX - s.x)));
+    syncScroll(); draw();
+  }
+}
+function touchUp(e) {
+  if (!T.pts.has(e.pointerId)) return;
+  T.pts.delete(e.pointerId);
+  clearTimeout(T.lp);
+  if (T.pinch) { if (T.pts.size === 0) T.pinch = null; return; } // 핀치가 끝나도 남은 손가락은 무시
+  const s = T.st; T.st = null;
+  if (!s) return;
+  if (s.phase === 'note' || s.phase === 'band') { onUp(fakeMouse(e)); return; }
+  if (s.phase === 'pending' && !A.penMode) { // 빈 곳 탭: 선택 해제 / 쓰기 모드는 노트 찍기 / 마디 칸은 재생 시작선
+    onDown(fakeMouse(s.ev)); onUp(fakeMouse(s.ev));
+  }
+}
+function longPress() {
+  const s = T.st; if (!s || A.penMode) return;
+  if (s.phase === 'note') { // 노트 길게 누르기: 이동을 취소하고 메뉴
+    if (A.drag && A.drag.moved) return;
+    A.drag = null; s.phase = 'menu'; draw();
+    if (navigator.vibrate) try { navigator.vibrate(15); } catch (err) { /* 무시 */ }
+    showCtx(s.note, s.x, s.y);
+    return;
+  }
+  if (s.phase === 'pending' && A.mode === 'select') { // 빈 곳 길게 누르기: 범위 선택 시작
+    s.phase = 'band';
+    if (navigator.vibrate) try { navigator.vibrate(15); } catch (err) { /* 무시 */ }
+    onDown(fakeMouse(s.ev));
+  }
+}
+function startPinch() {
+  clearTimeout(T.lp); hideCtx();
+  if (T.st && (T.st.phase === 'note' || T.st.phase === 'band')) { A.drag = null; draw(); } // 편집 중이던 끌기는 취소
+  T.st = null;
+  const [a, b] = [...T.pts.values()];
+  const r = A.sc.getBoundingClientRect();
+  const cy = (a.y + b.y) / 2 - r.top, cx = (a.x + b.x) / 2 - r.left;
+  T.pinch = { dx: Math.abs(a.x - b.x), dy: Math.abs(a.y - b.y), z: cfg.zoom, zx: cfg.zoomX || 1, cx, cy,
+    beat: A.view.bottom + (A.H - cy) / A.ppb, l0: A.view.left };
+}
+function movePinch() {
+  const p = T.pinch; if (!p || T.pts.size < 2) return;
+  const [a, b] = [...T.pts.values()];
+  const r = A.sc.getBoundingClientRect();
+  const cy = (a.y + b.y) / 2 - r.top, cx = (a.x + b.x) / 2 - r.left;
+  const dx = Math.abs(a.x - b.x), dy = Math.abs(a.y - b.y);
+  // 손가락을 벌린 방향대로: 세로로 벌리면 세로 확대, 가로로 벌리면 가로 확대
+  if (p.dy > 40) setZoom(p.z * dy / p.dy, p.beat, cy); else setBottom(p.beat - (A.H - cy) / A.ppb);
+  if (p.dx > 40) setZoomX(p.zx * dx / p.dx, cx);
+}
+function fakeMouse(e) {
+  return { clientX: e.clientX, clientY: e.clientY, button: 0, buttons: 1, shiftKey: false, ctrlKey: false, altKey: false, metaKey: false, preventDefault() {} };
+}
+
+/* 노트 메뉴 (손가락으로 길게 누르기) */
+function showCtx(n, x, y) {
+  const m = $('#ctxMenu');
+  m.innerHTML = '';
+  const add = (label, fn) => { const b = document.createElement('button'); b.textContent = label; b.addEventListener('click', () => { hideCtx(); fn(); }); m.appendChild(b); };
+  if (!A.sel.has(n)) A.sel = new Set([n]);
+  const sel = [...A.sel];
+  add(sel.length > 1 ? `삭제 (${sel.length}개)` : '삭제', deleteSel);
+  add('값 바꾸기', () => { const kind = (x2) => (isSound(x2.lane) ? 's' : x2.lane); editValue([n, ...sel.filter((x2) => x2 !== n && kind(x2) === kind(n))]); });
+  add('복사', () => { copySel(); toast(`노트 ${A.sel.size}개 복사`); });
+  m.hidden = false;
+  const r = m.getBoundingClientRect();
+  m.style.left = Math.min(window.innerWidth - r.width - 8, Math.max(8, x - r.width / 2)) + 'px';
+  m.style.top = Math.max(8, y - r.height - 24) + 'px';
+  statusNote(); draw();
+}
+function hideCtx() { const m = $('#ctxMenu'); if (m) m.hidden = true; }
+
+/* 선택 도구 막대 (터치·펜을 쓰면 표시) */
+function setTouchUI(on) {
+  if (A.touchUI === on) return;
+  A.touchUI = on;
+  document.body.classList.toggle('touch', on);
+  updateSelBar();
+}
+function updateSelBar() {
+  const bar = $('#selBar'); if (!bar) return;
+  bar.hidden = !(A.touchUI && A.st);
+  if (bar.hidden) return;
+  const has = A.sel.size > 0;
+  for (const b of bar.querySelectorAll('[data-need-sel]')) b.disabled = !has;
+  $('#tbPaste').disabled = !A.clip;
+  $('#tbCopyMode').classList.toggle('on', !!A.copyMode);
+  $('#tbNoSnap').classList.toggle('on', !!A.noSnap);
+  $('#tbCount').textContent = has ? `${A.sel.size}개 선택` : '';
+}
+function bindTouch() {
+  const sc = A.sc;
+  sc.addEventListener('pointerdown', onPointerDown);
+  sc.addEventListener('pointermove', onPointerMove);
+  window.addEventListener('pointermove', (e) => { if (e.target !== sc && e.pointerType !== 'touch') onPointerMove(e); });
+  window.addEventListener('pointerup', onPointerUp);
+  window.addEventListener('pointercancel', onPointerUp);
+  sc.addEventListener('pointerleave', (e) => { if (e.pointerType !== 'touch' && !A.drag && A.hover) { A.hover = null; statusPos(null); statusNote(); draw(); } });
+  document.addEventListener('pointerdown', (e) => { if (!e.target.closest('#ctxMenu')) hideCtx(); }, true);
+  const act = (id, fn) => $(id).addEventListener('click', () => { fn(); updateSelBar(); });
+  act('#tbDel', deleteSel);
+  act('#tbCopy', () => { copySel(); toast(`노트 ${A.sel.size}개 복사`); });
+  act('#tbPaste', () => { if (A.clip) pasteText(A.clip.text); });
+  act('#tbUndo', undo); act('#tbRedo', redo);
+  act('#tbUp', () => nudge(1, 0, false)); act('#tbDown', () => nudge(-1, 0, false));
+  act('#tbLeft', () => nudge(0, -1, false)); act('#tbRight', () => nudge(0, 1, false));
+  act('#tbCopyMode', () => { A.copyMode = !A.copyMode; toast(A.copyMode ? '복사 모드: 끌면 복사됩니다' : '복사 모드 끔'); });
+  act('#tbNoSnap', () => { A.noSnap = !A.noSnap; toast(A.noSnap ? '그리드 무시 (1/192 단위)' : '그리드 맞춤'); });
+  act('#tbTouchOff', () => setTouchUI(false));
+}
+
 /* ── app/main.js ── */
 /* ───────── 시작 ───────── */
 function init() {
@@ -2997,15 +3204,15 @@ function init() {
   applySide();
   A.toggleSide = toggleSide;
   $('#sideTgl').addEventListener('click', (e) => { e.stopPropagation(); toggleSide(); A.sc.focus({ preventScroll: true }); });
-  $('#sideTgl').addEventListener('mousedown', (e) => e.stopPropagation());
+  $('#sideTgl').addEventListener('pointerdown', (e) => e.stopPropagation());
   split.addEventListener('dblclick', toggleSide);
-  split.addEventListener('mousedown', (e) => {
+  split.addEventListener('pointerdown', (e) => {
     if (cfg.sideOff || e.button !== 0) return;
     e.preventDefault(); split.classList.add('drag');
     const x0 = e.clientX, w0 = side.getBoundingClientRect().width;
     const mv = (ev) => { cfg.sideW = Math.round(Math.min(Math.max(220, w0 - (ev.clientX - x0)), Math.max(260, window.innerWidth - 400))); side.style.width = cfg.sideW + 'px'; };
-    const up = () => { split.classList.remove('drag'); window.removeEventListener('mousemove', mv); window.removeEventListener('mouseup', up); saveCfg(); };
-    window.addEventListener('mousemove', mv); window.addEventListener('mouseup', up);
+    const up = () => { split.classList.remove('drag'); window.removeEventListener('pointermove', mv); window.removeEventListener('pointerup', up); saveCfg(); };
+    window.addEventListener('pointermove', mv); window.addEventListener('pointerup', up); window.addEventListener('pointercancel', up, { once: true });
   });
   $('#bmpList').addEventListener('click', (e) => { const r = e.target.closest('.wr'); if (!r || e.target.tagName === 'INPUT') return; A.curBmp = +r.dataset.id; markCurBmp(false); });
   $('#bmpList').addEventListener('dblclick', (e) => { const r = e.target.closest('.wr'); if (r && A.st && e.target.tagName !== 'INPUT') editBmpName(+r.dataset.id, r); });
@@ -3048,10 +3255,10 @@ function init() {
   });
 
   A.sc.addEventListener('scroll', onScroll);
-  A.sc.addEventListener('mousedown', onDown);
   A.sc.addEventListener('contextmenu', (e) => e.preventDefault());
   A.sc.addEventListener('auxclick', (e) => { if (e.button === 1) e.preventDefault(); });
   A.sc.addEventListener('dblclick', (e) => {
+    if (A.lastPtr === 'touch') return; // 손가락 두 번 탭은 값 바꾸기 안 함
     if (!A.st || A.mode !== 'select') return;
     const n = noteAt(hitAt(e)); if (!n) return;
     const kind = (x) => (isSound(x.lane) ? 's' : x.lane);
@@ -3059,9 +3266,8 @@ function init() {
     editValue(targets);
   });
   A.sc.addEventListener('wheel', onWheel, { passive: false });
-  A.sc.addEventListener('mouseleave', () => { if (!A.drag && A.hover) { A.hover = null; statusPos(null); statusNote(); draw(); } });
-  window.addEventListener('mousemove', onMove);
-  window.addEventListener('mouseup', onUp);
+  bindTouch();
+  if (cfg.sideOff === undefined && window.innerWidth < 1100) { cfg.sideOff = true; applySide(); } // 좁은 화면은 패널을 접고 시작
   document.addEventListener('keydown', onKey);
   document.addEventListener('copy', (e) => {
     if (isTyping(document.activeElement) || !$('#modal').hidden || !A.st || !A.sel.size) return;
