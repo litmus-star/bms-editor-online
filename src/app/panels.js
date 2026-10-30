@@ -37,13 +37,13 @@ let wavRenderT = 0;
 function renderWavList() {
   const el = $('#wavList');
   if (!A.st) { el.innerHTML = ''; $('#wavCnt').textContent = ''; return; }
-  const q = $('#wavQ').value.trim().toLowerCase(), defOnly = $('#wavDef').checked;
+  const qRaw = $('#wavQ').value.trim(), q = qRaw.toLowerCase(), defOnly = $('#wavDef').checked; // 62진수는 번호의 대소문자를 구분
   const max = C.idMax(A.doc.base), parts = [];
   for (let id = 1; id <= max; id++) {
     const name = A.st.wavs.get(id) || '';
     if (defOnly && !name) continue;
     const s = idS(id);
-    if (q && !(s.toLowerCase().includes(q) || name.toLowerCase().includes(q))) continue;
+    if (q && !((A.doc.base === 62 ? s.includes(qRaw) : s.toLowerCase().includes(q)) || name.toLowerCase().includes(q))) continue;
     const use = A.usage.get(id) || 0;
     const stt = name ? Au.state.get(wavKey(name)) : '';
     const cls = (id === A.curWav ? ' cur' : '') + (!name ? ' empty' : '') + (stt === 'missing' || stt === 'fail' ? ' miss' : '');
@@ -181,13 +181,13 @@ function renderAllPanels() { renderHeader(); renderWavList(); renderBmpList(); r
 function renderBmpList() {
   const el = $('#bmpList');
   if (!A.st) { el.innerHTML = ''; $('#bmpCnt').textContent = ''; return; }
-  const q = $('#bmpQ').value.trim().toLowerCase(), defOnly = $('#bmpDef').checked;
+  const qRaw = $('#bmpQ').value.trim(), q = qRaw.toLowerCase(), defOnly = $('#bmpDef').checked;
   const max = C.idMax(A.doc.base), parts = [], use = A.usageB || new Map();
   for (let id = 0; id <= max; id++) {
     const name = A.st.bmps.get(id) || '';
     if ((defOnly || id === 0) && !name) continue;
     const s = idS(id);
-    if (q && !(s.toLowerCase().includes(q) || name.toLowerCase().includes(q))) continue;
+    if (q && !((A.doc.base === 62 ? s.includes(qRaw) : s.toLowerCase().includes(q)) || name.toLowerCase().includes(q))) continue;
     const miss = name && A.bmpMiss && A.bmpMiss.has(normPath(name).toLowerCase());
     const cls = (id === A.curBmp ? ' cur' : '') + (!name ? ' empty' : '') + (miss ? ' miss' : '');
     parts.push(`<div class="wr${cls}" data-id="${id}"><b>${s}</b><span title="${esc(name + (miss ? ' (파일 없음)' : ''))}">${esc(name) || '—'}</span><i>${use.get(id) || ''}</i></div>`);

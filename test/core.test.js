@@ -372,4 +372,22 @@ t('LNOBJ: 2P에서도 동작', () => {
   assert.ok(n.lnobj && n.lb === 2);
   assert.strictEqual(hex(C.serialize(d, C.stateFromDoc(d)).bytes), hex(b));
 });
+t('#BASE 62: 대소문자 구분 · 1295번 초과 번호 · 원본 그대로 · 새 번호는 62진수로', () => {
+  const txt = ['#PLAYER 1', '#BASE 62', '#BPM 150', '#WAV0a lower.wav', '#WAV0A upper.wav', '#WAVzz last.wav', '#WAV10 ten.wav', '',
+    '#00111:0a0A', '#00112:zz00', '#00101:10', ''].join('\r\n');
+  const b = new TextEncoder().encode(txt);
+  const d = C.parse(b), st = C.stateFromDoc(d);
+  assert.strictEqual(d.base, 62);
+  assert.strictEqual(st.wavs.get(36), 'lower.wav'); assert.strictEqual(st.wavs.get(10), 'upper.wav');
+  assert.strictEqual(st.wavs.get(3843), 'last.wav'); assert.strictEqual(st.wavs.get(62), 'ten.wav');
+  assert.deepStrictEqual(st.notes.filter((n) => n.lane === 'K11').map((n) => n.v).sort((x, y) => x - y), [10, 36]);
+  assert.strictEqual(hex(C.serialize(d, st).bytes), hex(b));
+  const n = st.notes.find((x) => x.lane === 'K12'); n.lane = 'K13';
+  st.wavs.set(3000, 'new.wav'); st.notes.push(Object.assign({}, n, { lane: 'K14', v: 3000, uid: 99999 }));
+  const r = C.serialize(d, st), out = new TextDecoder().decode(r.bytes);
+  assert.ok(r.verify.ok);
+  assert.ok(out.includes('#WAVmO new.wav') && out.includes('#00114:mO') && out.includes('#00113:zz') && out.includes('#00111:0a0A'));
+  assert.strictEqual(C.idStr(3000, 62), 'mO'); assert.strictEqual(C.idParse('mO', 62), 3000);
+  assert.strictEqual(C.idParse('mo', 36), C.idParse('MO', 36));
+});
 console.log(`\n${pass} passed`);
