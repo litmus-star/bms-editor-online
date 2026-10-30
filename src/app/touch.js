@@ -7,8 +7,8 @@ const T = { pts: new Map(), st: null, pinch: null, lp: 0, mousePid: null };
 const TAP_MOVE = 8, LONG_MS = 500;
 
 /* 관성 스크롤: 손가락으로 빈 곳을 끌다 놓으면 그 속도로 미끄러지다 서서히 멈춘다.
-   FLING_FRICTION: 1ms마다 속도에 곱하는 값. 1에 가까울수록 오래 미끄러짐 (0.997 ≈ 0.33초마다 속도가 1/e로) */
-const FLING_FRICTION = 0.997, FLING_MIN_START = 0.25, FLING_MIN_STOP = 0.02, FLING_MAX = 8, FLING_WINDOW = 100;
+   FLING_FRICTION: 1ms마다 속도에 곱하는 값. 1에 가까울수록 오래 미끄러짐 (0.9985 ≈ 0.67초마다 속도가 1/e로, 1이면 영영 안 멈춤) */
+const FLING_FRICTION = 0.9985, FLING_MIN_START = 0.25, FLING_MIN_STOP = 0.02, FLING_MAX = 8, FLING_WINDOW = 100;
 const F = { on: false, vx: 0, vy: 0, t: 0, raf: 0 };
 function stopFling() { if (!F.on) return false; F.on = false; cancelAnimationFrame(F.raf); A.userScroll = false; return true; }
 function panBy(dx, dy) { // 손가락 기준 이동량(px): 아래로 끌면 앞(곡 시작 쪽)으로
