@@ -1,4 +1,5 @@
 disclaimer : THIS IS AN AI SLOP!! I made this cuz... I needed this thing but nobody made it.
+주의 : AI로 대충 만든 물건입니다. 웹에서 동작하는 BMS 에디터를 아무도 안만들었길래 클로드 갈궈서 만들었읍니다...
 
 # BMS 웹 에디터 (index.html)
 
