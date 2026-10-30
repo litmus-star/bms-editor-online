@@ -68,6 +68,8 @@ main { flex: 1; display: flex; min-height: 0; }
 body.touch #tb button, body.touch #tb select { min-height: 36px; }
 body.touch #split { width: 14px; }
 #diagBd { margin: 0 0 8px; white-space: pre-wrap; word-break: break-all; font: 11.5px/1.5 Consolas, Menlo, monospace; color: var(--text); }
+#infoBd .muri { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; max-height: 160px; overflow-y: auto; }
+#infoBd .muri button { font-size: 11.5px; padding: 1px 6px; color: #ffc27a; border-color: #6b4a1c; }
 #drop { position: absolute; inset: 10px; border: 2px dashed var(--acc); border-radius: 10px; background: rgba(20, 18, 5, .85);
   display: flex; align-items: center; justify-content: center; font-size: 18px; color: var(--acc); pointer-events: none; }
 
@@ -165,7 +167,7 @@ body.side-off #side { display: none; }
       <button id="bRedo" class="ic" title="다시 실행 (Ctrl+Y)">↷</button>
     </div>
     <div class="g">
-      <button id="bDP" title="SP/DP 화면 전환 — 파일을 열 때 #PLAYER 3이거나 2P 노트가 있으면 DP로 엽니다">SP</button>
+      <button id="bDP" title="SP → DP → PMS 화면 전환 — 파일을 열 때 .pms이거나 팝픈 9버튼 레인만 쓰면 PMS, #PLAYER 3이거나 2P 노트가 있으면 DP로 엽니다">SP</button>
     </div>
     <div class="g seg">
       <button id="mSel" title="선택 모드 (F1)">선택 <kbd>F1</kbd></button>
@@ -482,6 +484,11 @@ const KEY_LANES = [
   keyLane('2', '1', '1'), keyLane('2', '2', '2'), keyLane('2', '3', '3'), keyLane('2', '4', '4'),
   keyLane('2', '5', '5'), keyLane('2', '8', '6'), keyLane('2', '9', '7'), keyLane('2', '6', 'SC'),
 ];
+// PMS(팝픈뮤직 9버튼): 1~5 = 1P 1~5키(11~15), 6~9 = 2P 2~5키(22~25). 색은 팝픈 버튼 색(흰·노·초·파·빨·파·초·노·흰)
+const PMS_LANES = [
+  ['K11', '1', 'pw'], ['K12', '2', 'py'], ['K13', '3', 'pg'], ['K14', '4', 'pb'], ['K15', '5', 'pr'],
+  ['K22', '6', 'pb'], ['K23', '7', 'pg'], ['K24', '8', 'py'], ['K25', '9', 'pw'],
+].map(([key, label, col]) => ({ key, label, col }));
 const BGA_LANES = [{ key: 'G04', ch: '04', label: 'BGA' }, { key: 'G07', ch: '07', label: 'LAYER' }, { key: 'G06', ch: '06', label: 'POOR' }];
 const LANE_BY_KEY = {}, CH2LANE = {}, CH2KIND = {};
 KEY_LANES.forEach((l) => {
@@ -1246,7 +1253,7 @@ G.BMSCore = {
   R, R0, R1, R4, radd, rsub, rmul, rdiv, rcmp, req, rf, rkey, rApprox, gcd, lcm,
   idParse, idStr, idMax, hex2, pad3, fmtNum, parse, serialize, stateFromDoc, measureStarts,
   buildTiming, blockGhosts, detectEncoding, encodingInfo, getEncoder, splitLines, parseMeasureLen, lenStr, retimeBlockText,
-  noteSig, compareStates, finalizeNote, KEY_LANES, BGA_LANES, LANE_BY_KEY, CH2LANE, CH2KIND, ENC_LABEL, NEW_TEMPLATE,
+  noteSig, compareStates, finalizeNote, KEY_LANES, PMS_LANES, BGA_LANES, LANE_BY_KEY, CH2LANE, CH2KIND, ENC_LABEL, NEW_TEMPLATE,
 };
 
 })(typeof window !== 'undefined' ? window : globalThis);
@@ -1271,9 +1278,13 @@ function saveCfg() { try { localStorage.setItem(CFG_KEY, JSON.stringify(cfg)); }
 
 /* ───────── 상수 ───────── */
 const HEAD_H = 22, MEAS_W = 50, PPB = 48; // 확대 1 → 한 박 48px, 4/4 한 마디 192px
-const NOTE_COL = { bga: '#c08cff', sc: '#ff5b5b', w: '#e8e8e8', b: '#5c88ff', bgm: '#a9afba', bpm: '#62d872', stop: '#ffa04a' };
-const NOTE_TXT = { bga: '#1d0a33', sc: '#fff', w: '#111', b: '#fff', bgm: '#111', bpm: '#06200c', stop: '#2a1300' };
-const LANE_BG = { bga: '#120c1a', bpm: '#08130b', stop: '#150c06', sc: '#1b0808', w: '#111111', b: '#0b0e1d', bgm: '#0d0d0d' };
+// pw·py·pg·pb·pr: PMS(팝픈) 버튼 색 — 흰·노랑·초록·파랑·빨강
+const NOTE_COL = { bga: '#c08cff', sc: '#ff5b5b', w: '#e8e8e8', b: '#5c88ff', bgm: '#a9afba', bpm: '#62d872', stop: '#ffa04a',
+  pw: '#ececec', py: '#ffd83a', pg: '#45d65f', pb: '#4a8cff', pr: '#ff4646' };
+const NOTE_TXT = { bga: '#1d0a33', sc: '#fff', w: '#111', b: '#fff', bgm: '#111', bpm: '#06200c', stop: '#2a1300',
+  pw: '#111', py: '#2a2000', pg: '#03200a', pb: '#fff', pr: '#fff' };
+const LANE_BG = { bga: '#120c1a', bpm: '#08130b', stop: '#150c06', sc: '#1b0808', w: '#111111', b: '#0b0e1d', bgm: '#0d0d0d',
+  pw: '#141414', py: '#17140a', pg: '#0a160c', pb: '#0b0f1d', pr: '#1b0909' };
 const GRIDS = [4, 8, 12, 16, 24, 32, 48, 64, 96, 192];
 const AUDIO_EXT = /\.(wav|ogg|flac|mp3|m4a|aac|opus)$/i;
 const CHART_EXT = /\.(bms|bme|bml|pms)$/i;
@@ -1286,7 +1297,7 @@ const A = {
   mode: 'select', curWav: 1, curBmp: 1, noteKind: 'n', dp: false,
   view: { bottom: 0, left: 0 }, ppb: PPB * cfg.zoom, W: 0, H: 0, dpr: 1,
   lanes: [], laneMap: new Map(), sound: [], totalW: 0, bgmCount: 8,
-  by: new Map(), maxLen: new Map(), ms: null, timing: null, ghosts: [], extentM: 64, usage: new Map(), conflicts: 0,
+  by: new Map(), maxLen: new Map(), ms: null, timing: null, ghosts: [], extentM: 64, usage: new Map(), conflicts: 0, muri: [],
   drag: null, hover: null, playBeat: null, playMark: null, playToken: null,
   fs: { provider: null, files: [] }, backedUp: new Set(), clip: null,
   blkIdx: 0, beatSel: new Set(), beatAnchor: -1,
@@ -1332,8 +1343,9 @@ function layout() {
   add({ key: 'BPM', type: 'bpm', col: 'bpm', w: 56, label: 'BPM' });
   add({ key: 'STOP', type: 'stop', col: 'stop', w: 48, label: 'STOP' });
   x += 8;
-  C.KEY_LANES.filter((k) => k.p === 1).forEach((k, i) => add({ key: k.key, type: 'key', p: 1, col: i === 0 ? 'sc' : (i % 2 ? 'w' : 'b'), w: i === 0 ? 54 : 42, label: k.label }));
-  if (A.dp) {
+  if (A.pms) C.PMS_LANES.forEach((k) => add({ key: k.key, type: 'key', p: 0, col: k.col, w: 42, label: k.label }));
+  else C.KEY_LANES.filter((k) => k.p === 1).forEach((k, i) => add({ key: k.key, type: 'key', p: 1, col: i === 0 ? 'sc' : (i % 2 ? 'w' : 'b'), w: i === 0 ? 54 : 42, label: k.label }));
+  if (A.dp && !A.pms) {
     x += 8;
     C.KEY_LANES.filter((k) => k.p === 2).forEach((k, i) => add({ key: k.key, type: 'key', p: 2, col: i === 7 ? 'sc' : (i % 2 ? 'b' : 'w'), w: i === 7 ? 54 : 42, label: k.label }));
   }
@@ -1398,8 +1410,46 @@ function reindex() {
     for (const n of a) if (n._c) conf++;
   }
   A.by = by; A.conflicts = conf;
+  checkMuri();
   const need = Math.max(8, maxB + 5);
   if (need !== A.bgmCount) { A.bgmCount = need; layout(); }
+}
+/* PMS 무리배치: 같은 타이밍에 눌러야 하는 버튼(그 순간 누르고 있는 롱노트 포함)을
+   왼손·오른손 두 묶음으로 나눴을 때, 각 묶음이 연속된 버튼 3개 범위 안에 들어가는 방법이 하나도 없으면 무리.
+   예: 1-5-9 → 무리, 2-4-6-8 → 가능. 숨김 노트·지뢰는 제외. */
+const PMS_BTN = { K11: 1, K12: 2, K13: 3, K14: 4, K15: 5, K22: 6, K23: 7, K24: 8, K25: 9 };
+function handsOk(btns) {
+  const s = [...new Set(btns)].sort((a, b) => a - b);
+  for (let i = 0; i <= s.length; i++) {
+    const L = s.slice(0, i), Rr = s.slice(i);
+    if ((!L.length || L[L.length - 1] - L[0] <= 2) && (!Rr.length || Rr[Rr.length - 1] - Rr[0] <= 2)) return true;
+  }
+  return false;
+}
+function checkMuri() {
+  for (const n of A.st.notes) n._m = false;
+  A.muri = [];
+  if (!A.pms) return;
+  const ns = A.st.notes.filter((n) => PMS_BTN[n.lane] && !n.kind).sort((a, b) => a.b - b.b);
+  const lns = ns.filter((n) => n.lb > 0);
+  let li = 0; const held = [];
+  for (let i = 0; i < ns.length;) {
+    let j = i; while (j < ns.length && ns[j].b - ns[i].b < 1e-9) j++;
+    const t = ns[i].b, chord = ns.slice(i, j);
+    while (li < lns.length && lns[li].b < t - 1e-9) held.push(lns[li++]); // 이 시점 전에 시작한 롱노트
+    for (let k = held.length - 1; k >= 0; k--) if (held[k].b + held[k].lb <= t + 1e-9) held.splice(k, 1); // 이미 끝난 것은 빼기
+    const all = chord.concat(held);
+    if (all.length >= 2 && !handsOk(all.map((n) => PMS_BTN[n.lane]))) {
+      for (const n of all) n._m = true;
+      A.muri.push({ b: t, notes: all, btns: [...new Set(all.map((n) => PMS_BTN[n.lane]))].sort((a, b) => a - b), held: held.length });
+    }
+    i = j;
+  }
+}
+function muriLabel(m) {
+  const mm = measureAt(m.b + 1e-9), off = m.b - A.ms.Sf[mm], len = rf(lenOf(mm)) * 4;
+  const g = [4, 8, 12, 16, 24, 32, 48, 64, 96, 192].find((d) => Math.abs(off / len * d - Math.round(off / len * d)) < 1e-6) || 192;
+  return `마디 ${C.pad3(mm)} · ${Math.round(off / len * g)}/${g} · ${m.btns.join('-')}` + (m.held ? ' (롱노트 포함)' : '');
 }
 function refresh() {
   if (!A.st) return;
@@ -1503,6 +1553,7 @@ function drawNote(ctx, n, l, x, yOf, nh, alpha, pv) {
     ctx.strokeStyle = mine ? '#ff6b7f' : col; ctx.strokeRect(xx + 0.5, y - nh + 0.5, w - 1, nh - 1); ctx.setLineDash([]);
   }
   if (!pv) {
+    if (n._m && !n._c) { ctx.strokeStyle = '#ff9a1f'; ctx.lineWidth = 2; ctx.setLineDash([4, 2]); ctx.strokeRect(xx - 1, topY - 1, w + 2, y - topY + 2); ctx.setLineDash([]); }
     if (n._c) { ctx.strokeStyle = '#ff2b2b'; ctx.lineWidth = 2; ctx.strokeRect(xx - 1, topY - 1, w + 2, y - topY + 2); }
     if (A.sel.has(n)) { ctx.strokeStyle = '#ffe14d'; ctx.lineWidth = 2; ctx.strokeRect(xx - 1, topY - 1, w + 2, y - topY + 2); }
     else if (A.hover && A.hover.note === n) { ctx.strokeStyle = 'rgba(255,255,255,.85)'; ctx.lineWidth = 1; ctx.strokeRect(xx - 0.5, topY - 0.5, w + 1, y - topY + 1); }
@@ -2159,7 +2210,7 @@ function statusPos(h) {
 function noteDesc(n) {
   if (n.lane === 'BPM') return `BPM ${fmtV(n.v)}` + (n.bch === '08' ? ` (#BPM${idS(n.bid)})` : '');
   if (n.lane === 'STOP') return `STOP ${fmtV(n.v)}` + (n.sid ? ` (#STOP${idS(n.sid)})` : '');
-  const lane = A.laneMap.get(n.lane), ln = lane ? (lane.p === 2 ? '2P ' : lane.p === 1 && A.dp ? '1P ' : '') + lane.label : n.lane;
+  const lane = A.laneMap.get(n.lane), ln = lane ? (lane.p === 2 ? '2P ' : lane.p === 1 && A.dp ? '1P ' : '') + (A.pms && lane.type === 'key' ? '버튼 ' : '') + lane.label : n.lane;
   if (n.lane[0] === 'G') return `${ln} · #BMP${idS(n.v)} ${A.st.bmps.get(n.v) || '(정의 없음)'}`;
   if (n.kind === 'm') return `${ln} · 지뢰 · 값 ${idS(n.v)}`;
   const nm = A.st.wavs.get(n.v) || '(정의 없음)';
@@ -2322,7 +2373,7 @@ function renderInfo() {
   const rows = [
     ['파일', esc(A.fileName || '(새 파일 — 아직 저장 안 됨)')],
     ['인코딩', `${C.ENC_LABEL[A.doc.enc]} · ${A.doc.eol === '\r\n' ? 'CRLF' : 'LF'}`],
-    ['노트', A.dp || p2 ? `${notes}개 (롱노트 ${ln}, 1P ${k1}+${s1}, 2P ${k2}+${s2})` : `${notes}개 (롱노트 ${ln}, 스크래치 ${sc})`],
+    ['노트', A.pms ? `${notes}개 (롱노트 ${ln})` : A.dp || p2 ? `${notes}개 (롱노트 ${ln}, 1P ${k1}+${s1}, 2P ${k2}+${s2})` : `${notes}개 (롱노트 ${ln}, 스크래치 ${sc})`],
     ['숨김 · 지뢰', `${hid}개 · ${mine}개`],
     ['BGM · BGA', `${bgm}개 · ${bga}개`],
     ['길이', fmtTime(A.timing.beatToTime(A.lastBeat || 0))],
@@ -2332,10 +2383,16 @@ function renderInfo() {
   ];
   const warn = [];
   if (A.conflicts) warn.push(`겹친 노트 ${A.conflicts}개 (빨간 테두리) — 저장 전에 정리해 주세요`);
-  if (!A.dp && A.st.notes.some((n) => n.lane[0] === 'K' && n.lane[1] === '2')) warn.push('2P 노트가 있지만 SP 화면입니다. 툴바의 DP 버튼으로 2P 레인을 볼 수 있습니다(노트는 그대로 저장됩니다).');
+  if (A.pms && A.muri.length) warn.push(`무리배치 ${A.muri.length}곳 (주황 테두리) — 한 손이 연속된 버튼 3개까지만 누를 수 있다고 보고, 완전히 같은 타이밍의 동시치기(누르고 있는 롱노트 포함)만 검사합니다`);
+  if (A.pms) {
+    const off = A.st.notes.filter((n) => n.lane[0] === 'K' && !PMS_KEYS.has(n.lane)).length;
+    if (off) warn.push(`PMS에서 쓰지 않는 레인(스크래치·6·7키·2P 1키 등)에 노트 ${off}개가 있습니다. 화면에는 보이지 않지만 그대로 저장됩니다.`);
+  } else if (!A.dp && A.st.notes.some((n) => n.lane[0] === 'K' && n.lane[1] === '2')) warn.push('2P 노트가 있지만 SP 화면입니다. 툴바의 DP 버튼으로 2P 레인을 볼 수 있습니다(노트는 그대로 저장됩니다).');
   if (A.doc.lntype === 2) warn.push('#LNTYPE 2 파일입니다. 롱노트 채널은 편집하지 않고 원본 그대로 둡니다.');
   if (!A.fs.provider) warn.push('폴더 없이 연 상태라 키음을 재생할 수 없습니다.');
-  bd.innerHTML = `<table>${rows.map(([a, b]) => `<tr><td>${a}</td><td>${b}</td></tr>`).join('')}</table>` + warn.map((w) => `<div class="w">! ${esc(w)}</div>`).join('');
+  bd.innerHTML = `<table>${rows.map(([a, b]) => `<tr><td>${a}</td><td>${b}</td></tr>`).join('')}</table>` + warn.map((w) => `<div class="w">! ${esc(w)}</div>`).join('')
+    + (A.pms && A.muri.length ? `<div class="muri">${A.muri.slice(0, 50).map((m, i) => `<button data-mi="${i}">${esc(muriLabel(m))}</button>`).join('')}${A.muri.length > 50 ? `<span class="dim">외 ${A.muri.length - 50}곳</span>` : ''}</div>` : '');
+  for (const el of bd.querySelectorAll('[data-mi]')) el.addEventListener('click', () => { const m = A.muri[+el.dataset.mi]; if (m) { setBottom(m.b - (A.H - HEAD_H) * 0.3 / A.ppb); A.sel = new Set(m.notes); statusNote(); draw(); } });
 }
 function syncOptions() {
   $('#oName').checked = cfg.showName; $('#oFollow').checked = cfg.follow; $('#oBgm').checked = cfg.playBgm;
@@ -2398,17 +2455,28 @@ async function checkBmps() {
   }
   renderBmpList();
 }
-// SP/DP 화면 전환 (파일 내용은 바꾸지 않음)
-function setDP(on, quiet) {
-  A.dp = !!on;
-  $('#bDP').classList.toggle('on', A.dp); $('#bDP').textContent = A.dp ? 'DP' : 'SP';
-  if (!A.dp) for (const n of [...A.sel]) if (n.lane[0] === 'K' && n.lane[1] === '2') A.sel.delete(n);
+// SP / DP / PMS 화면 전환 (파일 내용은 바꾸지 않음)
+const PMS_KEYS = new Set(C.PMS_LANES.map((l) => l.key));
+const PLAY_MODES = ['sp', 'dp', 'pms'];
+function playMode() { return A.pms ? 'pms' : A.dp ? 'dp' : 'sp'; }
+function setPlayMode(m, quiet) {
+  A.dp = m === 'dp'; A.pms = m === 'pms';
+  const b = $('#bDP'); b.classList.toggle('on', m !== 'sp'); b.textContent = m.toUpperCase();
   layout();
+  for (const n of [...A.sel]) if (n.lane[0] === 'K' && !A.laneMap.has(n.lane)) A.sel.delete(n); // 화면에서 사라진 레인의 선택은 해제
   if (A.st) {
     refresh();
-    const p2 = A.st.notes.some((n) => n.lane[0] === 'K' && n.lane[1] === '2');
-    if (!quiet) toast(A.dp ? 'DP 화면 (1P + 2P)' + (A.st.headers.get('PLAYER') !== '3' ? ' — 헤더의 플레이를 3 · DP로 바꾸는 것도 잊지 마세요' : '') : 'SP 화면' + (p2 ? ' — 2P 노트는 보이지 않지만 그대로 저장됩니다' : ''), 4000);
+    const hiddenKeys = A.st.notes.filter((n) => n.lane[0] === 'K' && !A.laneMap.has(n.lane)).length;
+    const tail = hiddenKeys ? ` — 이 화면에 없는 레인의 노트 ${hiddenKeys}개는 보이지 않지만 그대로 저장됩니다` : '';
+    if (!quiet) toast((m === 'dp' ? 'DP 화면 (1P + 2P)' + (A.st.headers.get('PLAYER') !== '3' ? ' — 헤더의 플레이를 3 · DP로 바꾸는 것도 잊지 마세요' : '')
+      : m === 'pms' ? 'PMS 화면 (팝픈 9버튼)' : 'SP 화면') + tail, 4000);
   }
+}
+function setDP(on, quiet) { setPlayMode(on ? 'dp' : 'sp', quiet); }
+// 파일을 열 때 자동 판단: 확장자 .pms면 PMS / #PLAYER 3이거나 2P 노트가 있으면 DP / 그 외 SP
+function guessPlayMode(doc, name, st) {
+  if (/\.pms$/i.test(name || '')) return 'pms';
+  return (st.headers.get('PLAYER') || '').trim() === '3' || doc.hasP2 ? 'dp' : 'sp';
 }
 
 /* ── app/dialogs.js ── */
@@ -2471,7 +2539,7 @@ function showHelp() {
 <tr><td>G · H · N</td><td>스냅 켜고 끄기 · 옆으로만 이동 · 쓸 노트 종류(일반→숨김→지뢰)</td></tr>
 <tr><td>+ − · Ctrl+휠</td><td>세로 확대 축소</td></tr>
 <tr><td>[ ] · Ctrl+Shift+휠</td><td>가로 확대 축소</td></tr></table>
-<h4>DP · BGA · 숨김 · 지뢰</h4><p>#PLAYER 3이거나 2P 노트가 있으면 DP 화면으로 엽니다. 툴바의 SP/DP 버튼으로 바꿀 수 있습니다. 가로 스크롤하면 플레이 영역은 고정되고 BGA·LAYER·POOR와 BGM 칼럼이 함께 움직입니다. BGA 레인에는 BMP 목록에서 고른 번호가 찍히고, BGA 노트는 BGA 레인끼리만 옮겨집니다. 숨김 노트는 흐리게, 지뢰는 진한 빨강(✕)으로 보이며 키 레인 안에서만 옮길 수 있습니다.</p>
+<h4>DP · PMS · BGA · 숨김 · 지뢰</h4><p>#PLAYER 3이거나 2P 노트가 있으면 DP 화면으로, 확장자가 .pms이거나 팝픈 9버튼 레인(1P 1~5키 + 2P 2~5키)만 쓰면 PMS 화면으로 엽니다. 툴바의 SP/DP/PMS 버튼을 누를 때마다 바뀝니다. PMS 레인 색은 팝픈뮤직 버튼 색(흰·노·초·파·빨·파·초·노·흰)을 따릅니다. PMS 화면에서는 무리배치(완전히 같은 타이밍의 동시치기를 두 손으로 나눴을 때 한 손이 연속된 버튼 3개 범위를 넘는 경우, 누르고 있는 롱노트 포함)를 주황 점선으로 표시하고 정보 칸에 위치 목록을 보여 줍니다. 가로 스크롤하면 플레이 영역은 고정되고 BGA·LAYER·POOR와 BGM 칼럼이 함께 움직입니다. BGA 레인에는 BMP 목록에서 고른 번호가 찍히고, BGA 노트는 BGA 레인끼리만 옮겨집니다. 숨김 노트는 흐리게, 지뢰는 진한 빨강(✕)으로 보이며 키 레인 안에서만 옮길 수 있습니다.</p>
 <h4>태블릿 (손가락 · S펜)</h4><ul><li>손가락: 노트를 끌면 이동, 빈 곳을 끌면 화면 이동(빠르게 쓸고 놓으면 관성으로 미끄러지고, 그때 탭하면 멈춤), 두 손가락을 벌리고 오므리면 확대·축소(세로로 벌리면 세로, 가로로 벌리면 가로)</li><li>탭: 노트 선택 · 빈 곳은 선택 해제 · 쓰기 모드에서는 노트 찍기</li><li>길게 누르기: 빈 곳은 범위 선택 시작, 노트는 메뉴(삭제 · 값 바꾸기 · 복사)</li><li>안드로이드에서는 폴더를 빠른 방식(폴더 고르기)으로 엽니다. 처음 저장할 때 같은 폴더를 한 번 더 골라 주면 그 뒤로는 그 폴더에 바로 저장합니다. '보기 · 재생 · 저장' 칸에서 방식을 바꿀 수 있습니다.</li><li>S펜: 마우스와 똑같이 편집합니다(펜 옆 버튼 = 오른쪽 클릭 = 삭제). 손가락 조작은 펜을 쓴 뒤에도 그대로이고, 펜이 화면에 닿아 있는 동안만 손가락을 무시합니다(손바닥 오작동 방지).</li><li>아래 도구 막대: 실행 취소 · ▲▼◀▶ 한 칸 옮기기 · 복사 · 붙여넣기 · 삭제 · 복사 모드(끌면 복사, Ctrl 대신) · 그리드 무시(Shift 대신)</li></ul><h4>재생</h4><p>마디 번호 칸을 클릭하면 재생 시작선(초록)이 생깁니다. F6·Space는 시작선부터, 시작선이 없으면 화면 맨 아래 마디부터 재생합니다. 같은 키음이 다시 울리면 앞 소리는 끊깁니다(BMS 플레이어와 같은 방식). BPM 변화와 STOP도 반영합니다.</p>
 <h4>저장</h4><p>편집한 채널(BGM · BPM · STOP · 1P 키 · 롱노트 · 마디 길이)과 고친 헤더 · WAV 줄만 다시 쓰고, 나머지 줄(BGA, 2P, 숨김 노트, 지뢰, 주석, 모르는 명령, #RANDOM 블록)은 원본 바이트 그대로 둡니다. 저장 직전에 결과를 다시 읽어 편집 내용과 일치하는지 확인하고, 바뀐 줄을 보여 줍니다. 기본 인코딩은 Shift-JIS입니다.</p>
 <h4>복사 · 붙여넣기</h4><p>iBMSC 클립보드 형식("iBMSC Clipboard Data")을 씁니다. iBMSC에서 복사한 노트나 ibmsc_clip.py가 만든 텍스트를 붙여넣을 수 있고, 여기서 복사한 노트를 iBMSC에 붙여넣을 수도 있습니다. 위치는 마우스가 있는 마디의 시작점 기준입니다.</p>
@@ -2668,7 +2736,7 @@ function loadDoc(doc, name) {
   A.curWav = A.st.wavs.size ? Math.min(...A.st.wavs.keys()) : 1;
   A.curBmp = [...A.st.bmps.keys()].filter((k) => k > 0).sort((a, b) => a - b)[0] || 1;
   A.view.bottom = 0; A.view.left = 0;
-  setDP((A.st.headers.get('PLAYER') || '').trim() === '3' || doc.hasP2, true); // 자동 판단
+  setPlayMode(guessPlayMode(doc, name, A.st), true); // 자동 판단
   $('#empty').hidden = true;
   setDirty(false);
   refresh();
@@ -2679,8 +2747,8 @@ function loadDoc(doc, name) {
   startPreload(); checkBmps();
   const notes = [];
   if (A.dp) notes.push('DP 패턴으로 열었습니다');
+  if (A.pms) notes.push('PMS(9버튼) 패턴으로 열었습니다');
   if (doc.lntype === 2) notes.push('LNTYPE 2 롱노트는 편집하지 않고 보존합니다');
-  if (/\.pms$/i.test(name)) notes.push('PMS 파일은 7키 레인으로 표시됩니다');
   if (doc.encAmbiguous) notes.push('인코딩을 Shift-JIS로 추정했습니다. 글자가 깨져 보이면 아래쪽 인코딩을 바꿔 보세요');
   if (notes.length) toast(notes.join(' · '), 5000);
 }
@@ -2695,7 +2763,7 @@ function newChart(skipConfirm) {
 function suggestName() {
   if (A.fileName) return A.fileName.replace(/(\.[^.]+)$/, '_copy$1');
   const t = (A.st.headers.get('TITLE') || 'new').replace(/[\\/:*?"<>|]/g, '').trim() || 'new';
-  return t + '.bme';
+  return t + (A.pms ? '.pms' : '.bme');
 }
 async function save(asNew) {
   if (!A.st) return;
@@ -2713,7 +2781,7 @@ async function save(asNew) {
     if (!r) return;
     ({ name, enc, res } = r);
   }
-  if (!CHART_EXT.test(name)) name += '.bme';
+  if (!CHART_EXT.test(name)) name += A.pms ? '.pms' : '.bme';
   await writeOut(name, res, enc);
 }
 function saveDialog(res0, name, asNew) {
@@ -3409,7 +3477,7 @@ function init() {
   $('#bmpList').addEventListener('dblclick', (e) => { const r = e.target.closest('.wr'); if (r && A.st && e.target.tagName !== 'INPUT') editBmpName(+r.dataset.id, r); });
   $('#bmpQ').addEventListener('input', () => { clearTimeout(wavRenderT); wavRenderT = setTimeout(renderBmpList, 120); });
   $('#bmpDef').addEventListener('change', renderBmpList);
-  $('#bDP').addEventListener('click', () => { setDP(!A.dp); A.sc.focus({ preventScroll: true }); });
+  $('#bDP').addEventListener('click', () => { setPlayMode(PLAY_MODES[(PLAY_MODES.indexOf(playMode()) + 1) % 3]); A.sc.focus({ preventScroll: true }); });
   const setKind = (k) => { A.noteKind = k; $('#kindSel').value = k; $('#mineVal').hidden = k !== 'm'; if (A.hover) A.hover.ghost = null; draw(); };
   $('#kindSel').addEventListener('change', (e) => { setKind(e.target.value); A.sc.focus({ preventScroll: true }); });
   $('#mineVal').addEventListener('change', (e) => { const v = C.idParse(e.target.value.trim(), A.doc ? A.doc.base : 36); if (v > 0) A.mineVal = v; else { e.target.value = idS(A.mineVal || 1); toast('지뢰 값은 01~ZZ로 넣어 주세요'); } });

@@ -85,7 +85,7 @@ function init() {
   $('#bmpList').addEventListener('dblclick', (e) => { const r = e.target.closest('.wr'); if (r && A.st && e.target.tagName !== 'INPUT') editBmpName(+r.dataset.id, r); });
   $('#bmpQ').addEventListener('input', () => { clearTimeout(wavRenderT); wavRenderT = setTimeout(renderBmpList, 120); });
   $('#bmpDef').addEventListener('change', renderBmpList);
-  $('#bDP').addEventListener('click', () => { setDP(!A.dp); A.sc.focus({ preventScroll: true }); });
+  $('#bDP').addEventListener('click', () => { setPlayMode(PLAY_MODES[(PLAY_MODES.indexOf(playMode()) + 1) % 3]); A.sc.focus({ preventScroll: true }); });
   const setKind = (k) => { A.noteKind = k; $('#kindSel').value = k; $('#mineVal').hidden = k !== 'm'; if (A.hover) A.hover.ghost = null; draw(); };
   $('#kindSel').addEventListener('change', (e) => { setKind(e.target.value); A.sc.focus({ preventScroll: true }); });
   $('#mineVal').addEventListener('change', (e) => { const v = C.idParse(e.target.value.trim(), A.doc ? A.doc.base : 36); if (v > 0) A.mineVal = v; else { e.target.value = idS(A.mineVal || 1); toast('지뢰 값은 01~ZZ로 넣어 주세요'); } });

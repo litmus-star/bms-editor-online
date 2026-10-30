@@ -9,7 +9,7 @@ function statusPos(h) {
 function noteDesc(n) {
   if (n.lane === 'BPM') return `BPM ${fmtV(n.v)}` + (n.bch === '08' ? ` (#BPM${idS(n.bid)})` : '');
   if (n.lane === 'STOP') return `STOP ${fmtV(n.v)}` + (n.sid ? ` (#STOP${idS(n.sid)})` : '');
-  const lane = A.laneMap.get(n.lane), ln = lane ? (lane.p === 2 ? '2P ' : lane.p === 1 && A.dp ? '1P ' : '') + lane.label : n.lane;
+  const lane = A.laneMap.get(n.lane), ln = lane ? (lane.p === 2 ? '2P ' : lane.p === 1 && A.dp ? '1P ' : '') + (A.pms && lane.type === 'key' ? '버튼 ' : '') + lane.label : n.lane;
   if (n.lane[0] === 'G') return `${ln} · #BMP${idS(n.v)} ${A.st.bmps.get(n.v) || '(정의 없음)'}`;
   if (n.kind === 'm') return `${ln} · 지뢰 · 값 ${idS(n.v)}`;
   const nm = A.st.wavs.get(n.v) || '(정의 없음)';

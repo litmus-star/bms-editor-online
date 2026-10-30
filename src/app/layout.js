@@ -7,8 +7,9 @@ function layout() {
   add({ key: 'BPM', type: 'bpm', col: 'bpm', w: 56, label: 'BPM' });
   add({ key: 'STOP', type: 'stop', col: 'stop', w: 48, label: 'STOP' });
   x += 8;
-  C.KEY_LANES.filter((k) => k.p === 1).forEach((k, i) => add({ key: k.key, type: 'key', p: 1, col: i === 0 ? 'sc' : (i % 2 ? 'w' : 'b'), w: i === 0 ? 54 : 42, label: k.label }));
-  if (A.dp) {
+  if (A.pms) C.PMS_LANES.forEach((k) => add({ key: k.key, type: 'key', p: 0, col: k.col, w: 42, label: k.label }));
+  else C.KEY_LANES.filter((k) => k.p === 1).forEach((k, i) => add({ key: k.key, type: 'key', p: 1, col: i === 0 ? 'sc' : (i % 2 ? 'w' : 'b'), w: i === 0 ? 54 : 42, label: k.label }));
+  if (A.dp && !A.pms) {
     x += 8;
     C.KEY_LANES.filter((k) => k.p === 2).forEach((k, i) => add({ key: k.key, type: 'key', p: 2, col: i === 7 ? 'sc' : (i % 2 ? 'b' : 'w'), w: i === 7 ? 54 : 42, label: k.label }));
   }
@@ -73,8 +74,46 @@ function reindex() {
     for (const n of a) if (n._c) conf++;
   }
   A.by = by; A.conflicts = conf;
+  checkMuri();
   const need = Math.max(8, maxB + 5);
   if (need !== A.bgmCount) { A.bgmCount = need; layout(); }
+}
+/* PMS 무리배치: 같은 타이밍에 눌러야 하는 버튼(그 순간 누르고 있는 롱노트 포함)을
+   왼손·오른손 두 묶음으로 나눴을 때, 각 묶음이 연속된 버튼 3개 범위 안에 들어가는 방법이 하나도 없으면 무리.
+   예: 1-5-9 → 무리, 2-4-6-8 → 가능. 숨김 노트·지뢰는 제외. */
+const PMS_BTN = { K11: 1, K12: 2, K13: 3, K14: 4, K15: 5, K22: 6, K23: 7, K24: 8, K25: 9 };
+function handsOk(btns) {
+  const s = [...new Set(btns)].sort((a, b) => a - b);
+  for (let i = 0; i <= s.length; i++) {
+    const L = s.slice(0, i), Rr = s.slice(i);
+    if ((!L.length || L[L.length - 1] - L[0] <= 2) && (!Rr.length || Rr[Rr.length - 1] - Rr[0] <= 2)) return true;
+  }
+  return false;
+}
+function checkMuri() {
+  for (const n of A.st.notes) n._m = false;
+  A.muri = [];
+  if (!A.pms) return;
+  const ns = A.st.notes.filter((n) => PMS_BTN[n.lane] && !n.kind).sort((a, b) => a.b - b.b);
+  const lns = ns.filter((n) => n.lb > 0);
+  let li = 0; const held = [];
+  for (let i = 0; i < ns.length;) {
+    let j = i; while (j < ns.length && ns[j].b - ns[i].b < 1e-9) j++;
+    const t = ns[i].b, chord = ns.slice(i, j);
+    while (li < lns.length && lns[li].b < t - 1e-9) held.push(lns[li++]); // 이 시점 전에 시작한 롱노트
+    for (let k = held.length - 1; k >= 0; k--) if (held[k].b + held[k].lb <= t + 1e-9) held.splice(k, 1); // 이미 끝난 것은 빼기
+    const all = chord.concat(held);
+    if (all.length >= 2 && !handsOk(all.map((n) => PMS_BTN[n.lane]))) {
+      for (const n of all) n._m = true;
+      A.muri.push({ b: t, notes: all, btns: [...new Set(all.map((n) => PMS_BTN[n.lane]))].sort((a, b) => a - b), held: held.length });
+    }
+    i = j;
+  }
+}
+function muriLabel(m) {
+  const mm = measureAt(m.b + 1e-9), off = m.b - A.ms.Sf[mm], len = rf(lenOf(mm)) * 4;
+  const g = [4, 8, 12, 16, 24, 32, 48, 64, 96, 192].find((d) => Math.abs(off / len * d - Math.round(off / len * d)) < 1e-6) || 192;
+  return `마디 ${C.pad3(mm)} · ${Math.round(off / len * g)}/${g} · ${m.btns.join('-')}` + (m.held ? ' (롱노트 포함)' : '');
 }
 function refresh() {
   if (!A.st) return;

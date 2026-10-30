@@ -149,7 +149,7 @@ function renderInfo() {
   const rows = [
     ['파일', esc(A.fileName || '(새 파일 — 아직 저장 안 됨)')],
     ['인코딩', `${C.ENC_LABEL[A.doc.enc]} · ${A.doc.eol === '\r\n' ? 'CRLF' : 'LF'}`],
-    ['노트', A.dp || p2 ? `${notes}개 (롱노트 ${ln}, 1P ${k1}+${s1}, 2P ${k2}+${s2})` : `${notes}개 (롱노트 ${ln}, 스크래치 ${sc})`],
+    ['노트', A.pms ? `${notes}개 (롱노트 ${ln})` : A.dp || p2 ? `${notes}개 (롱노트 ${ln}, 1P ${k1}+${s1}, 2P ${k2}+${s2})` : `${notes}개 (롱노트 ${ln}, 스크래치 ${sc})`],
     ['숨김 · 지뢰', `${hid}개 · ${mine}개`],
     ['BGM · BGA', `${bgm}개 · ${bga}개`],
     ['길이', fmtTime(A.timing.beatToTime(A.lastBeat || 0))],
@@ -159,10 +159,16 @@ function renderInfo() {
   ];
   const warn = [];
   if (A.conflicts) warn.push(`겹친 노트 ${A.conflicts}개 (빨간 테두리) — 저장 전에 정리해 주세요`);
-  if (!A.dp && A.st.notes.some((n) => n.lane[0] === 'K' && n.lane[1] === '2')) warn.push('2P 노트가 있지만 SP 화면입니다. 툴바의 DP 버튼으로 2P 레인을 볼 수 있습니다(노트는 그대로 저장됩니다).');
+  if (A.pms && A.muri.length) warn.push(`무리배치 ${A.muri.length}곳 (주황 테두리) — 한 손이 연속된 버튼 3개까지만 누를 수 있다고 보고, 완전히 같은 타이밍의 동시치기(누르고 있는 롱노트 포함)만 검사합니다`);
+  if (A.pms) {
+    const off = A.st.notes.filter((n) => n.lane[0] === 'K' && !PMS_KEYS.has(n.lane)).length;
+    if (off) warn.push(`PMS에서 쓰지 않는 레인(스크래치·6·7키·2P 1키 등)에 노트 ${off}개가 있습니다. 화면에는 보이지 않지만 그대로 저장됩니다.`);
+  } else if (!A.dp && A.st.notes.some((n) => n.lane[0] === 'K' && n.lane[1] === '2')) warn.push('2P 노트가 있지만 SP 화면입니다. 툴바의 DP 버튼으로 2P 레인을 볼 수 있습니다(노트는 그대로 저장됩니다).');
   if (A.doc.lntype === 2) warn.push('#LNTYPE 2 파일입니다. 롱노트 채널은 편집하지 않고 원본 그대로 둡니다.');
   if (!A.fs.provider) warn.push('폴더 없이 연 상태라 키음을 재생할 수 없습니다.');
-  bd.innerHTML = `<table>${rows.map(([a, b]) => `<tr><td>${a}</td><td>${b}</td></tr>`).join('')}</table>` + warn.map((w) => `<div class="w">! ${esc(w)}</div>`).join('');
+  bd.innerHTML = `<table>${rows.map(([a, b]) => `<tr><td>${a}</td><td>${b}</td></tr>`).join('')}</table>` + warn.map((w) => `<div class="w">! ${esc(w)}</div>`).join('')
+    + (A.pms && A.muri.length ? `<div class="muri">${A.muri.slice(0, 50).map((m, i) => `<button data-mi="${i}">${esc(muriLabel(m))}</button>`).join('')}${A.muri.length > 50 ? `<span class="dim">외 ${A.muri.length - 50}곳</span>` : ''}</div>` : '');
+  for (const el of bd.querySelectorAll('[data-mi]')) el.addEventListener('click', () => { const m = A.muri[+el.dataset.mi]; if (m) { setBottom(m.b - (A.H - HEAD_H) * 0.3 / A.ppb); A.sel = new Set(m.notes); statusNote(); draw(); } });
 }
 function syncOptions() {
   $('#oName').checked = cfg.showName; $('#oFollow').checked = cfg.follow; $('#oBgm').checked = cfg.playBgm;
@@ -225,15 +231,26 @@ async function checkBmps() {
   }
   renderBmpList();
 }
-// SP/DP 화면 전환 (파일 내용은 바꾸지 않음)
-function setDP(on, quiet) {
-  A.dp = !!on;
-  $('#bDP').classList.toggle('on', A.dp); $('#bDP').textContent = A.dp ? 'DP' : 'SP';
-  if (!A.dp) for (const n of [...A.sel]) if (n.lane[0] === 'K' && n.lane[1] === '2') A.sel.delete(n);
+// SP / DP / PMS 화면 전환 (파일 내용은 바꾸지 않음)
+const PMS_KEYS = new Set(C.PMS_LANES.map((l) => l.key));
+const PLAY_MODES = ['sp', 'dp', 'pms'];
+function playMode() { return A.pms ? 'pms' : A.dp ? 'dp' : 'sp'; }
+function setPlayMode(m, quiet) {
+  A.dp = m === 'dp'; A.pms = m === 'pms';
+  const b = $('#bDP'); b.classList.toggle('on', m !== 'sp'); b.textContent = m.toUpperCase();
   layout();
+  for (const n of [...A.sel]) if (n.lane[0] === 'K' && !A.laneMap.has(n.lane)) A.sel.delete(n); // 화면에서 사라진 레인의 선택은 해제
   if (A.st) {
     refresh();
-    const p2 = A.st.notes.some((n) => n.lane[0] === 'K' && n.lane[1] === '2');
-    if (!quiet) toast(A.dp ? 'DP 화면 (1P + 2P)' + (A.st.headers.get('PLAYER') !== '3' ? ' — 헤더의 플레이를 3 · DP로 바꾸는 것도 잊지 마세요' : '') : 'SP 화면' + (p2 ? ' — 2P 노트는 보이지 않지만 그대로 저장됩니다' : ''), 4000);
+    const hiddenKeys = A.st.notes.filter((n) => n.lane[0] === 'K' && !A.laneMap.has(n.lane)).length;
+    const tail = hiddenKeys ? ` — 이 화면에 없는 레인의 노트 ${hiddenKeys}개는 보이지 않지만 그대로 저장됩니다` : '';
+    if (!quiet) toast((m === 'dp' ? 'DP 화면 (1P + 2P)' + (A.st.headers.get('PLAYER') !== '3' ? ' — 헤더의 플레이를 3 · DP로 바꾸는 것도 잊지 마세요' : '')
+      : m === 'pms' ? 'PMS 화면 (팝픈 9버튼)' : 'SP 화면') + tail, 4000);
   }
+}
+function setDP(on, quiet) { setPlayMode(on ? 'dp' : 'sp', quiet); }
+// 파일을 열 때 자동 판단: 확장자 .pms면 PMS / #PLAYER 3이거나 2P 노트가 있으면 DP / 그 외 SP
+function guessPlayMode(doc, name, st) {
+  if (/\.pms$/i.test(name || '')) return 'pms';
+  return (st.headers.get('PLAYER') || '').trim() === '3' || doc.hasP2 ? 'dp' : 'sp';
 }

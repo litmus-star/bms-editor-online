@@ -2,7 +2,7 @@
 function suggestName() {
   if (A.fileName) return A.fileName.replace(/(\.[^.]+)$/, '_copy$1');
   const t = (A.st.headers.get('TITLE') || 'new').replace(/[\\/:*?"<>|]/g, '').trim() || 'new';
-  return t + '.bme';
+  return t + (A.pms ? '.pms' : '.bme');
 }
 async function save(asNew) {
   if (!A.st) return;
@@ -20,7 +20,7 @@ async function save(asNew) {
     if (!r) return;
     ({ name, enc, res } = r);
   }
-  if (!CHART_EXT.test(name)) name += '.bme';
+  if (!CHART_EXT.test(name)) name += A.pms ? '.pms' : '.bme';
   await writeOut(name, res, enc);
 }
 function saveDialog(res0, name, asNew) {

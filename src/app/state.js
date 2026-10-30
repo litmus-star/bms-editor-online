@@ -14,9 +14,13 @@ function saveCfg() { try { localStorage.setItem(CFG_KEY, JSON.stringify(cfg)); }
 
 /* ───────── 상수 ───────── */
 const HEAD_H = 22, MEAS_W = 50, PPB = 48; // 확대 1 → 한 박 48px, 4/4 한 마디 192px
-const NOTE_COL = { bga: '#c08cff', sc: '#ff5b5b', w: '#e8e8e8', b: '#5c88ff', bgm: '#a9afba', bpm: '#62d872', stop: '#ffa04a' };
-const NOTE_TXT = { bga: '#1d0a33', sc: '#fff', w: '#111', b: '#fff', bgm: '#111', bpm: '#06200c', stop: '#2a1300' };
-const LANE_BG = { bga: '#120c1a', bpm: '#08130b', stop: '#150c06', sc: '#1b0808', w: '#111111', b: '#0b0e1d', bgm: '#0d0d0d' };
+// pw·py·pg·pb·pr: PMS(팝픈) 버튼 색 — 흰·노랑·초록·파랑·빨강
+const NOTE_COL = { bga: '#c08cff', sc: '#ff5b5b', w: '#e8e8e8', b: '#5c88ff', bgm: '#a9afba', bpm: '#62d872', stop: '#ffa04a',
+  pw: '#ececec', py: '#ffd83a', pg: '#45d65f', pb: '#4a8cff', pr: '#ff4646' };
+const NOTE_TXT = { bga: '#1d0a33', sc: '#fff', w: '#111', b: '#fff', bgm: '#111', bpm: '#06200c', stop: '#2a1300',
+  pw: '#111', py: '#2a2000', pg: '#03200a', pb: '#fff', pr: '#fff' };
+const LANE_BG = { bga: '#120c1a', bpm: '#08130b', stop: '#150c06', sc: '#1b0808', w: '#111111', b: '#0b0e1d', bgm: '#0d0d0d',
+  pw: '#141414', py: '#17140a', pg: '#0a160c', pb: '#0b0f1d', pr: '#1b0909' };
 const GRIDS = [4, 8, 12, 16, 24, 32, 48, 64, 96, 192];
 const AUDIO_EXT = /\.(wav|ogg|flac|mp3|m4a|aac|opus)$/i;
 const CHART_EXT = /\.(bms|bme|bml|pms)$/i;
@@ -29,7 +33,7 @@ const A = {
   mode: 'select', curWav: 1, curBmp: 1, noteKind: 'n', dp: false,
   view: { bottom: 0, left: 0 }, ppb: PPB * cfg.zoom, W: 0, H: 0, dpr: 1,
   lanes: [], laneMap: new Map(), sound: [], totalW: 0, bgmCount: 8,
-  by: new Map(), maxLen: new Map(), ms: null, timing: null, ghosts: [], extentM: 64, usage: new Map(), conflicts: 0,
+  by: new Map(), maxLen: new Map(), ms: null, timing: null, ghosts: [], extentM: 64, usage: new Map(), conflicts: 0, muri: [],
   drag: null, hover: null, playBeat: null, playMark: null, playToken: null,
   fs: { provider: null, files: [] }, backedUp: new Set(), clip: null,
   blkIdx: 0, beatSel: new Set(), beatAnchor: -1,

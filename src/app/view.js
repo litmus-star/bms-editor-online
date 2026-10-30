@@ -83,6 +83,7 @@ function drawNote(ctx, n, l, x, yOf, nh, alpha, pv) {
     ctx.strokeStyle = mine ? '#ff6b7f' : col; ctx.strokeRect(xx + 0.5, y - nh + 0.5, w - 1, nh - 1); ctx.setLineDash([]);
   }
   if (!pv) {
+    if (n._m && !n._c) { ctx.strokeStyle = '#ff9a1f'; ctx.lineWidth = 2; ctx.setLineDash([4, 2]); ctx.strokeRect(xx - 1, topY - 1, w + 2, y - topY + 2); ctx.setLineDash([]); }
     if (n._c) { ctx.strokeStyle = '#ff2b2b'; ctx.lineWidth = 2; ctx.strokeRect(xx - 1, topY - 1, w + 2, y - topY + 2); }
     if (A.sel.has(n)) { ctx.strokeStyle = '#ffe14d'; ctx.lineWidth = 2; ctx.strokeRect(xx - 1, topY - 1, w + 2, y - topY + 2); }
     else if (A.hover && A.hover.note === n) { ctx.strokeStyle = 'rgba(255,255,255,.85)'; ctx.lineWidth = 1; ctx.strokeRect(xx - 0.5, topY - 0.5, w + 1, y - topY + 1); }

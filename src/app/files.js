@@ -186,7 +186,7 @@ function loadDoc(doc, name) {
   A.curWav = A.st.wavs.size ? Math.min(...A.st.wavs.keys()) : 1;
   A.curBmp = [...A.st.bmps.keys()].filter((k) => k > 0).sort((a, b) => a - b)[0] || 1;
   A.view.bottom = 0; A.view.left = 0;
-  setDP((A.st.headers.get('PLAYER') || '').trim() === '3' || doc.hasP2, true); // 자동 판단
+  setPlayMode(guessPlayMode(doc, name, A.st), true); // 자동 판단
   $('#empty').hidden = true;
   setDirty(false);
   refresh();
@@ -197,8 +197,8 @@ function loadDoc(doc, name) {
   startPreload(); checkBmps();
   const notes = [];
   if (A.dp) notes.push('DP 패턴으로 열었습니다');
+  if (A.pms) notes.push('PMS(9버튼) 패턴으로 열었습니다');
   if (doc.lntype === 2) notes.push('LNTYPE 2 롱노트는 편집하지 않고 보존합니다');
-  if (/\.pms$/i.test(name)) notes.push('PMS 파일은 7키 레인으로 표시됩니다');
   if (doc.encAmbiguous) notes.push('인코딩을 Shift-JIS로 추정했습니다. 글자가 깨져 보이면 아래쪽 인코딩을 바꿔 보세요');
   if (notes.length) toast(notes.join(' · '), 5000);
 }

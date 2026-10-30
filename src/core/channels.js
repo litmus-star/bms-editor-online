@@ -7,6 +7,11 @@ const KEY_LANES = [
   keyLane('2', '1', '1'), keyLane('2', '2', '2'), keyLane('2', '3', '3'), keyLane('2', '4', '4'),
   keyLane('2', '5', '5'), keyLane('2', '8', '6'), keyLane('2', '9', '7'), keyLane('2', '6', 'SC'),
 ];
+// PMS(팝픈뮤직 9버튼): 1~5 = 1P 1~5키(11~15), 6~9 = 2P 2~5키(22~25). 색은 팝픈 버튼 색(흰·노·초·파·빨·파·초·노·흰)
+const PMS_LANES = [
+  ['K11', '1', 'pw'], ['K12', '2', 'py'], ['K13', '3', 'pg'], ['K14', '4', 'pb'], ['K15', '5', 'pr'],
+  ['K22', '6', 'pb'], ['K23', '7', 'pg'], ['K24', '8', 'py'], ['K25', '9', 'pw'],
+].map(([key, label, col]) => ({ key, label, col }));
 const BGA_LANES = [{ key: 'G04', ch: '04', label: 'BGA' }, { key: 'G07', ch: '07', label: 'LAYER' }, { key: 'G06', ch: '06', label: 'POOR' }];
 const LANE_BY_KEY = {}, CH2LANE = {}, CH2KIND = {};
 KEY_LANES.forEach((l) => {
