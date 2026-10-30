@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; media-src blob: data:; font-src data:; connect-src 'none'; form-action 'none'; base-uri 'none'">
+<title>BMS 웹 에디터</title>
+<style>/*__CSS__*/</style>
+</head>
+<body>
+<div id="app">
+  <header id="tb">
+    <div class="g">
+      <button id="bOpen" title="곡 폴더 열기 (Ctrl+O)">폴더 열기</button>
+      <select id="fileSel" title="폴더 안의 패턴 파일" disabled><option>(폴더 없음)</option></select>
+      <button id="bNew" title="빈 패턴 만들기">새 파일</button>
+      <button id="bSave" class="pri" title="저장 (Ctrl+S)">저장</button>
+      <button id="bSaveAs" title="다른 이름으로 저장 (Ctrl+Shift+S)">다른 이름으로</button>
+    </div>
+    <div class="g">
+      <button id="bUndo" class="ic" title="실행 취소 (Ctrl+Z)">↶</button>
+      <button id="bRedo" class="ic" title="다시 실행 (Ctrl+Y)">↷</button>
+    </div>
+    <div class="g">
+      <button id="bDP" title="SP/DP 화면 전환 — 파일을 열 때 #PLAYER 3이거나 2P 노트가 있으면 DP로 엽니다">SP</button>
+    </div>
+    <div class="g seg">
+      <button id="mSel" title="선택 모드 (F1)">선택 <kbd>F1</kbd></button>
+      <button id="mWrite" title="쓰기 모드 (F3)">쓰기 <kbd>F3</kbd></button>
+    </div>
+    <div class="g">
+      <select id="kindSel" title="쓰기 모드에서 키 레인에 찍을 노트 종류 (N)"><option value="n">일반 노트</option><option value="h">숨김 노트</option><option value="m">지뢰</option></select>
+      <input id="mineVal" type="text" value="01" maxlength="2" title="새 지뢰의 값(피해량)" style="width:38px" hidden>
+    </div>
+    <div class="g">
+      <button id="pStart" title="처음부터 재생 (F5)">⏮ 처음부터</button>
+      <button id="pHere" title="시작선부터 재생 · 시작선이 없으면 화면 맨 아래 마디부터 (F6, Space)">▶ 재생</button>
+      <button id="pStop" title="정지 (F7, Space)">■ 정지</button>
+    </div>
+    <div class="g">
+      <label>그리드 <select id="gridSel"></select></label>
+      <label class="chk" title="G"><input type="checkbox" id="snapChk"> 스냅</label>
+      <label class="chk" title="노트를 옮길 때 위아래로는 움직이지 않음 (H)"><input type="checkbox" id="lockChk"> 옆으로만</label>
+    </div>
+    <div class="g"><label title="세로 확대 (Ctrl+휠, + −)">세로 <input type="range" id="zoomR" min="0.25" max="8" step="0.25"></label><label title="가로 확대 (Ctrl+Shift+휠, [ ])">가로 <input type="range" id="zoomXR" min="0.4" max="4" step="0.05"></label></div>
+    <div class="g"><label>음량 <input type="range" id="volR" min="0" max="1" step="0.05"></label></div>
+    <div class="g end">
+      <span class="lock" title="파일은 이 브라우저 안에서만 읽고 씁니다. 외부로 나가는 통신은 보안 정책(CSP)으로 막혀 있습니다.">● 로컬 전용</span>
+      <button id="bHelp" title="도움말 · 단축키">?</button>
+    </div>
+  </header>
+  <main>
+    <section id="ed">
+      <canvas id="cv"></canvas>
+      <div id="sc" tabindex="0"><div id="sp"></div></div>
+      <div id="empty">
+        <h2>BMS 웹 에디터</h2>
+        <p>BMS 곡 폴더를 열면 패턴 파일과 키음을 함께 불러옵니다.<br>폴더를 이 창으로 끌어다 놓아도 됩니다.</p>
+        <div class="row"><button id="eOpen" class="pri">폴더 열기</button><button id="eNew">새 파일</button></div>
+        <p class="dim">파일은 이 컴퓨터 안에서만 처리되고, 어디에도 업로드되지 않습니다.</p>
+        <p class="dim" id="eNote"></p>
+      </div>
+      <div id="drop" hidden>여기에 놓으면 폴더를 엽니다</div>
+    </section>
+    <div id="split" title="끌어서 패널 너비 조절 · 더블클릭: 접기/펼치기"><button id="sideTgl" title="오른쪽 패널 접기/펼치기 (\\)">▶</button></div>
+    <aside id="side">
+      <details id="pnHdr" open><summary>헤더</summary><div class="bd" id="hdrBd"></div></details>
+      <details id="pnWav" open><summary>WAV <span id="wavCnt" class="dim"></span></summary><div class="bd">
+        <div class="row"><input id="wavQ" type="search" placeholder="번호·파일명 검색" spellcheck="false"><label class="chk"><input type="checkbox" id="wavDef"> 정의된 것만</label></div>
+        <div id="wavList" class="list"></div>
+        <div class="hint">클릭: 쓰기 모드에서 찍을 키음 고르기 + 미리듣기 · 더블클릭: 파일명 바꾸기 · 빨간색: 파일 없음</div>
+      </div></details>
+      <details id="pnBmp"><summary>BMP (BGA) <span id="bmpCnt" class="dim"></span></summary><div class="bd">
+        <div class="row"><input id="bmpQ" type="search" placeholder="번호·파일명 검색" spellcheck="false"><label class="chk"><input type="checkbox" id="bmpDef" checked> 정의된 것만</label></div>
+        <div id="bmpList" class="list"></div>
+        <div class="hint">클릭: 쓰기 모드에서 BGA·LAYER·POOR 레인에 찍을 이미지 고르기 · 더블클릭: 파일명 바꾸기 · 빨간색: 파일 없음</div>
+      </div></details>
+      <details id="pnBeat"><summary>박자 (마디 길이)</summary><div class="bd">
+        <div class="row"><input id="bN" type="number" min="1" max="999" value="3"><span>/</span><input id="bD" type="number" min="1" max="64" value="4"><button id="bApply">선택 마디에 적용</button><button id="bReset" title="선택 마디를 4/4로">4/4</button></div>
+        <div id="beatList" class="list"></div>
+        <div class="hint">마디를 클릭해서 고르고(Shift: 범위, Ctrl: 추가) 적용하세요. 노트는 제자리에 있고 마디선만 움직입니다.</div>
+      </div></details>
+      <details id="pnExp"><summary>확장 코드 <span id="expCnt" class="dim"></span></summary><div class="bd">
+        <div id="blkTabs" class="tabs"></div>
+        <textarea id="blkTx" spellcheck="false" placeholder="#RANDOM / #IF 블록"></textarea>
+        <div class="row"><button id="blkApply">적용</button><button id="blkNew">새 블록</button><button id="blkDel">이 블록 비우기</button></div>
+        <div class="hint">#RANDOM · #IF 블록은 파일 안 원래 자리에 그대로 저장됩니다. 블록 안 노트는 편집 화면에 회색 점선으로 보입니다(편집 불가).</div>
+      </div></details>
+      <details id="pnView"><summary>보기 · 재생 · 저장</summary><div class="bd col">
+        <label class="chk"><input type="checkbox" id="oName"> 노트에 키음 파일명 표시</label>
+        <label class="chk"><input type="checkbox" id="oFollow"> 재생 중 화면 따라가기</label>
+        <label class="chk"><input type="checkbox" id="oBgm"> 재생: BGM 레인 소리</label>
+        <label class="chk"><input type="checkbox" id="oKeys"> 재생: 키 레인 소리</label>
+        <label class="chk"><input type="checkbox" id="oBackup"> 처음 덮어쓸 때 원본을 .bak으로 백업</label>
+        <label class="chk"><input type="checkbox" id="oConfirm"> 저장할 때 바뀐 줄 확인 창 보기</label>
+      </div></details>
+      <details id="pnInfo" open><summary>정보</summary><div class="bd" id="infoBd"></div></details>
+    </aside>
+  </main>
+  <footer id="stb">
+    <span id="sPos"></span><span id="sNote"></span><span class="fill"></span>
+    <span id="sLoad"></span>
+    <label title="파일을 읽을 때 쓸 인코딩. 글자가 깨져 보이면 바꿔 보세요">인코딩 <select id="encSel"></select></label>
+    <span id="sFile"></span>
+  </footer>
+</div>
+<datalist id="audioList"></datalist>
+<datalist id="imgList"></datalist>
+<input type="file" id="dirIn" webkitdirectory multiple hidden>
+<input type="file" id="filesIn" multiple hidden>
+<div id="modal" hidden><div class="box"><h3 id="mTitle"></h3><div id="mBody"></div><div class="btns" id="mBtns"></div></div></div>
+<div id="toast"></div>
+<script>/*__CORE__*/</script>
+<script>/*__APP__*/</script>
+</body>
+</html>

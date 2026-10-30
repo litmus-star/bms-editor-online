@@ -59,6 +59,10 @@ main { flex: 1; display: flex; min-height: 0; }
 #drop { position: absolute; inset: 10px; border: 2px dashed var(--acc); border-radius: 10px; background: rgba(20, 18, 5, .85);
   display: flex; align-items: center; justify-content: center; font-size: 18px; color: var(--acc); pointer-events: none; }
 
+#split { flex: none; width: 7px; cursor: col-resize; background: var(--panel); border-left: 1px solid var(--line); position: relative; }
+#split:hover, #split.drag { background: #2f3540; }
+#split button { position: absolute; top: 50%; left: -7px; transform: translateY(-50%); width: 20px; height: 44px; padding: 0; font-size: 10px; z-index: 2; }
+body.side-off #side { display: none; }
 #side { width: 340px; flex: none; overflow-y: auto; background: var(--panel); border-left: 1px solid var(--line); }
 #side details { border-bottom: 1px solid var(--line); }
 #side summary { padding: 7px 10px; cursor: pointer; font-weight: 600; background: var(--panel2); user-select: none; }
@@ -78,7 +82,7 @@ main { flex: 1; display: flex; min-height: 0; }
 .wr input { flex: 1; min-width: 0; padding: 0 4px; font: inherit; }
 .br span { width: 46px; }
 .br.mod span { color: #7fb0ff; }
-#wavQ { flex: 1; min-width: 0; }
+#wavQ, #bmpQ { flex: 1; min-width: 0; }
 .tabs { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 6px; }
 .tabs button { padding: 2px 8px; font-size: 12px; }
 #blkTx { width: 100%; height: 170px; resize: vertical; font: 12px/1.45 Consolas, Menlo, monospace; white-space: pre; }
@@ -148,9 +152,16 @@ main { flex: 1; display: flex; min-height: 0; }
       <button id="bUndo" class="ic" title="실행 취소 (Ctrl+Z)">↶</button>
       <button id="bRedo" class="ic" title="다시 실행 (Ctrl+Y)">↷</button>
     </div>
+    <div class="g">
+      <button id="bDP" title="SP/DP 화면 전환 — 파일을 열 때 #PLAYER 3이거나 2P 노트가 있으면 DP로 엽니다">SP</button>
+    </div>
     <div class="g seg">
       <button id="mSel" title="선택 모드 (F1)">선택 <kbd>F1</kbd></button>
       <button id="mWrite" title="쓰기 모드 (F3)">쓰기 <kbd>F3</kbd></button>
+    </div>
+    <div class="g">
+      <select id="kindSel" title="쓰기 모드에서 키 레인에 찍을 노트 종류 (N)"><option value="n">일반 노트</option><option value="h">숨김 노트</option><option value="m">지뢰</option></select>
+      <input id="mineVal" type="text" value="01" maxlength="2" title="새 지뢰의 값(피해량)" style="width:38px" hidden>
     </div>
     <div class="g">
       <button id="pStart" title="처음부터 재생 (F5)">⏮ 처음부터</button>
@@ -162,7 +173,7 @@ main { flex: 1; display: flex; min-height: 0; }
       <label class="chk" title="G"><input type="checkbox" id="snapChk"> 스냅</label>
       <label class="chk" title="노트를 옮길 때 위아래로는 움직이지 않음 (H)"><input type="checkbox" id="lockChk"> 옆으로만</label>
     </div>
-    <div class="g"><label title="세로 확대 (Ctrl+휠, + −)">확대 <input type="range" id="zoomR" min="0.25" max="8" step="0.25"></label></div>
+    <div class="g"><label title="세로 확대 (Ctrl+휠, + −)">세로 <input type="range" id="zoomR" min="0.25" max="8" step="0.25"></label><label title="가로 확대 (Ctrl+Shift+휠, [ ])">가로 <input type="range" id="zoomXR" min="0.4" max="4" step="0.05"></label></div>
     <div class="g"><label>음량 <input type="range" id="volR" min="0" max="1" step="0.05"></label></div>
     <div class="g end">
       <span class="lock" title="파일은 이 브라우저 안에서만 읽고 씁니다. 외부로 나가는 통신은 보안 정책(CSP)으로 막혀 있습니다.">● 로컬 전용</span>
@@ -182,12 +193,18 @@ main { flex: 1; display: flex; min-height: 0; }
       </div>
       <div id="drop" hidden>여기에 놓으면 폴더를 엽니다</div>
     </section>
+    <div id="split" title="끌어서 패널 너비 조절 · 더블클릭: 접기/펼치기"><button id="sideTgl" title="오른쪽 패널 접기/펼치기 (\\)">▶</button></div>
     <aside id="side">
       <details id="pnHdr" open><summary>헤더</summary><div class="bd" id="hdrBd"></div></details>
       <details id="pnWav" open><summary>WAV <span id="wavCnt" class="dim"></span></summary><div class="bd">
         <div class="row"><input id="wavQ" type="search" placeholder="번호·파일명 검색" spellcheck="false"><label class="chk"><input type="checkbox" id="wavDef"> 정의된 것만</label></div>
         <div id="wavList" class="list"></div>
         <div class="hint">클릭: 쓰기 모드에서 찍을 키음 고르기 + 미리듣기 · 더블클릭: 파일명 바꾸기 · 빨간색: 파일 없음</div>
+      </div></details>
+      <details id="pnBmp"><summary>BMP (BGA) <span id="bmpCnt" class="dim"></span></summary><div class="bd">
+        <div class="row"><input id="bmpQ" type="search" placeholder="번호·파일명 검색" spellcheck="false"><label class="chk"><input type="checkbox" id="bmpDef" checked> 정의된 것만</label></div>
+        <div id="bmpList" class="list"></div>
+        <div class="hint">클릭: 쓰기 모드에서 BGA·LAYER·POOR 레인에 찍을 이미지 고르기 · 더블클릭: 파일명 바꾸기 · 빨간색: 파일 없음</div>
       </div></details>
       <details id="pnBeat"><summary>박자 (마디 길이)</summary><div class="bd">
         <div class="row"><input id="bN" type="number" min="1" max="999" value="3"><span>/</span><input id="bD" type="number" min="1" max="64" value="4"><button id="bApply">선택 마디에 적용</button><button id="bReset" title="선택 마디를 4/4로">4/4</button></div>
@@ -219,13 +236,15 @@ main { flex: 1; display: flex; min-height: 0; }
   </footer>
 </div>
 <datalist id="audioList"></datalist>
+<datalist id="imgList"></datalist>
 <input type="file" id="dirIn" webkitdirectory multiple hidden>
 <input type="file" id="filesIn" multiple hidden>
 <div id="modal" hidden><div class="box"><h3 id="mTitle"></h3><div id="mBody"></div><div class="btns" id="mBtns"></div></div></div>
 <div id="toast"></div>
-<script>/* BMS Web Editor — core: 파싱 · 저장 · 인코딩 · 타이밍 (DOM 없음) */
+<script>/* BMS Web Editor — core (DOM 없음) */
 (function (G) {
 'use strict';
+/* ── core/rational.js ── */
 
 /* ───────────── 유리수 (위치 계산은 전부 정확한 분수로) ───────────── */
 const safe = Number.isSafeInteger;
@@ -290,6 +309,7 @@ function rApprox(x, maxDen) {
   return R(neg ? -h1 : h1, k1);
 }
 
+/* ── core/ids.js ── */
 /* ───────────── 번호 (36진수 / #BASE 62) ───────────── */
 const B36 = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 const B62 = B36 + 'abcdefghijklmnopqrstuvwxyz';
@@ -306,6 +326,7 @@ function hex2(v) { return (v < 16 ? '0' : '') + v.toString(16).toUpperCase(); }
 function pad3(m) { return String(m).padStart(3, '0'); }
 function fmtNum(v) { return String(+(+v).toFixed(6)); }
 
+/* ── core/encoding.js ── */
 /* ───────────── 인코딩 ───────────── */
 const ENC_LABEL = { 'shift_jis': 'Shift-JIS', 'utf-8': 'UTF-8', 'euc-kr': 'EUC-KR' };
 const encCache = {};
@@ -398,6 +419,7 @@ function encodingInfo(bytes) {
 }
 function detectEncoding(bytes) { return encodingInfo(bytes).enc; }
 
+/* ── core/lines.js ── */
 /* ───────────── 줄 나누기 (원본 바이트 보존용) ───────────── */
 function splitLines(bytes, start0) {
   const out = []; let start = start0 || 0;
@@ -418,20 +440,24 @@ function splitLines(bytes, start0) {
   return out;
 }
 
+/* ── core/channels.js ── */
 /* ───────────── 레인 / 채널 ───────────── */
+// 키 레인: 일반(ch) · 롱노트(lnch) · 숨김(hch) · 지뢰(mch) 채널. 화면 순서대로 (1P: SC 1~7, 2P: 1~7 SC)
+const keyLane = (p, d, label) => ({ key: 'K' + p + d, p: +p, ch: p + d, lnch: (+p + 4) + d, hch: (+p + 2) + d, mch: (p === '1' ? 'D' : 'E') + d, label });
 const KEY_LANES = [
-  { key: 'K16', ch: '16', lnch: '56', label: 'SC' },
-  { key: 'K11', ch: '11', lnch: '51', label: '1' },
-  { key: 'K12', ch: '12', lnch: '52', label: '2' },
-  { key: 'K13', ch: '13', lnch: '53', label: '3' },
-  { key: 'K14', ch: '14', lnch: '54', label: '4' },
-  { key: 'K15', ch: '15', lnch: '55', label: '5' },
-  { key: 'K18', ch: '18', lnch: '58', label: '6' },
-  { key: 'K19', ch: '19', lnch: '59', label: '7' },
+  keyLane('1', '6', 'SC'), keyLane('1', '1', '1'), keyLane('1', '2', '2'), keyLane('1', '3', '3'),
+  keyLane('1', '4', '4'), keyLane('1', '5', '5'), keyLane('1', '8', '6'), keyLane('1', '9', '7'),
+  keyLane('2', '1', '1'), keyLane('2', '2', '2'), keyLane('2', '3', '3'), keyLane('2', '4', '4'),
+  keyLane('2', '5', '5'), keyLane('2', '8', '6'), keyLane('2', '9', '7'), keyLane('2', '6', 'SC'),
 ];
-const LANE_BY_KEY = {}, CH2LANE = {};
-KEY_LANES.forEach((l) => { LANE_BY_KEY[l.key] = l; CH2LANE[l.ch] = l.key; CH2LANE[l.lnch] = l.key; });
-const MANAGED = new Set(['01', '02', '03', '08', '09'].concat(KEY_LANES.map((l) => l.ch), KEY_LANES.map((l) => l.lnch)));
+const BGA_LANES = [{ key: 'G04', ch: '04', label: 'BGA' }, { key: 'G07', ch: '07', label: 'LAYER' }, { key: 'G06', ch: '06', label: 'POOR' }];
+const LANE_BY_KEY = {}, CH2LANE = {}, CH2KIND = {};
+KEY_LANES.forEach((l) => {
+  LANE_BY_KEY[l.key] = l;
+  for (const [c, k] of [[l.ch, 'n'], [l.lnch, 'l'], [l.hch, 'h'], [l.mch, 'm']]) { CH2LANE[c] = l.key; CH2KIND[c] = k; }
+});
+BGA_LANES.forEach((l) => { LANE_BY_KEY[l.key] = l; CH2LANE[l.ch] = l.key; CH2KIND[l.ch] = 'g'; });
+const MANAGED = new Set(['01', '02', '03', '08', '09'].concat(Object.keys(CH2LANE)));
 
 const CTRL_RE = /^#(SETRANDOM|RANDOM|RONDAM|IFEND|IF|ELSEIF|ELSE|ENDIF|ENDRANDOM|SETSWITCH|SWITCH|CASE|SKIP|DEF|ENDSW)(?![0-9A-Za-z_])/i;
 const DATA_RE = /^#(\d{3})([0-9A-Za-z]{2}):(.*)$/;
@@ -600,6 +626,7 @@ function finalizeNote(n) {
   return n;
 }
 
+/* ── core/parse.js ── */
 /* ───────────── 읽기 ───────────── */
 function parse(bytes, encHint) {
   if (!(bytes instanceof Uint8Array)) bytes = new Uint8Array(bytes);
@@ -626,7 +653,7 @@ function parse(bytes, encHint) {
     if (m) base = +m[1] === 62 ? 62 : 36;
   }
 
-  const headers = new Map(), wavs = new Map(), bpmDefs = new Map(), stopDefs = new Map();
+  const headers = new Map(), wavs = new Map(), bmps = new Map(), bpmDefs = new Map(), stopDefs = new Map();
   const usedBpm = new Set(), usedStop = new Set();
   let firstData = -1;
   for (let i = 0; i < lines.length; i++) {
@@ -644,6 +671,7 @@ function parse(bytes, encHint) {
     L.kind = 'hdr'; L.keyRaw = m[1]; L.key = m[1].toUpperCase(); L.value = (m[2] || '').trim();
     let mm;
     if ((mm = /^WAV(.{2})$/i.exec(L.keyRaw))) { L.kind = 'wav'; L.idRaw = mm[1]; }
+    else if ((mm = /^BMP(.{2})$/i.exec(L.keyRaw))) { L.kind = 'bmp'; L.idRaw = mm[1]; }
     else if (L.key !== 'BPM' && (mm = /^(?:EX)?BPM(.{2})$/i.exec(L.keyRaw))) { L.kind = 'bpmdef'; L.idRaw = mm[1]; }
     else if ((mm = /^STOP(.{2})$/i.exec(L.keyRaw))) { L.kind = 'stopdef'; L.idRaw = mm[1]; }
     if (L.kind === 'bpmdef' || L.kind === 'stopdef') {
@@ -652,6 +680,7 @@ function parse(bytes, encHint) {
     }
     if (L.block >= 0) continue;
     if (L.kind === 'hdr') { const o = headers.get(L.key); headers.set(L.key, { value: L.value, idx: i, keyRaw: L.keyRaw, all: (o ? o.all : []).concat(i) }); }
+    else if (L.kind === 'bmp') { const id = idParse(L.idRaw, base); if (id >= 0) { const o = bmps.get(id); bmps.set(id, { name: L.value, idx: i, keyRaw: L.keyRaw, all: (o ? o.all : []).concat(i) }); } }
     else if (L.kind === 'wav') { const id = idParse(L.idRaw, base); if (id > 0) { const o = wavs.get(id); wavs.set(id, { name: L.value, idx: i, keyRaw: L.keyRaw, all: (o ? o.all : []).concat(i) }); } }
     else if (L.kind === 'bpmdef') { const id = idParse(L.idRaw, base); if (id > 0) bpmDefs.set(id, { str: L.value, v: parseFloat(L.value), idx: i }); }
     else if (L.kind === 'stopdef') { const id = idParse(L.idRaw, base); if (id > 0) stopDefs.set(id, { str: L.value, v: parseFloat(L.value), idx: i }); }
@@ -661,12 +690,14 @@ function parse(bytes, encHint) {
     if (L.kind !== 'data' || (L.ch !== '08' && L.ch !== '09')) continue;
     for (const o of parseRaw(L.data)) { const id = idParse(o.vs, base); if (id > 0) (L.ch === '08' ? usedBpm : usedStop).add(id); }
   }
+  let lastBmp = -1;
   let hdrAnchor = -1, lastWav = -1, lastBpmDef = -1, lastStopDef = -1, lastHdrAny = -1;
   for (let i = 0; i < lines.length; i++) {
     const L = lines[i];
     if (L.block >= 0) continue;
     if (L.kind === 'hdr') { lastHdrAny = i; if (firstData < 0 || i < firstData) hdrAnchor = i; }
     else if (L.kind === 'wav') lastWav = i;
+    else if (L.kind === 'bmp') lastBmp = i;
     else if (L.kind === 'bpmdef') lastBpmDef = i;
     else if (L.kind === 'stopdef') lastStopDef = i;
   }
@@ -676,7 +707,7 @@ function parse(bytes, encHint) {
   const lnobj = lnobjH ? idParse(lnobjH.value.trim().slice(0, 2), base) : -1;
   const lntypeH = headers.get('LNTYPE');
   const lntype = lntypeH ? (parseInt(lntypeH.value, 10) || 1) : 1;
-  const isManaged = (ch) => MANAGED.has(ch) && !(lntype === 2 && ch[0] === '5');
+  const isManaged = (ch) => MANAGED.has(ch) && !(lntype === 2 && CH2KIND[ch] === 'l');
 
   const groups = new Map(), bgm = new Map(), meas = new Map(), dataByMeasure = new Map();
   let unmanagedData = 0, hasP2 = false;
@@ -734,9 +765,10 @@ function parse(bytes, encHint) {
       else if (g.ch === '08') { const d = bpmDefs.get(o.v); notes.push({ lane: 'BPM', pos, v: d ? d.v : NaN, bch: '08', bid: o.v }); }
       else if (g.ch === '09') { const d = stopDefs.get(o.v); notes.push({ lane: 'STOP', pos, v: d ? d.v : NaN, sid: o.v }); }
       else {
-        const lane = CH2LANE[g.ch];
-        const tgt = g.ch[0] === '1' ? keyN : keyL;
-        (tgt[lane] || (tgt[lane] = [])).push({ pos, v: o.v });
+        const lane = CH2LANE[g.ch], kd = CH2KIND[g.ch];
+        if (kd === 'g') notes.push({ lane, pos, v: o.v });
+        else if (kd === 'h' || kd === 'm') notes.push({ lane, pos, v: o.v, kind: kd });
+        else { const tgt = kd === 'n' ? keyN : keyL; (tgt[lane] || (tgt[lane] = [])).push({ pos, v: o.v }); }
       }
     }
   }
@@ -765,10 +797,11 @@ function parse(bytes, encHint) {
     arr.forEach((ln, k) => { for (const o of ln.entries) notes.push({ lane: 'B' + k, pos: posOf(m, o.f), v: o.v }); });
   }
   notes.forEach(finalizeNote);
+  if (notes.some((n) => LANE_BY_KEY[n.lane] && LANE_BY_KEY[n.lane].p === 2)) hasP2 = true;
 
   return {
-    bytes, enc, encAmbiguous: info.ambiguous, bom, eol, lastEol, lines, base, headers, wavs, bpmDefs, stopDefs, usedBpm, usedStop,
-    groups, bgm, meas, blocks, notes, lnobj, lntype, firstData, hdrAnchor, lastWav, lastBpmDef, lastStopDef,
+    bytes, enc, encAmbiguous: info.ambiguous, bom, eol, lastEol, lines, base, headers, wavs, bmps, bpmDefs, stopDefs, usedBpm, usedStop,
+    groups, bgm, meas, blocks, notes, lnobj, lntype, firstData, hdrAnchor, lastWav, lastBmp, lastBpmDef, lastStopDef,
     dataByMeasure, unmanagedData, hasP2,
   };
 }
@@ -781,10 +814,12 @@ function stateFromDoc(doc) {
     meas,
     headers: new Map([...doc.headers].map(([k, h]) => [k, h.value])),
     wavs: new Map([...doc.wavs].map(([id, w]) => [id, w.name])),
+    bmps: new Map([...doc.bmps].map(([id, w]) => [id, w.name])),
     blocks: doc.blocks.map((b) => b.text),
   };
 }
 
+/* ── core/serialize.js ── */
 /* ───────────── 저장 ───────────── */
 function serialize(doc, st, opt) {
   opt = opt || {};
@@ -829,6 +864,7 @@ function serialize(doc, st, opt) {
       let id = stopVal.get(v);
       if (id === undefined) { id = alloc(usedS); stopVal.set(v, id); newStop.set(id, fmtNum(v)); }
       put(L.m, '09', L.f, ids(id));
+    } else if (n.lane[0] === 'G') { put(L.m, n.lane.slice(1), L.f, ids(n.v));
     } else if (n.lane[0] === 'B') {
       const k = +n.lane.slice(1);
       let mm = curBgm.get(L.m);
@@ -839,7 +875,8 @@ function serialize(doc, st, opt) {
     } else {
       const ld = LANE_BY_KEY[n.lane];
       if (!ld) { lost++; continue; }
-      if (n.len && n.len.n > 0) {
+      if (n.kind === 'h' || n.kind === 'm') put(L.m, n.kind === 'h' ? ld.hch : ld.mch, L.f, ids(n.v));
+      else if (n.len && n.len.n > 0) {
         const E = locate(radd(n.pos, n.len));
         if (!E) { lost++; continue; }
         if (n.lnobj && doc.lnobj > 0) { put(L.m, ld.ch, L.f, ids(n.v)); put(E.m, ld.ch, E.f, ids(doc.lnobj)); }
@@ -949,6 +986,19 @@ function serialize(doc, st, opt) {
       if (doc.lastWav >= 0) add(insA, doc.lastWav, it); else hdrPlace(it);
     }
   }
+  // BMP (BGA 이미지)
+  const bmpSt = st.bmps || new Map();
+  const bk = [...new Set([...doc.bmps.keys(), ...bmpSt.keys()])].sort((a, b) => a - b);
+  for (const id of bk) {
+    const o = doc.bmps.get(id), ov = o ? o.name : '', cv = bmpSt.get(id) || '';
+    if (ov === cv) continue;
+    if (o) { if (cv) rep.set(o.idx, ['#' + o.keyRaw + ' ' + cv]); else o.all.forEach((j) => rep.set(j, [])); }
+    else if (cv) {
+      const it = { t: '#BMP' + ids(id) + ' ' + cv, k: [-2, 2000 + id] };
+      const a = doc.lastBmp >= 0 ? doc.lastBmp : doc.lastWav;
+      if (a >= 0) add(insA, a, it); else hdrPlace(it);
+    }
+  }
   // 새 #BPMxx / #STOPxx 정의
   for (const [id, s] of newBpm) {
     const it = { t: '#BPM' + ids(id) + ' ' + s, k: [-1, 0, id] };
@@ -1053,6 +1103,7 @@ function serialize(doc, st, opt) {
 function noteSig(n) {
   const p = rkey(n.pos);
   if (n.lane[0] === 'X') return n.lane + '|' + p + '|' + n.vs;
+  if (n.kind) return n.lane + '|' + p + '|' + n.v + '|' + n.kind;
   if (n.lane === 'BPM') return 'BPM|' + p + '|' + (isFinite(n.v) ? +n.v : 'x' + n.bid);
   if (n.lane === 'STOP') return 'STOP|' + p + '|' + (isFinite(n.v) ? +n.v : 'x' + n.sid);
   let s = n.lane + '|' + p + '|' + n.v;
@@ -1083,11 +1134,16 @@ function compareStates(a, b) {
   let wbad = 0;
   for (const k of ws) if (canonJP(a.wavs.get(k)) !== canonJP(b.wavs.get(k))) wbad++;
   if (wbad) problems.push(`#WAV 정의 ${wbad}개 불일치`);
+  const bs = new Set([...(a.bmps || new Map()).keys(), ...(b.bmps || new Map()).keys()]);
+  let bbad = 0;
+  for (const k of bs) if (canonJP((a.bmps || new Map()).get(k)) !== canonJP((b.bmps || new Map()).get(k))) bbad++;
+  if (bbad) problems.push(`#BMP 정의 ${bbad}개 불일치`);
   const flat = (arr) => arr.join('\n').split('\n').map((s) => s.trim()).filter(Boolean).join('\n');
   if (flat(a.blocks) !== flat(b.blocks)) problems.push('확장 블록 내용 불일치');
   return { ok: problems.length === 0, problems };
 }
 
+/* ── core/timing.js ── */
 /* ───────────── 타이밍 (BPM 변화 · STOP) ───────────── */
 function buildTiming(notes, initBpm) {
   const ev = [];
@@ -1140,7 +1196,7 @@ function blockGhosts(texts, base, meas) {
       const mm = +m[1];
       for (const o of parseObjs(m[3], base, ch === '03')) {
         const pos = radd(S[mm], rmul(o.f, rmul(Lm(mm), R4)));
-        out.push({ lane, b: rf(pos), vs: o.vs });
+        out.push({ lane, b: rf(pos), vs: o.vs, kind: CH2KIND[ch] });
       }
     }
   }
@@ -1153,17 +1209,20 @@ const NEW_TEMPLATE = [
   '#LNTYPE 1', '', '', '*---------------------- MAIN DATA FIELD', '', '',
 ].join('\r\n');
 
+/* ── core/_export.js ── */
 G.BMSCore = {
   R, R0, R1, R4, radd, rsub, rmul, rdiv, rcmp, req, rf, rkey, rApprox, gcd, lcm,
   idParse, idStr, idMax, hex2, pad3, fmtNum, parse, serialize, stateFromDoc, measureStarts,
   buildTiming, blockGhosts, detectEncoding, encodingInfo, getEncoder, splitLines, parseMeasureLen, lenStr, retimeBlockText,
-  noteSig, compareStates, finalizeNote, KEY_LANES, LANE_BY_KEY, CH2LANE, ENC_LABEL, NEW_TEMPLATE,
+  noteSig, compareStates, finalizeNote, KEY_LANES, BGA_LANES, LANE_BY_KEY, CH2LANE, CH2KIND, ENC_LABEL, NEW_TEMPLATE,
 };
+
 })(typeof window !== 'undefined' ? window : globalThis);
 </script>
-<script>/* BMS Web Editor — 화면 · 조작 · 파일 · 재생 */
+<script>/* BMS Web Editor — UI */
 (function () {
 'use strict';
+/* ── app/state.js ── */
 const C = window.BMSCore;
 const { R, R1, R4, radd, rsub, rmul, rdiv, rcmp, rf } = C;
 const $ = (s) => document.querySelector(s);
@@ -1180,9 +1239,9 @@ function saveCfg() { try { localStorage.setItem(CFG_KEY, JSON.stringify(cfg)); }
 
 /* ───────── 상수 ───────── */
 const HEAD_H = 22, MEAS_W = 50, PPB = 48; // 확대 1 → 한 박 48px, 4/4 한 마디 192px
-const NOTE_COL = { sc: '#ff5b5b', w: '#e8e8e8', b: '#5c88ff', bgm: '#a9afba', bpm: '#62d872', stop: '#ffa04a' };
-const NOTE_TXT = { sc: '#fff', w: '#111', b: '#fff', bgm: '#111', bpm: '#06200c', stop: '#2a1300' };
-const LANE_BG = { bpm: '#08130b', stop: '#150c06', sc: '#1b0808', w: '#111111', b: '#0b0e1d', bgm: '#0d0d0d' };
+const NOTE_COL = { bga: '#c08cff', sc: '#ff5b5b', w: '#e8e8e8', b: '#5c88ff', bgm: '#a9afba', bpm: '#62d872', stop: '#ffa04a' };
+const NOTE_TXT = { bga: '#1d0a33', sc: '#fff', w: '#111', b: '#fff', bgm: '#111', bpm: '#06200c', stop: '#2a1300' };
+const LANE_BG = { bga: '#120c1a', bpm: '#08130b', stop: '#150c06', sc: '#1b0808', w: '#111111', b: '#0b0e1d', bgm: '#0d0d0d' };
 const GRIDS = [4, 8, 12, 16, 24, 32, 48, 64, 96, 192];
 const AUDIO_EXT = /\.(wav|ogg|flac|mp3|m4a|aac|opus)$/i;
 const CHART_EXT = /\.(bms|bme|bml|pms)$/i;
@@ -1192,7 +1251,7 @@ const ENC_LIST = ['shift_jis', 'utf-8', 'euc-kr'];
 const A = {
   doc: null, st: null, fileName: '', dirty: false,
   undo: [], redo: [], sel: new Set(),
-  mode: 'select', curWav: 1,
+  mode: 'select', curWav: 1, curBmp: 1, noteKind: 'n', dp: false,
   view: { bottom: 0, left: 0 }, ppb: PPB * cfg.zoom, W: 0, H: 0, dpr: 1,
   lanes: [], laneMap: new Map(), sound: [], totalW: 0, bgmCount: 8,
   by: new Map(), maxLen: new Map(), ms: null, timing: null, ghosts: [], extentM: 64, usage: new Map(), conflicts: 0,
@@ -1202,7 +1261,7 @@ const A = {
 };
 let UID = 1e9;
 function mkNote(o) { o.uid = ++UID; o.b = rf(o.pos); o.lb = o.len ? rf(o.len) : 0; return o; }
-const NOTE_PROPS = ['len', 'ev', 'lnobj', 'dangling', 'bch', 'bid', 'sid'];
+const NOTE_PROPS = ['len', 'ev', 'lnobj', 'dangling', 'bch', 'bid', 'sid', 'kind'];
 function cloneNote(n, over) {
   const o = { lane: n.lane, pos: n.pos, v: n.v };
   for (const p of NOTE_PROPS) if (n[p] !== undefined) o[p] = n[p];
@@ -1210,9 +1269,15 @@ function cloneNote(n, over) {
   if (o.lane[0] === 'B' || o.len === null || (o.len && o.len.n <= 0)) { delete o.len; delete o.ev; delete o.lnobj; }
   if (o.lane[0] === 'B') delete o.dangling;
   if (o.len) delete o.dangling;
+  if (o.lane[0] !== 'K') delete o.kind;
+  if (o.kind) { delete o.len; delete o.ev; delete o.lnobj; delete o.dangling; }
   return mkNote(o);
 }
-const laneX = (l) => (l.type === 'bgm' ? l.x - A.view.left : l.x);
+const scrolls = (l) => l.type === 'bgm' || l.type === 'bga'; // 가로 스크롤되는 레인 (BGA + BGM)
+const laneX = (l) => (scrolls(l) ? l.x - A.view.left : l.x);
+// 같은 그룹 안에서만 옆으로 옮길 수 있음: 키음(키+BGM), BGA
+const grpOf = (lane) => (lane[0] === 'K' || lane[0] === 'B' ? 'snd' : lane[0] === 'G' ? 'bga' : null);
+const KIND_NAME = { n: '일반', h: '숨김', m: '지뢰' };
 const isSound = (lane) => lane[0] === 'K' || lane[0] === 'B';
 const isKey = (lane) => lane[0] === 'K';
 const lenOf = (m) => { const g = A.st && A.st.meas.get(m); return g ? g.r : R1; };
@@ -1225,21 +1290,30 @@ function beatLabel(r) { if (64 % r.d === 0) { const d = Math.max(4, r.d); return
 function baseName(s) { return String(s).replace(/^.*[\\/]/, '').replace(/\.[^.]*$/, ''); }
 function normPath(p) { return String(p).replace(/\\/g, '/').replace(/^\.\//, '').replace(/^\/+/, ''); }
 
+/* ── app/layout.js ── */
 /* ───────── 레인 배치 ───────── */
 function layout() {
   const L = []; let x = 0;
-  const add = (o) => { o.x = x; x += o.w; L.push(o); };
+  const zx = cfg.zoomX || 1, W = (w) => Math.max(14, Math.round(w * zx)); // 가로 확대
+  const add = (o) => { if (o.type !== 'meas') o.w = W(o.w); o.x = x; x += o.w; L.push(o); };
   add({ key: 'M', type: 'meas', w: MEAS_W, label: '#' });
   add({ key: 'BPM', type: 'bpm', col: 'bpm', w: 56, label: 'BPM' });
   add({ key: 'STOP', type: 'stop', col: 'stop', w: 48, label: 'STOP' });
   x += 8;
-  C.KEY_LANES.forEach((k, i) => add({ key: k.key, type: 'key', col: i === 0 ? 'sc' : (i % 2 ? 'w' : 'b'), w: i === 0 ? 54 : 42, label: k.label }));
+  C.KEY_LANES.filter((k) => k.p === 1).forEach((k, i) => add({ key: k.key, type: 'key', p: 1, col: i === 0 ? 'sc' : (i % 2 ? 'w' : 'b'), w: i === 0 ? 54 : 42, label: k.label }));
+  if (A.dp) {
+    x += 8;
+    C.KEY_LANES.filter((k) => k.p === 2).forEach((k, i) => add({ key: k.key, type: 'key', p: 2, col: i === 7 ? 'sc' : (i % 2 ? 'b' : 'w'), w: i === 7 ? 54 : 42, label: k.label }));
+  }
   x += 8;
-  A.fixW = x; // 여기까지(마디~7번 키)는 가로 스크롤해도 고정
+  A.fixW = x; // 여기까지(플레이 영역)는 가로 스크롤해도 고정, 이후 BGA+BGM이 함께 스크롤
+  C.BGA_LANES.forEach((g) => add({ key: g.key, type: 'bga', col: 'bga', w: 50, label: g.label }));
+  x += 8;
   for (let k = 0; k < A.bgmCount; k++) add({ key: 'B' + k, type: 'bgm', col: 'bgm', w: 42, label: 'B' + (k + 1) });
   A.lanes = L; A.laneMap = new Map(L.map((l) => [l.key, l])); A.totalW = x + 30;
-  A.sound = L.filter((l) => l.type === 'key' || l.type === 'bgm');
-  A.sound.forEach((l, i) => { l.si = i; });
+  A.grp = { snd: L.filter((l) => l.type === 'key' || l.type === 'bgm'), bga: L.filter((l) => l.type === 'bga') };
+  for (const g of Object.values(A.grp)) g.forEach((l, i) => { l.gi = i; });
+  A.keyCount = L.filter((l) => l.type === 'key').length;
 }
 
 /* ───────── 위치 · 스냅 ───────── */
@@ -1284,10 +1358,10 @@ function reindex() {
     let ml = 0;
     for (const n of a) { n._c = false; if (n.lb > ml) ml = n.lb; }
     A.maxLen.set(k, ml);
-    for (let i = 0; i < a.length; i++) {
-      const n = a[i];
-      if (i + 1 < a.length && Math.abs(a[i + 1].b - n.b) < 1e-9) { n._c = a[i + 1]._c = true; }
-      if (n.lb > 0) for (let j = i + 1; j < a.length && a[j].b <= n.b + n.lb + 1e-9; j++) { n._c = a[j]._c = true; }
+    for (let i = 0; i < a.length; i++) { // 같은 종류(일반/숨김/지뢰)끼리만 겹침 검사
+      const n = a[i], kn = n.kind || 'n';
+      for (let j = i + 1; j < a.length && a[j].b - n.b < 1e-9; j++) if ((a[j].kind || 'n') === kn) n._c = a[j]._c = true;
+      if (n.lb > 0) for (let j = i + 1; j < a.length && a[j].b <= n.b + n.lb + 1e-9; j++) if (!a[j].kind) { n._c = a[j]._c = true; }
     }
     for (const n of a) if (n._c) conf++;
   }
@@ -1311,6 +1385,7 @@ function refresh() {
   draw();
 }
 
+/* ── app/view.js ── */
 /* ───────── 스크롤 · 확대 ───────── */
 function updateScroller() {
   if (!A.ms || !A.H) return;
@@ -1332,6 +1407,20 @@ function onScroll() {
   draw();
 }
 function setBottom(b) { A.view.bottom = Math.max(0, b); syncScroll(); draw(); }
+// 가로 확대: 마우스 아래 레인이 제자리에 있도록 BGA·BGM 스크롤 위치를 맞춤
+function setZoomX(z, anchorX) {
+  z = Math.min(4, Math.max(0.4, z));
+  const old = cfg.zoomX || 1;
+  cfg.zoomX = z; saveCfg(); $('#zoomXR').value = z;
+  if (anchorX === undefined) anchorX = A.fixW;
+  const ox = anchorX >= A.fixW ? anchorX + A.view.left : anchorX;
+  layout();
+  if (anchorX >= A.fixW) {
+    const nx = MEAS_W + (ox - MEAS_W) * (z / old);
+    A.view.left = Math.max(0, nx - anchorX);
+  }
+  updateScroller(); draw();
+}
 function setZoom(z, anchorBeat, anchorY) {
   z = Math.min(8, Math.max(0.25, z));
   if (anchorBeat === undefined) { anchorY = A.H; anchorBeat = A.view.bottom; }
@@ -1354,11 +1443,14 @@ function draw() { if (!rafPending) { rafPending = true; requestAnimationFrame(()
 function noteLabel(n, w) {
   if (n.lane === 'BPM') return isFinite(n.v) ? fmtV(n.v) : '?' + idS(n.bid);
   if (n.lane === 'STOP') return isFinite(n.v) ? fmtV(n.v) : '?' + idS(n.sid);
-  if (cfg.showName) { const nm = A.st.wavs.get(n.v); if (nm) return trunc(baseName(nm), Math.max(2, Math.floor((w - 4) / 6))); }
+  if (n.lane[0] === 'G') { const nm = cfg.showName && A.st.bmps.get(n.v); return nm ? trunc(baseName(nm), Math.max(2, Math.floor((w - 4) / 6))) : idS(n.v); }
+  if (cfg.showName && !n.kind) { const nm = A.st.wavs.get(n.v); if (nm) return trunc(baseName(nm), Math.max(2, Math.floor((w - 4) / 6))); }
   return idS(n.v);
 }
 function drawNote(ctx, n, l, x, yOf, nh, alpha, pv) {
-  const col = NOTE_COL[l.col], y = yOf(n.b), xx = x + 2, w = l.w - 4;
+  const mine = n.kind === 'm', hid = n.kind === 'h';
+  const col = mine ? '#8a1426' : NOTE_COL[l.col], y = yOf(n.b), xx = x + 2, w = l.w - 4;
+  if (hid) alpha *= 0.4;
   ctx.globalAlpha = alpha;
   let topY = y - nh;
   if (n.lb > 0) {
@@ -1373,7 +1465,11 @@ function drawNote(ctx, n, l, x, yOf, nh, alpha, pv) {
   ctx.fillStyle = col; ctx.fillRect(xx, y - nh, w, nh);
   ctx.fillStyle = 'rgba(255,255,255,.35)'; ctx.fillRect(xx, y - nh, w, 1);
   ctx.fillStyle = 'rgba(0,0,0,.45)'; ctx.fillRect(xx, y - 1, w, 1);
-  if (nh >= 8) { ctx.fillStyle = NOTE_TXT[l.col]; ctx.fillText(noteLabel(n, w), xx + w / 2, y - nh / 2 + 0.5); }
+  if (nh >= 8) { ctx.fillStyle = mine ? '#ffd6dc' : NOTE_TXT[l.col]; ctx.fillText((mine ? '✕' : '') + noteLabel(n, w), xx + w / 2, y - nh / 2 + 0.5); }
+  if (hid || mine) { // 숨김: 흐리게 + 점선, 지뢰: 진한 빨강 + 점선
+    ctx.globalAlpha = 1; ctx.setLineDash([3, 2]); ctx.lineWidth = 1;
+    ctx.strokeStyle = mine ? '#ff6b7f' : col; ctx.strokeRect(xx + 0.5, y - nh + 0.5, w - 1, nh - 1); ctx.setLineDash([]);
+  }
   if (!pv) {
     if (n._c) { ctx.strokeStyle = '#ff2b2b'; ctx.lineWidth = 2; ctx.strokeRect(xx - 1, topY - 1, w + 2, y - topY + 2); }
     if (A.sel.has(n)) { ctx.strokeStyle = '#ffe14d'; ctx.lineWidth = 2; ctx.strokeRect(xx - 1, topY - 1, w + 2, y - topY + 2); }
@@ -1390,8 +1486,8 @@ function paint() {
   const ppb = A.ppb, bot = A.view.bottom, left = A.view.left, Sf = A.ms.Sf, nh = noteH();
   const yOf = (b) => H - (b - bot) * ppb;
   const top = bot + (H - HEAD_H) / ppb;
-  const vis = (l) => { const x = laneX(l); return l.type === 'bgm' ? x + l.w > A.fixW && x < W : x < W; };
-  const clipB = (l) => { ctx.save(); if (l.type === 'bgm') { ctx.beginPath(); ctx.rect(A.fixW, 0, W - A.fixW, H); ctx.clip(); } };
+  const vis = (l) => { const x = laneX(l); return scrolls(l) ? x + l.w > A.fixW && x < W : x < W; };
+  const clipB = (l) => { ctx.save(); if (scrolls(l)) { ctx.beginPath(); ctx.rect(A.fixW, 0, W - A.fixW, H); ctx.clip(); } };
 
   for (const l of A.lanes) {
     if (l.type === 'meas' || !vis(l)) continue;
@@ -1491,6 +1587,7 @@ function paint() {
   ctx.fillStyle = '#9a9a9a'; ctx.fillText('마디', MEAS_W / 2, HEAD_H / 2);
 }
 
+/* ── app/history.js ── */
 /* ───────── 실행 취소 ───────── */
 function commit(act) {
   applyAct(act, false);
@@ -1503,6 +1600,7 @@ function applyAct(act, rev) {
   if (act.list) { (rev ? act.list.slice().reverse() : act.list).forEach((a) => applyAct(a, rev)); return; }
   if (act.type === 'meas') { const v = rev ? act.before : act.after; for (const [m, g] of v) { if (g) A.st.meas.set(m, g); else A.st.meas.delete(m); } return; }
   if (act.type === 'hdr') { A.st.headers.set(act.key, rev ? act.before : act.after); return; }
+  if (act.type === 'bmp') { const v = rev ? act.before : act.after; if (v) A.st.bmps.set(act.id, v); else A.st.bmps.delete(act.id); return; }
   if (act.type === 'wav') { const v = rev ? act.before : act.after; if (v) A.st.wavs.set(act.id, v); else A.st.wavs.delete(act.id); return; }
   if (act.type === 'blk') {
     const v = rev ? act.before : act.after;
@@ -1519,6 +1617,7 @@ function afterChange(act) {
   const t = actTypes(act);
   if (t.has('hdr')) renderHeader();
   if (t.has('wav')) { renderWavList(); startPreload(); }
+  if (t.has('bmp')) { renderBmpList(); checkBmps(); }
   if (t.has('meas')) renderBeatList();
   if (t.has('blk')) renderBlocks();
 }
@@ -1546,16 +1645,17 @@ function setDirty(v) {
 /* 같은 자리 충돌 처리: 이동·붙여넣기는 밀려난 노트를 빈 BGM 레인으로, 쓰기는 덮어쓰기 */
 function resolveConflicts(act, mode) {
   const delSet = new Set(act.del);
-  const keyOf = (lane, pos) => lane + '|' + C.rkey(pos);
+  // 같은 레인·같은 자리·같은 종류(일반/숨김/지뢰)끼리만 충돌
+  const keyOf = (lane, pos, kind) => lane + '|' + C.rkey(pos) + '|' + (kind || 'n');
   const occ = new Map();
-  for (const n of A.st.notes) if (!delSet.has(n)) occ.set(keyOf(n.lane, n.pos), n);
-  const addK = new Map(act.add.map((a) => [keyOf(a.lane, a.pos), a]));
+  for (const n of A.st.notes) if (!delSet.has(n)) occ.set(keyOf(n.lane, n.pos, n.kind), n);
+  const addK = new Map(act.add.map((a) => [keyOf(a.lane, a.pos, a.kind), a]));
   const extraDel = [], extraAdd = [];
   for (const [k, a] of addK) {
     const ex = occ.get(k);
     if (!ex || ex === a) continue;
     extraDel.push(ex); occ.delete(k);
-    if (mode === 'displace' && isSound(ex.lane)) {
+    if (mode === 'displace' && isSound(ex.lane) && !ex.kind) {
       for (let j = 0; j < 4000; j++) {
         const kk = keyOf('B' + j, ex.pos);
         if (!occ.has(kk) && !addK.has(kk)) { const dn = cloneNote(ex, { lane: 'B' + j }); extraAdd.push(dn); occ.set(kk, dn); break; }
@@ -1567,6 +1667,7 @@ function resolveConflicts(act, mode) {
   return extraAdd.length || (mode === 'replace' ? 0 : extraDel.length);
 }
 
+/* ── app/mouse.js ── */
 /* ───────── 마우스 ───────── */
 function hitAt(e) {
   const r = A.sc.getBoundingClientRect();
@@ -1574,7 +1675,7 @@ function hitAt(e) {
   const inArea = mx >= 0 && my >= 0 && mx < A.sc.clientWidth && my < A.sc.clientHeight;
   let lane = null;
   if (mx < MEAS_W) lane = A.laneMap.get('M');
-  else for (const l of A.lanes) { if (l.type === 'meas') continue; if (l.type === 'bgm' && mx < A.fixW) continue; const x = laneX(l); if (mx >= x && mx < x + l.w) { lane = l; break; } }
+  else for (const l of A.lanes) { if (l.type === 'meas') continue; if (scrolls(l) && mx < A.fixW) continue; const x = laneX(l); if (mx >= x && mx < x + l.w) { lane = l; break; } }
   return { mx, my, cx: mx, lane, beat: A.view.bottom + (A.H - my) / A.ppb, inArea, head: my < HEAD_H };
 }
 function noteAt(h) {
@@ -1618,17 +1719,20 @@ function onDown(e) {
 }
 function downWrite(e, h, n) {
   if (n) {
+    if (n.lane[0] === 'G') { A.curBmp = n.v; markCurBmp(true); return; }
     if (!isSound(n.lane)) { editValue([n]); return; }
+    if (n.kind === 'm') { editValue([n]); return; }
     A.curWav = n.v; markCurWav(true); preview(n.v);
-    A.drag = isKey(n.lane) ? { kind: 'resize', note: n, preview: null, sx: h.mx, sy: h.my } : null;
+    A.drag = isKey(n.lane) && !n.kind ? { kind: 'resize', note: n, preview: null, sx: h.mx, sy: h.my } : null;
     return;
   }
   if (!h.lane || h.lane.type === 'meas') return;
   const pos = snap(h.beat, 'floor', e.shiftKey);
   if (h.lane.type === 'bpm' || h.lane.type === 'stop') { addValueNote(h.lane.key, pos); return; }
-  const note = mkNote({ lane: h.lane.key, pos, v: A.curWav });
+  const note = mkNote(newNoteAt(h.lane, pos));
   A.drag = { kind: 'place', base: note, preview: note, sy: h.my };
-  preview(A.curWav); draw();
+  if (h.lane.type !== 'bga' && note.kind !== 'm') preview(A.curWav);
+  draw();
 }
 function downSelect(e, h, n) {
   if (n) {
@@ -1636,17 +1740,37 @@ function downSelect(e, h, n) {
     const wasSel = A.sel.has(n), mod = e.ctrlKey || e.metaKey || e.shiftKey;
     if (mod) A.sel.add(n); else if (!wasSel) A.sel = new Set([n]);
     A.drag = { kind: 'move', anchor: n, b0: h.beat, sx: h.mx, sy: h.my, wasSel, toggle: mod, moved: false, preview: [], hide: null, delta: C.R0, dSi: 0 };
-    if (isSound(n.lane)) preview(n.v);
+    if (isSound(n.lane) && n.kind !== 'm') preview(n.v);
     statusNote(); draw(); return;
   }
   if (!(e.shiftKey || e.ctrlKey || e.metaKey)) A.sel = new Set();
   A.drag = { kind: 'band', x0: h.cx, b0: h.beat, x1: h.cx, b1: h.beat, base: new Set(A.sel) };
   statusNote(); draw();
 }
-function movedNote(n, delta, dSi) {
+// 쓰기 모드에서 새로 찍을 노트: BGA 레인은 BMP 번호, 키 레인은 고른 종류(일반/숨김/지뢰)
+function newNoteAt(l, pos) {
+  if (l.type === 'bga') return { lane: l.key, pos, v: A.curBmp };
+  if (l.type === 'key' && A.noteKind !== 'n') return { lane: l.key, pos, v: A.noteKind === 'm' ? (A.mineVal || 1) : A.curWav, kind: A.noteKind };
+  return { lane: l.key, pos, v: A.curWav };
+}
+function movedNote(n, delta, dG, grp) {
   let lane = n.lane;
-  if (dSi && isSound(lane)) lane = A.sound[A.laneMap.get(lane).si + dSi].key;
+  const l = A.laneMap.get(lane);
+  if (dG && l && grpOf(lane) === grp) lane = A.grp[grp][l.gi + dG].key;
   return cloneNote(n, { lane, pos: radd(n.pos, delta) });
+}
+// 옆으로 옮길 칸 수를 범위 안으로 (숨김·지뢰는 키 레인 밖으로 못 나감)
+function clampShift(sel, grp, dG) {
+  if (!grp || !dG) return 0;
+  const list = A.grp[grp];
+  let lo = -Infinity, hi = Infinity;
+  for (const n of sel) {
+    if (grpOf(n.lane) !== grp) continue;
+    const l = A.laneMap.get(n.lane); if (!l) continue;
+    const max = (n.kind ? A.keyCount : list.length) - 1;
+    lo = Math.max(lo, -l.gi); hi = Math.min(hi, max - l.gi);
+  }
+  return Math.max(lo, Math.min(hi, dG));
 }
 function lnStyle(n, len) {
   if (n.len && !n.lnobj) return { len, ev: n.ev || n.v };
@@ -1670,26 +1794,23 @@ function onMove(e) {
     const sel = [...A.sel];
     const st = stepR(e.shiftKey), sf = rf(st);
     let k = cfg.lockH ? 0 : Math.round((h.beat - d.b0) / sf);
+    const grp = grpOf(d.anchor.lane), al = A.laneMap.get(d.anchor.lane);
     let dSi = 0;
-    if (isSound(d.anchor.lane) && h.lane && (h.lane.type === 'key' || h.lane.type === 'bgm')) dSi = h.lane.si - A.laneMap.get(d.anchor.lane).si;
-    let minSi = Infinity, maxSi = -Infinity, minB = Infinity, maxE = -Infinity;
-    for (const n of sel) {
-      if (isSound(n.lane)) { const si = A.laneMap.get(n.lane).si; if (si < minSi) minSi = si; if (si > maxSi) maxSi = si; }
-      if (n.b < minB) minB = n.b;
-      if (n.b + n.lb > maxE) maxE = n.b + n.lb;
-    }
-    if (minSi !== Infinity) { if (minSi + dSi < 0) dSi = -minSi; if (maxSi + dSi > A.sound.length - 1) dSi = A.sound.length - 1 - maxSi; }
+    if (grp && al && h.lane && grpOf(h.lane.key) === grp) dSi = h.lane.gi - al.gi;
+    dSi = clampShift(sel, grp, dSi);
+    let minB = Infinity, maxE = -Infinity;
+    for (const n of sel) { if (n.b < minB) minB = n.b; if (n.b + n.lb > maxE) maxE = n.b + n.lb; }
     const kMin = Math.ceil(-minB / sf - 1e-9), kMax = Math.floor((A.ms.Sf[1000] - maxE) / sf - 1e-9);
     if (k < kMin) k = kMin;
     if (k > kMax) k = kMax;
     d.delta = rmul(st, R(k)); d.dSi = dSi; d.moved = true; d.copy = e.ctrlKey || e.altKey || e.metaKey;
-    d.preview = sel.map((n) => movedNote(n, d.delta, dSi));
+    d.preview = sel.map((n) => movedNote(n, d.delta, dSi, grp));
     d.hide = d.copy ? null : new Set(sel);
     A.sc.style.cursor = d.copy ? 'copy' : 'move';
     autoScroll(h); draw(); return;
   }
   if (d.kind === 'place') {
-    if (isKey(d.base.lane) && h.my < d.sy - 3) {
+    if (isKey(d.base.lane) && !d.base.kind && h.my < d.sy - 3) {
       const end = snap(h.beat, 'round', e.shiftKey);
       const len = rsub(end, d.base.pos);
       d.preview = len.n > 0 ? cloneNote(d.base, lnStyle(d.base, len)) : d.base;
@@ -1734,7 +1855,7 @@ function bandSelect(d) {
   const nhb = noteH() / A.ppb, sel = new Set(d.base);
   for (const l of A.lanes) {
     const lx = laneX(l);
-    if (l.type === 'meas' || lx + l.w <= x0 || lx >= x1 || (l.type === 'bgm' && lx + l.w <= A.fixW)) continue;
+    if (l.type === 'meas' || lx + l.w <= x0 || lx >= x1 || (scrolls(l) && lx + l.w <= A.fixW)) continue;
     const arr = A.by.get(l.key); if (!arr) continue;
     for (let i = lowerBound(arr, b0 - (A.maxLen.get(l.key) || 0) - nhb); i < arr.length; i++) {
       const n = arr[i]; if (n.b > b1) break;
@@ -1753,8 +1874,8 @@ function hoverUpdate(h, e) {
   let ghost = null;
   if (A.mode === 'write' && over && !n && h.lane && h.lane.type !== 'meas') {
     const pos = snap(h.beat, 'floor', e.shiftKey);
-    const v = h.lane.type === 'bpm' ? A.timing.bpmAt(rf(pos)) : h.lane.type === 'stop' ? 48 : A.curWav;
-    ghost = { lane: h.lane.key, pos, b: rf(pos), lb: 0, v };
+    ghost = h.lane.type === 'bpm' ? { lane: h.lane.key, pos, v: A.timing.bpmAt(rf(pos)) } : h.lane.type === 'stop' ? { lane: h.lane.key, pos, v: 48 } : newNoteAt(h.lane, pos);
+    ghost.b = rf(pos); ghost.lb = 0;
   }
   const prev = A.hover;
   A.hover = { note: n, ghost, h };
@@ -1765,6 +1886,12 @@ function hoverUpdate(h, e) {
 }
 function onWheel(e) {
   if (!A.st) return;
+  if ((e.ctrlKey || e.metaKey) && e.shiftKey) { // Ctrl+Shift+휠: 가로 확대
+    e.preventDefault();
+    const d = e.deltaY || e.deltaX;
+    setZoomX((cfg.zoomX || 1) * (d < 0 ? 1.15 : 1 / 1.15), hitAt(e).mx);
+    return;
+  }
   if (e.ctrlKey || e.metaKey) {
     e.preventDefault();
     const h = hitAt(e);
@@ -1772,17 +1899,17 @@ function onWheel(e) {
   }
 }
 
+/* ── app/edit.js ── */
 /* ───────── 편집 동작 ───────── */
 function deleteSel() { const s = [...A.sel]; if (!s.length) return; commit({ del: s, add: [] }); A.sel = new Set(); draw(); }
-function selectAll() { A.sel = new Set(A.st.notes.filter((n) => n.lane[0] !== 'X')); statusNote(); draw(); }
+function selectAll() { A.sel = new Set(A.st.notes.filter((n) => A.laneMap.has(n.lane))); statusNote(); draw(); }
 function nudge(dk, dSi, fine) {
   const sel = [...A.sel]; if (!sel.length) return false;
   const delta = rmul(stepR(fine), R(dk)), df = rf(delta);
-  for (const n of sel) {
-    if (n.b + df < -1e-9 || n.b + n.lb + df >= A.ms.Sf[1000]) return true;
-    if (dSi && isSound(n.lane)) { const si = A.laneMap.get(n.lane).si + dSi; if (si < 0 || si >= A.sound.length) return true; }
-  }
-  const add = sel.map((n) => movedNote(n, delta, dSi));
+  for (const n of sel) if (n.b + df < -1e-9 || n.b + n.lb + df >= A.ms.Sf[1000]) return true;
+  const g0 = sel.find((n) => grpOf(n.lane)), grp = g0 ? grpOf(g0.lane) : null;
+  if (dSi && clampShift(sel, grp, dSi) !== dSi) return true;
+  const add = sel.map((n) => movedNote(n, delta, dSi, grp));
   const act = { del: sel, add };
   const nd = resolveConflicts(act, 'displace');
   commit(act); A.sel = new Set(add); draw();
@@ -1801,11 +1928,13 @@ async function editValue(notes) {
     commit({ del: targets, add }); A.sel = new Set(add); draw(); return;
   }
   const maxS = idS(C.idMax(A.doc.base));
-  const v = await promptText('키음 번호 바꾸기', `WAV 번호 (01~${maxS})`, idS(n0.v), notes.length > 1 ? `선택한 노트 ${notes.length}개에 모두 적용됩니다` : '');
+  const what = n0.lane[0] === 'G' ? ['BGA 이미지 번호 바꾸기', '#BMP 번호'] : n0.kind === 'm' ? ['지뢰 값 바꾸기', '지뢰 값(피해량)'] : ['키음 번호 바꾸기', 'WAV 번호'];
+  const v = await promptText(what[0], `${what[1]} (01~${maxS})`, idS(n0.v), notes.length > 1 ? `선택한 노트 ${notes.length}개에 모두 적용됩니다` : '');
   if (v === null) return;
   const id = C.idParse(v.trim(), A.doc.base);
-  if (!(id > 0)) { toast('올바른 WAV 번호가 아닙니다'); return; }
-  const targets = notes.filter((n) => isSound(n.lane));
+  if (!(id > 0)) { toast('올바른 번호가 아닙니다'); return; }
+  const same = (n) => (n.lane[0] === 'G') === (n0.lane[0] === 'G') && (n.kind === 'm') === (n0.kind === 'm');
+  const targets = notes.filter((n) => (isSound(n.lane) || n.lane[0] === 'G') && same(n));
   const add = targets.map((n) => cloneNote(n, { v: id, ev: n.len && !n.lnobj && n.ev === n.v ? id : n.ev }));
   commit({ del: targets, add }); A.sel = new Set(add); draw();
 }
@@ -1821,8 +1950,10 @@ async function addValueNote(lane, pos) {
   commit(act); A.sel = new Set([n]); draw();
 }
 
+/* ── app/clipboard.js ── */
 /* ───────── 복사 · 붙여넣기 (iBMSC 클립보드 형식) ───────── */
-const IB_COL = { BPM: 2, STOP: 3, K16: 5, K11: 6, K12: 7, K13: 8, K14: 9, K15: 10, K18: 11, K19: 12 };
+const IB_COL = { BPM: 2, STOP: 3, K16: 5, K11: 6, K12: 7, K13: 8, K14: 9, K15: 10, K18: 11, K19: 12,
+  K21: 14, K22: 15, K23: 16, K24: 17, K25: 18, K28: 19, K29: 20, K26: 21, G04: 23, G07: 24, G06: 25 };
 const IB_REV = Object.fromEntries(Object.entries(IB_COL).map(([k, v]) => [v, k]));
 const colOf = (lane) => (lane[0] === 'B' ? 27 + +lane.slice(1) : IB_COL[lane]);
 const laneOfCol = (c) => (c >= 27 ? 'B' + (c - 27) : IB_REV[c] || null);
@@ -1836,7 +1967,7 @@ function copySel() {
   for (const n of sel) {
     const rel = rsub(n.pos, baseR);
     const val = isFinite(n.v) ? Math.round(n.v * 10000) : 0;
-    lines.push(`${colOf(n.lane)} ${fmtVP(rf(rel) * 48)} ${val} ${hasLN ? fmtVP(n.lb * 48) : 0} 0 0`);
+    lines.push(`${colOf(n.lane)} ${fmtVP(rf(rel) * 48)} ${val} ${hasLN ? fmtVP(n.lb * 48) : 0} ${n.kind === 'h' ? -1 : 0} ${n.kind === 'm' ? -1 : 0}`);
     items.push({ n, rel });
   }
   const text = lines.join('\r\n');
@@ -1871,8 +2002,9 @@ function pasteText(text) {
       const flag = (x) => !!x && x !== '0' && x.toLowerCase() !== 'false';
       const lane = laneOfCol(+p[0]), vp = +p[1], val = +p[2];
       const lnv = nt ? (+p[3] || 0) : (flag(p[3]) ? 1 : 0);
-      if (!lane || flag(p[4]) || flag(p[5]) || !isFinite(vp) || vp < 0) { skipped++; continue; }
-      raw.push({ lane, vp, val, lnv });
+      const kind = flag(p[5]) ? 'm' : flag(p[4]) ? 'h' : null;
+      if (!lane || (kind && !isKey(lane)) || !isFinite(vp) || vp < 0) { skipped++; continue; }
+      raw.push({ lane, vp, val, lnv: kind ? 0 : lnv, kind });
     }
     if (!nt) { // BMSE 방식: LongNote 표시가 붙은 노트 둘이 한 쌍
       const open = {}, keep = [];
@@ -1889,11 +2021,12 @@ function pasteText(text) {
     const toR = (vp) => { const x = vp / 48, a = C.rApprox(x, 3840); return Math.abs(rf(a) - x) < 1e-6 ? a : C.rApprox(x, 1e6); };
     for (const r of raw) {
       const pos = radd(base, toR(r.vp));
-      if (!isSound(r.lane)) { const v = r.val / 10000; if (v > 0) notes.push(mkNote({ lane: r.lane, pos, v })); else skipped++; continue; }
+      if (r.lane === 'BPM' || r.lane === 'STOP') { const v = r.val / 10000; if (v > 0) notes.push(mkNote({ lane: r.lane, pos, v })); else skipped++; continue; }
       const v = Math.round(r.val / 10000);
       if (!(v > 0 && v <= C.idMax(A.doc.base))) { skipped++; continue; }
       const o = { lane: r.lane, pos, v };
-      if (r.lenvp > 0 && isKey(r.lane)) Object.assign(o, lnStyle(o, toR(r.lenvp)));
+      if (r.kind) o.kind = r.kind;
+      else if (r.lenvp > 0 && isKey(r.lane)) Object.assign(o, lnStyle(o, toR(r.lenvp)));
       notes.push(mkNote(o));
     }
   }
@@ -1907,6 +2040,7 @@ function pasteText(text) {
   toast(`노트 ${notes.length}개를 마디 ${C.pad3(measureAt(rf(base)))}에 붙여넣었습니다` + (nd ? ` · 겹친 ${nd}개는 빈 BGM 레인으로` : '') + (skipped ? ` · 건너뜀 ${skipped}개(숨김/지뢰/2P 등)` : ''), 4000);
 }
 
+/* ── app/keyboard.js ── */
 /* ───────── 키보드 ───────── */
 function isTyping(el) {
   if (!el) return false;
@@ -1956,10 +2090,14 @@ function onKey(e) {
     }
     case 'Home': e.preventDefault(); setBottom(0); return;
     case 'End': e.preventDefault(); setBottom(Math.max(0, A.lastBeat - (A.H - HEAD_H) * 0.6 / A.ppb)); return;
+    case '[': setZoomX((cfg.zoomX || 1) / 1.15); return;
+    case ']': setZoomX((cfg.zoomX || 1) * 1.15); return;
     case '+': case '=': setZoom(cfg.zoom * 1.25); return;
     case '-': case '_': setZoom(cfg.zoom * 0.8); return;
     default: break;
   }
+  if (k === '\\') { A.toggleSide(); return; }
+  if (lk === 'n') { const order = ['n', 'h', 'm'], nk = order[(order.indexOf(A.noteKind) + 1) % 3]; A.setKind(nk); toast(`쓰기 노트 종류: ${KIND_NAME[nk]}`); return; }
   if (lk === 'h') { cfg.lockH = !cfg.lockH; saveCfg(); $('#lockChk').checked = cfg.lockH; toast(cfg.lockH ? '노트 이동: 옆으로만' : '노트 이동: 위아래·옆 모두'); return; }
   if (lk === 'g') { cfg.snap = !cfg.snap; saveCfg(); $('#snapChk').checked = cfg.snap; toast(cfg.snap ? '스냅 켬' : '스냅 끔 (1/192 단위)'); }
 }
@@ -1972,6 +2110,7 @@ function setMode(m) {
   draw();
 }
 
+/* ── app/status.js ── */
 /* ───────── 상태 표시줄 ───────── */
 function statusPos(h) {
   const el = $('#sPos');
@@ -1983,15 +2122,18 @@ function statusPos(h) {
 function noteDesc(n) {
   if (n.lane === 'BPM') return `BPM ${fmtV(n.v)}` + (n.bch === '08' ? ` (#BPM${idS(n.bid)})` : '');
   if (n.lane === 'STOP') return `STOP ${fmtV(n.v)}` + (n.sid ? ` (#STOP${idS(n.sid)})` : '');
+  const lane = A.laneMap.get(n.lane), ln = lane ? (lane.p === 2 ? '2P ' : lane.p === 1 && A.dp ? '1P ' : '') + lane.label : n.lane;
+  if (n.lane[0] === 'G') return `${ln} · #BMP${idS(n.v)} ${A.st.bmps.get(n.v) || '(정의 없음)'}`;
+  if (n.kind === 'm') return `${ln} · 지뢰 · 값 ${idS(n.v)}`;
   const nm = A.st.wavs.get(n.v) || '(정의 없음)';
-  const lane = A.laneMap.get(n.lane);
-  return `${lane ? lane.label : n.lane} · #WAV${idS(n.v)} ${nm}` + (n.lb > 0 ? ` · 롱노트 ${fmtV(n.lb)}박${n.lnobj ? ' (LNOBJ)' : ''}` : '') + (n.dangling ? ' · 끝이 없는 롱노트' : '');
+  return `${ln}${n.kind === 'h' ? ' · 숨김' : ''} · #WAV${idS(n.v)} ${nm}` + (n.lb > 0 ? ` · 롱노트 ${fmtV(n.lb)}박${n.lnobj ? ' (LNOBJ)' : ''}` : '') + (n.dangling ? ' · 끝이 없는 롱노트' : '');
 }
 function statusNote() {
   const n = A.hover && A.hover.note;
   $('#sNote').textContent = n ? noteDesc(n) : (A.sel.size ? `선택 ${A.sel.size}개` : '');
 }
 
+/* ── app/panels.js ── */
 /* ───────── 오른쪽 패널 ───────── */
 const HDR_FIELDS = [
   ['TITLE', '제목'], ['SUBTITLE', '부제'], ['ARTIST', '아티스트'], ['SUBARTIST', '서브 아티스트'], ['GENRE', '장르'],
@@ -2122,25 +2264,30 @@ function renderBlocks() {
 }
 
 let infoT = 0;
-function scheduleInfo() { clearTimeout(infoT); infoT = setTimeout(() => { renderInfo(); renderWavList(); }, 120); }
+function scheduleInfo() { clearTimeout(infoT); infoT = setTimeout(() => { renderInfo(); renderWavList(); renderBmpList(); }, 120); }
 function renderInfo() {
   const bd = $('#infoBd');
   if (!A.st) { bd.innerHTML = '<div class="dim">파일을 열면 표시됩니다</div>'; return; }
-  let notes = 0, ln = 0, sc = 0, bgm = 0, bpmMin = Infinity, bpmMax = -Infinity;
-  const usage = new Map();
+  let notes = 0, ln = 0, sc = 0, bgm = 0, hid = 0, mine = 0, p2 = 0, bga = 0, k1 = 0, s1 = 0, k2 = 0, s2 = 0, bpmMin = Infinity, bpmMax = -Infinity;
+  const usage = new Map(), usageB = new Map();
   for (const n of A.st.notes) {
-    if (isKey(n.lane)) { notes++; if (n.lb > 0) ln++; if (n.lane === 'K16') sc++; }
-    else if (n.lane[0] === 'B') bgm++;
-    if (isSound(n.lane)) usage.set(n.v, (usage.get(n.v) || 0) + 1);
+    if (isKey(n.lane)) {
+      if (n.kind === 'h') hid++; else if (n.kind === 'm') mine++;
+      else { notes++; if (n.lb > 0) ln++; if (n.lane === 'K16' || n.lane === 'K26') sc++; if (n.lane[1] === '2') p2++; const isSc = n.lane === 'K16' || n.lane === 'K26'; if (n.lane[1] === '2') { if (isSc) s2++; else k2++; } else if (isSc) s1++; else k1++; }
+    } else if (n.lane[0] === 'B') bgm++;
+    else if (n.lane[0] === 'G') { bga++; usageB.set(n.v, (usageB.get(n.v) || 0) + 1); }
+    if (isSound(n.lane) && n.kind !== 'm') usage.set(n.v, (usage.get(n.v) || 0) + 1);
   }
+  A.usageB = usageB;
   for (const s of A.timing.segs) { if (s.bpm < bpmMin) bpmMin = s.bpm; if (s.bpm > bpmMax) bpmMax = s.bpm; }
   A.usage = usage;
   const ld = loadCounts();
   const rows = [
     ['파일', esc(A.fileName || '(새 파일 — 아직 저장 안 됨)')],
     ['인코딩', `${C.ENC_LABEL[A.doc.enc]} · ${A.doc.eol === '\r\n' ? 'CRLF' : 'LF'}`],
-    ['노트', `${notes}개 (롱노트 ${ln}, 스크래치 ${sc})`],
-    ['BGM 노트', `${bgm}개`],
+    ['노트', A.dp || p2 ? `${notes}개 (롱노트 ${ln}, 1P ${k1}+${s1}, 2P ${k2}+${s2})` : `${notes}개 (롱노트 ${ln}, 스크래치 ${sc})`],
+    ['숨김 · 지뢰', `${hid}개 · ${mine}개`],
+    ['BGM · BGA', `${bgm}개 · ${bga}개`],
     ['길이', fmtTime(A.timing.beatToTime(A.lastBeat || 0))],
     ['BPM', bpmMin === bpmMax ? fmtV(bpmMin) : `${fmtV(bpmMin)} ~ ${fmtV(bpmMax)}`],
     ['키음', `${A.st.wavs.size}개 정의` + (ld.total ? ` · ${ld.ok}/${ld.total} 불러옴` : '') + (ld.missing ? ` · <span style="color:var(--bad)">없음 ${ld.missing}</span>` : '') + (ld.fail ? ` · <span style="color:var(--bad)">읽기 실패 ${ld.fail}</span>` : '')],
@@ -2148,7 +2295,7 @@ function renderInfo() {
   ];
   const warn = [];
   if (A.conflicts) warn.push(`겹친 노트 ${A.conflicts}개 (빨간 테두리) — 저장 전에 정리해 주세요`);
-  if (A.doc.hasP2) warn.push('2P/DP 채널 노트가 있습니다. 이 버전에서는 보이지 않지만 원본 그대로 저장됩니다.');
+  if (!A.dp && A.st.notes.some((n) => n.lane[0] === 'K' && n.lane[1] === '2')) warn.push('2P 노트가 있지만 SP 화면입니다. 툴바의 DP 버튼으로 2P 레인을 볼 수 있습니다(노트는 그대로 저장됩니다).');
   if (A.doc.lntype === 2) warn.push('#LNTYPE 2 파일입니다. 롱노트 채널은 편집하지 않고 원본 그대로 둡니다.');
   if (!A.fs.provider) warn.push('폴더 없이 연 상태라 키음을 재생할 수 없습니다.');
   bd.innerHTML = `<table>${rows.map(([a, b]) => `<tr><td>${a}</td><td>${b}</td></tr>`).join('')}</table>` + warn.map((w) => `<div class="w">! ${esc(w)}</div>`).join('');
@@ -2156,10 +2303,78 @@ function renderInfo() {
 function syncOptions() {
   $('#oName').checked = cfg.showName; $('#oFollow').checked = cfg.follow; $('#oBgm').checked = cfg.playBgm;
   $('#oKeys').checked = cfg.playKeys; $('#oBackup').checked = cfg.backup; $('#oConfirm').checked = cfg.confirmSave;
-  $('#snapChk').checked = cfg.snap; $('#lockChk').checked = !!cfg.lockH; $('#gridSel').value = String(cfg.grid); $('#zoomR').value = cfg.zoom; $('#volR').value = cfg.volume;
+  $('#snapChk').checked = cfg.snap; $('#lockChk').checked = !!cfg.lockH; $('#gridSel').value = String(cfg.grid); $('#zoomR').value = cfg.zoom; $('#zoomXR').value = cfg.zoomX || 1; $('#volR').value = cfg.volume;
 }
-function renderAllPanels() { renderHeader(); renderWavList(); renderBeatList(); renderBlocks(); renderInfo(); }
+function renderAllPanels() { renderHeader(); renderWavList(); renderBmpList(); renderBeatList(); renderBlocks(); renderInfo(); }
 
+/* BMP 목록 (BGA/LAYER/POOR 레인에서 쓰는 #BMPxx) */
+function renderBmpList() {
+  const el = $('#bmpList');
+  if (!A.st) { el.innerHTML = ''; $('#bmpCnt').textContent = ''; return; }
+  const q = $('#bmpQ').value.trim().toLowerCase(), defOnly = $('#bmpDef').checked;
+  const max = C.idMax(A.doc.base), parts = [], use = A.usageB || new Map();
+  for (let id = 0; id <= max; id++) {
+    const name = A.st.bmps.get(id) || '';
+    if ((defOnly || id === 0) && !name) continue;
+    const s = idS(id);
+    if (q && !(s.toLowerCase().includes(q) || name.toLowerCase().includes(q))) continue;
+    const miss = name && A.bmpMiss && A.bmpMiss.has(normPath(name).toLowerCase());
+    const cls = (id === A.curBmp ? ' cur' : '') + (!name ? ' empty' : '') + (miss ? ' miss' : '');
+    parts.push(`<div class="wr${cls}" data-id="${id}"><b>${s}</b><span title="${esc(name + (miss ? ' (파일 없음)' : ''))}">${esc(name) || '—'}</span><i>${use.get(id) || ''}</i></div>`);
+  }
+  const top = el.scrollTop;
+  el.innerHTML = parts.join('');
+  el.scrollTop = top;
+  $('#bmpCnt').textContent = `${A.st.bmps.size}개 정의`;
+}
+function markCurBmp(scroll) {
+  const el = $('#bmpList');
+  el.querySelectorAll('.wr.cur').forEach((r) => r.classList.remove('cur'));
+  const row = el.querySelector(`.wr[data-id="${A.curBmp}"]`);
+  if (row) { row.classList.add('cur'); if (scroll) row.scrollIntoView({ block: 'nearest' }); }
+  if (A.hover) A.hover.ghost = null;
+}
+function editBmpName(id, row) {
+  const span = row.querySelector('span'), before = A.st.bmps.get(id) || '';
+  const inp = document.createElement('input');
+  inp.type = 'text'; inp.value = before; inp.setAttribute('list', 'imgList'); inp.spellcheck = false;
+  span.replaceWith(inp); inp.focus(); inp.select();
+  let done = false;
+  const finish = (ok) => {
+    if (done) return; done = true;
+    const v = inp.value.trim();
+    if (ok && v !== before) commit({ type: 'bmp', id, before: before || undefined, after: v || undefined });
+    else renderBmpList();
+  };
+  inp.addEventListener('keydown', (e) => { e.stopPropagation(); if (e.key === 'Enter') finish(true); else if (e.key === 'Escape') finish(false); });
+  inp.addEventListener('blur', () => finish(true));
+}
+// 폴더에 BMP 파일이 있는지만 확인 (이미지는 읽지 않음)
+async function checkBmps() {
+  const P = A.fs.provider; A.bmpMiss = new Set();
+  if (!P || !A.st) { renderBmpList(); return; }
+  for (const name of new Set(A.st.bmps.values())) {
+    if (!name) continue;
+    let h = await P.find(name);
+    if (!h) { const stem = normPath(name).replace(/\.[^./]*$/, ''); for (const ext of ['.bmp', '.png', '.jpg', '.jpeg', '.gif', '.mpg', '.mpeg', '.mp4', '.wmv', '.avi', '.webm', '.m4v']) { h = await P.find(stem + ext); if (h) break; } }
+    if (!h) A.bmpMiss.add(normPath(name).toLowerCase());
+  }
+  renderBmpList();
+}
+// SP/DP 화면 전환 (파일 내용은 바꾸지 않음)
+function setDP(on, quiet) {
+  A.dp = !!on;
+  $('#bDP').classList.toggle('on', A.dp); $('#bDP').textContent = A.dp ? 'DP' : 'SP';
+  if (!A.dp) for (const n of [...A.sel]) if (n.lane[0] === 'K' && n.lane[1] === '2') A.sel.delete(n);
+  layout();
+  if (A.st) {
+    refresh();
+    const p2 = A.st.notes.some((n) => n.lane[0] === 'K' && n.lane[1] === '2');
+    if (!quiet) toast(A.dp ? 'DP 화면 (1P + 2P)' + (A.st.headers.get('PLAYER') !== '3' ? ' — 헤더의 플레이를 3 · DP로 바꾸는 것도 잊지 마세요' : '') : 'SP 화면' + (p2 ? ' — 2P 노트는 보이지 않지만 그대로 저장됩니다' : ''), 4000);
+  }
+}
+
+/* ── app/dialogs.js ── */
 /* ───────── 대화 상자 ───────── */
 function modal(title, body, buttons) {
   return new Promise((resolve) => {
@@ -2215,7 +2430,11 @@ function showHelp() {
 <tr><td>↑ ↓ / ← →</td><td>선택한 노트를 그리드 한 칸 위아래로 (Shift: 1/192) / 옆 레인으로</td></tr>
 <tr><td>PageUp · PageDown · Home · End</td><td>한 마디씩 · 처음 · 끝으로 스크롤</td></tr>
 <tr><td>F5 / F6, Space / F7</td><td>처음부터 재생 / 시작선부터 재생 / 정지</td></tr>
-<tr><td>G · H · + − · Ctrl+휠</td><td>스냅 켜고 끄기 · 옆으로만 이동 켜고 끄기 · 세로 확대 축소</td></tr></table>
+<tr><td>\\</td><td>오른쪽 패널 접기/펼치기 (패널 왼쪽 경계를 끌면 너비 조절)</td></tr>
+<tr><td>G · H · N</td><td>스냅 켜고 끄기 · 옆으로만 이동 · 쓸 노트 종류(일반→숨김→지뢰)</td></tr>
+<tr><td>+ − · Ctrl+휠</td><td>세로 확대 축소</td></tr>
+<tr><td>[ ] · Ctrl+Shift+휠</td><td>가로 확대 축소</td></tr></table>
+<h4>DP · BGA · 숨김 · 지뢰</h4><p>#PLAYER 3이거나 2P 노트가 있으면 DP 화면으로 엽니다. 툴바의 SP/DP 버튼으로 바꿀 수 있습니다. 가로 스크롤하면 플레이 영역은 고정되고 BGA·LAYER·POOR와 BGM 칼럼이 함께 움직입니다. BGA 레인에는 BMP 목록에서 고른 번호가 찍히고, BGA 노트는 BGA 레인끼리만 옮겨집니다. 숨김 노트는 흐리게, 지뢰는 진한 빨강(✕)으로 보이며 키 레인 안에서만 옮길 수 있습니다.</p>
 <h4>재생</h4><p>마디 번호 칸을 클릭하면 재생 시작선(초록)이 생깁니다. F6·Space는 시작선부터, 시작선이 없으면 화면 맨 아래 마디부터 재생합니다. 같은 키음이 다시 울리면 앞 소리는 끊깁니다(BMS 플레이어와 같은 방식). BPM 변화와 STOP도 반영합니다.</p>
 <h4>저장</h4><p>편집한 채널(BGM · BPM · STOP · 1P 키 · 롱노트 · 마디 길이)과 고친 헤더 · WAV 줄만 다시 쓰고, 나머지 줄(BGA, 2P, 숨김 노트, 지뢰, 주석, 모르는 명령, #RANDOM 블록)은 원본 바이트 그대로 둡니다. 저장 직전에 결과를 다시 읽어 편집 내용과 일치하는지 확인하고, 바뀐 줄을 보여 줍니다. 기본 인코딩은 Shift-JIS입니다.</p>
 <h4>복사 · 붙여넣기</h4><p>iBMSC 클립보드 형식("iBMSC Clipboard Data")을 씁니다. iBMSC에서 복사한 노트나 ibmsc_clip.py가 만든 텍스트를 붙여넣을 수 있고, 여기서 복사한 노트를 iBMSC에 붙여넣을 수도 있습니다. 위치는 마우스가 있는 마디의 시작점 기준입니다.</p>
@@ -2223,6 +2442,7 @@ function showHelp() {
 </div>`, [{ label: '닫기', value: null, primary: true }]);
 }
 
+/* ── app/files.js ── */
 /* ───────── 파일 (폴더 접근) ───────── */
 function makeDirProvider(dir) {
   const ls = new Map();
@@ -2363,6 +2583,7 @@ async function refreshFileList(select) {
   sel.disabled = !opts.length;
   sel.value = select !== undefined ? select : (A.fileName || '');
   $('#audioList').innerHTML = all.filter((n) => AUDIO_EXT.test(n)).sort().map((n) => `<option value="${esc(n)}">`).join('');
+  $('#imgList').innerHTML = all.filter((n) => /\.(bmp|png|jpe?g|gif|mpe?g|mp4|wmv|avi|webm|m4v)$/i.test(n)).sort().map((n) => `<option value="${esc(n)}">`).join('');
 }
 async function openChart(name, enc) {
   const P = A.fs.provider;
@@ -2377,7 +2598,9 @@ function loadDoc(doc, name) {
   A.doc = doc; A.st = C.stateFromDoc(doc); A.fileName = name;
   A.undo = []; A.redo = []; A.sel = new Set(); A.blkIdx = 0; A.beatSel = new Set(); A.playMark = null; A.drag = null; A.hover = null;
   A.curWav = A.st.wavs.size ? Math.min(...A.st.wavs.keys()) : 1;
+  A.curBmp = [...A.st.bmps.keys()].filter((k) => k > 0).sort((a, b) => a - b)[0] || 1;
   A.view.bottom = 0; A.view.left = 0;
+  setDP((A.st.headers.get('PLAYER') || '').trim() === '3' || doc.hasP2, true); // 자동 판단
   $('#empty').hidden = true;
   setDirty(false);
   refresh();
@@ -2385,9 +2608,9 @@ function loadDoc(doc, name) {
   syncScroll();
   refreshFileList(name);
   $('#encSel').value = doc.enc;
-  startPreload();
+  startPreload(); checkBmps();
   const notes = [];
-  if (doc.hasP2) notes.push('2P/DP 노트는 보이지 않지만 그대로 보존됩니다');
+  if (A.dp) notes.push('DP 패턴으로 열었습니다');
   if (doc.lntype === 2) notes.push('LNTYPE 2 롱노트는 편집하지 않고 보존합니다');
   if (/\.pms$/i.test(name)) notes.push('PMS 파일은 7키 레인으로 표시됩니다');
   if (doc.encAmbiguous) notes.push('인코딩을 Shift-JIS로 추정했습니다. 글자가 깨져 보이면 아래쪽 인코딩을 바꿔 보세요');
@@ -2399,6 +2622,7 @@ function newChart(skipConfirm) {
   confirmDiscard().then((ok) => { if (ok) go(); });
 }
 
+/* ── app/save.js ── */
 /* ───────── 저장 ───────── */
 function suggestName() {
   if (A.fileName) return A.fileName.replace(/(\.[^.]+)$/, '_copy$1');
@@ -2502,6 +2726,7 @@ async function writeOut(name, res, enc) {
   toast(wrote ? `저장했습니다: ${name}${backup}` : `다운로드했습니다: ${name}`, 4000);
 }
 
+/* ── app/audio.js ── */
 /* ───────── 소리 ───────── */
 const Au = {
   ctx: null, master: null, gen: 0, prom: new Map(), state: new Map(), buf: new Map(), preview: null, play: null, active: 0, queue: [],
@@ -2603,7 +2828,7 @@ async function play(fromBeat) {
   const T = A.timing, t0 = T.beatToTime(fromBeat);
   let evs = [];
   for (const n of A.st.notes) {
-    if (!isSound(n.lane)) continue;
+    if (!isSound(n.lane) || n.kind) continue; // 숨김·지뢰 노트는 자동 재생 소리 없음
     if (n.lane[0] === 'B' ? !cfg.playBgm : !cfg.playKeys) continue;
     evs.push({ t: T.beatToTime(n.b) - t0, id: n.v });
   }
@@ -2662,6 +2887,7 @@ function stopPlay() {
 }
 function setPlayButtons(on) { $('#pStop').classList.toggle('on', !!on); }
 
+/* ── app/drop.js ── */
 /* ───────── 끌어다 놓기 ───────── */
 function bindDrop() {
   let depth = 0;
@@ -2698,14 +2924,16 @@ function toast(msg, ms) {
   clearTimeout(toastT); toastT = setTimeout(() => el.classList.remove('on'), ms || 2600);
 }
 
+/* ── app/main.js ── */
 /* ───────── 시작 ───────── */
 function init() {
   A.cv = $('#cv'); A.ctx = A.cv.getContext('2d'); A.sc = $('#sc'); A.sp = $('#sp');
+  cfg.lockH = true; // '옆으로만'은 열 때마다 기본으로 켬
   layout();
   $('#gridSel').innerHTML = GRIDS.map((g) => `<option value="${g}">${g}</option>`).join('');
   $('#encSel').innerHTML = ENC_LIST.map((e) => `<option value="${e}">${C.ENC_LABEL[e]}</option>`).join('');
   syncOptions(); setMode('select'); renderAllPanels(); setDirty(false);
-  for (const id of ['pnHdr', 'pnWav', 'pnBeat', 'pnExp', 'pnView', 'pnInfo']) {
+  for (const id of ['pnHdr', 'pnWav', 'pnBmp', 'pnBeat', 'pnExp', 'pnView', 'pnInfo']) {
     const el = $('#' + id);
     if (cfg.panels && id in cfg.panels) el.open = !!cfg.panels[id];
     el.addEventListener('toggle', () => { cfg.panels = cfg.panels || {}; cfg.panels[id] = el.open; saveCfg(); });
@@ -2724,6 +2952,7 @@ function init() {
   $('#snapChk').addEventListener('change', (e) => { cfg.snap = e.target.checked; saveCfg(); });
   $('#lockChk').addEventListener('change', (e) => { cfg.lockH = e.target.checked; saveCfg(); });
   $('#zoomR').addEventListener('input', (e) => setZoom(+e.target.value));
+  $('#zoomXR').addEventListener('input', (e) => setZoomX(+e.target.value));
   $('#volR').addEventListener('input', (e) => { cfg.volume = +e.target.value; saveCfg(); if (Au.master) Au.master.gain.value = cfg.volume; });
   const opt = (id, key, after) => $(id).addEventListener('change', (e) => { cfg[key] = e.target.checked; saveCfg(); if (after) after(); });
   opt('#oName', 'showName', draw); opt('#oFollow', 'follow'); opt('#oBgm', 'playBgm'); opt('#oKeys', 'playKeys'); opt('#oBackup', 'backup'); opt('#oConfirm', 'confirmSave');
@@ -2761,6 +2990,32 @@ function init() {
   $('#hdrBd').addEventListener('keydown', (e) => { if (e.key === 'Enter' && e.target.tagName === 'INPUT') e.target.blur(); });
   $('#wavList').addEventListener('click', (e) => { const r = e.target.closest('.wr'); if (!r || e.target.tagName === 'INPUT') return; A.curWav = +r.dataset.id; markCurWav(false); preview(A.curWav); });
   $('#wavList').addEventListener('dblclick', (e) => { const r = e.target.closest('.wr'); if (r && A.st && e.target.tagName !== 'INPUT') editWavName(+r.dataset.id, r); });
+  // 오른쪽 패널: 너비 조절 · 접기/펼치기
+  const side = $('#side'), split = $('#split');
+  const applySide = () => { side.style.width = (cfg.sideW || 340) + 'px'; document.body.classList.toggle('side-off', !!cfg.sideOff); $('#sideTgl').textContent = cfg.sideOff ? '◀' : '▶'; };
+  const toggleSide = () => { cfg.sideOff = !cfg.sideOff; saveCfg(); applySide(); };
+  applySide();
+  A.toggleSide = toggleSide;
+  $('#sideTgl').addEventListener('click', (e) => { e.stopPropagation(); toggleSide(); A.sc.focus({ preventScroll: true }); });
+  $('#sideTgl').addEventListener('mousedown', (e) => e.stopPropagation());
+  split.addEventListener('dblclick', toggleSide);
+  split.addEventListener('mousedown', (e) => {
+    if (cfg.sideOff || e.button !== 0) return;
+    e.preventDefault(); split.classList.add('drag');
+    const x0 = e.clientX, w0 = side.getBoundingClientRect().width;
+    const mv = (ev) => { cfg.sideW = Math.round(Math.min(Math.max(220, w0 - (ev.clientX - x0)), Math.max(260, window.innerWidth - 400))); side.style.width = cfg.sideW + 'px'; };
+    const up = () => { split.classList.remove('drag'); window.removeEventListener('mousemove', mv); window.removeEventListener('mouseup', up); saveCfg(); };
+    window.addEventListener('mousemove', mv); window.addEventListener('mouseup', up);
+  });
+  $('#bmpList').addEventListener('click', (e) => { const r = e.target.closest('.wr'); if (!r || e.target.tagName === 'INPUT') return; A.curBmp = +r.dataset.id; markCurBmp(false); });
+  $('#bmpList').addEventListener('dblclick', (e) => { const r = e.target.closest('.wr'); if (r && A.st && e.target.tagName !== 'INPUT') editBmpName(+r.dataset.id, r); });
+  $('#bmpQ').addEventListener('input', () => { clearTimeout(wavRenderT); wavRenderT = setTimeout(renderBmpList, 120); });
+  $('#bmpDef').addEventListener('change', renderBmpList);
+  $('#bDP').addEventListener('click', () => { setDP(!A.dp); A.sc.focus({ preventScroll: true }); });
+  const setKind = (k) => { A.noteKind = k; $('#kindSel').value = k; $('#mineVal').hidden = k !== 'm'; if (A.hover) A.hover.ghost = null; draw(); };
+  $('#kindSel').addEventListener('change', (e) => { setKind(e.target.value); A.sc.focus({ preventScroll: true }); });
+  $('#mineVal').addEventListener('change', (e) => { const v = C.idParse(e.target.value.trim(), A.doc ? A.doc.base : 36); if (v > 0) A.mineVal = v; else { e.target.value = idS(A.mineVal || 1); toast('지뢰 값은 01~ZZ로 넣어 주세요'); } });
+  A.setKind = setKind;
   $('#wavQ').addEventListener('input', () => { clearTimeout(wavRenderT); wavRenderT = setTimeout(renderWavList, 120); });
   $('#wavDef').addEventListener('change', renderWavList);
   $('#beatList').addEventListener('click', onBeatClick);
@@ -2831,11 +3086,13 @@ function init() {
   resize();
 }
 
+/* ── app/_export.js ── */
 window.BMSApp = {
   A, cfg, Au, loadDoc, useProvider, makeListProvider, makeDirProvider, commit, undo, redo, save, play, stopPlay, setMode, pasteText, copySel, nudge,
   refresh, setZoom, setBottom, hereBeat, serialize: () => C.serialize(A.doc, A.st, { encoding: A.doc.enc }),
 };
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+
 })();
 </script>
 </body>

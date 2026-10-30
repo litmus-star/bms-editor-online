@@ -1,0 +1,239 @@
+/* ───────── 오른쪽 패널 ───────── */
+const HDR_FIELDS = [
+  ['TITLE', '제목'], ['SUBTITLE', '부제'], ['ARTIST', '아티스트'], ['SUBARTIST', '서브 아티스트'], ['GENRE', '장르'],
+  ['BPM', '시작 BPM'], ['PLAYLEVEL', '레벨'],
+  ['PLAYER', '플레이', [['', '(없음)'], ['1', '1 · SP'], ['2', '2 · Couple'], ['3', '3 · DP'], ['4', '4 · Battle']]],
+  ['RANK', '판정 RANK', [['', '(없음)'], ['0', '0 · VERY HARD'], ['1', '1 · HARD'], ['2', '2 · NORMAL'], ['3', '3 · EASY'], ['4', '4 · VERY EASY']]],
+  ['DIFFICULTY', '난이도', [['', '(없음)'], ['1', '1 · BEGINNER'], ['2', '2 · NORMAL'], ['3', '3 · HYPER'], ['4', '4 · ANOTHER'], ['5', '5 · INSANE']]],
+  ['TOTAL', 'TOTAL'], ['STAGEFILE', 'STAGEFILE'], ['BANNER', 'BANNER'], ['BACKBMP', 'BACKBMP'], ['PREVIEW', 'PREVIEW'], ['COMMENT', 'COMMENT'],
+];
+function renderHeader() {
+  const bd = $('#hdrBd');
+  if (!A.st) { bd.innerHTML = '<div class="dim">파일을 열면 표시됩니다</div>'; return; }
+  let h = '<div class="form">';
+  for (const [k, label, opts] of HDR_FIELDS) {
+    const v = A.st.headers.get(k) || '';
+    h += `<label for="h_${k}">${esc(label)}</label>`;
+    if (opts) {
+      const o = opts.slice();
+      if (v !== '' && !o.some((x) => x[0] === v)) o.push([v, v]);
+      h += `<select id="h_${k}" data-k="${k}">${o.map(([ov, ol]) => `<option value="${esc(ov)}"${ov === v ? ' selected' : ''}>${esc(ol)}</option>`).join('')}</select>`;
+    } else h += `<input id="h_${k}" type="text" data-k="${k}" value="${esc(v)}" spellcheck="false">`;
+  }
+  h += '</div>';
+  const ro = [];
+  for (const k of ['LNTYPE', 'LNOBJ', 'BASE']) if (A.st.headers.get(k)) ro.push(`#${k} ${A.st.headers.get(k)}`);
+  bd.innerHTML = h + (ro.length ? `<div class="hint">${esc(ro.join(' · '))} — 읽기 전용</div>` : '');
+}
+function onHeaderChange(e) {
+  const k = e.target.dataset.k;
+  if (!k || !A.st) return;
+  const v = e.target.value.trim(), before = A.st.headers.get(k);
+  if ((before || '') === v) return;
+  commit({ type: 'hdr', key: k, before, after: v });
+}
+
+let wavRenderT = 0;
+function renderWavList() {
+  const el = $('#wavList');
+  if (!A.st) { el.innerHTML = ''; $('#wavCnt').textContent = ''; return; }
+  const q = $('#wavQ').value.trim().toLowerCase(), defOnly = $('#wavDef').checked;
+  const max = C.idMax(A.doc.base), parts = [];
+  for (let id = 1; id <= max; id++) {
+    const name = A.st.wavs.get(id) || '';
+    if (defOnly && !name) continue;
+    const s = idS(id);
+    if (q && !(s.toLowerCase().includes(q) || name.toLowerCase().includes(q))) continue;
+    const use = A.usage.get(id) || 0;
+    const stt = name ? Au.state.get(wavKey(name)) : '';
+    const cls = (id === A.curWav ? ' cur' : '') + (!name ? ' empty' : '') + (stt === 'missing' || stt === 'fail' ? ' miss' : '');
+    const tip = stt === 'missing' ? ' (파일 없음)' : stt === 'fail' ? ' (읽기 실패)' : '';
+    parts.push(`<div class="wr${cls}" data-id="${id}"><b>${s}</b><span title="${esc(name + tip)}">${esc(name) || '—'}</span><i>${use || ''}</i></div>`);
+  }
+  const top = el.scrollTop;
+  el.innerHTML = parts.join('');
+  el.scrollTop = top;
+  $('#wavCnt').textContent = `${A.st.wavs.size}개 정의`;
+}
+function markCurWav(scroll) {
+  const el = $('#wavList');
+  el.querySelectorAll('.wr.cur').forEach((r) => r.classList.remove('cur'));
+  const row = el.querySelector(`.wr[data-id="${A.curWav}"]`);
+  if (row) { row.classList.add('cur'); if (scroll) row.scrollIntoView({ block: 'nearest' }); }
+  if (A.hover) A.hover.ghost = null;
+}
+function editWavName(id, row) {
+  const span = row.querySelector('span'), before = A.st.wavs.get(id) || '';
+  const inp = document.createElement('input');
+  inp.type = 'text'; inp.value = before; inp.setAttribute('list', 'audioList'); inp.spellcheck = false;
+  span.replaceWith(inp); inp.focus(); inp.select();
+  let done = false;
+  const finish = (ok) => {
+    if (done) return; done = true;
+    const v = inp.value.trim();
+    if (ok && v !== before) commit({ type: 'wav', id, before: before || undefined, after: v || undefined });
+    else renderWavList();
+  };
+  inp.addEventListener('keydown', (e) => { e.stopPropagation(); if (e.key === 'Enter') finish(true); else if (e.key === 'Escape') finish(false); });
+  inp.addEventListener('blur', () => finish(true));
+}
+
+function renderBeatList() {
+  const el = $('#beatList');
+  if (!A.st) { el.innerHTML = ''; return; }
+  const parts = [];
+  for (let m = 0; m < 1000; m++) {
+    const g = A.st.meas.get(m);
+    parts.push(`<div class="br${A.beatSel.has(m) ? ' cur' : ''}${g ? ' mod' : ''}" data-m="${m}"><b>${C.pad3(m)}</b><span>${g ? beatLabel(g.r) : '4/4'}</span><i>${g ? esc(g.str) : ''}</i></div>`);
+  }
+  const top = el.scrollTop;
+  el.innerHTML = parts.join('');
+  el.scrollTop = top;
+}
+function onBeatClick(e) {
+  const row = e.target.closest('.br'); if (!row || !A.st) return;
+  const m = +row.dataset.m;
+  if (e.shiftKey && A.beatAnchor >= 0) { const [a, b] = [Math.min(A.beatAnchor, m), Math.max(A.beatAnchor, m)]; for (let i = a; i <= b; i++) A.beatSel.add(i); }
+  else if (e.ctrlKey || e.metaKey) { if (A.beatSel.has(m)) A.beatSel.delete(m); else A.beatSel.add(m); A.beatAnchor = m; }
+  else { A.beatSel = new Set([m]); A.beatAnchor = m; }
+  renderBeatList();
+  setBottom(Math.max(0, A.ms.Sf[m] - 0.5));
+}
+function setMeasureLen(r) {
+  const ms = [...A.beatSel];
+  if (!ms.length) { toast('박자를 바꿀 마디를 목록에서 먼저 고르세요'); return; }
+  const str = C.lenStr(r), rr = C.parseMeasureLen(str);
+  const before = new Map(), after = new Map();
+  for (const m of ms) { before.set(m, A.st.meas.get(m) || null); after.set(m, C.req(rr, R1) ? null : { str, r: rr }); }
+  const newMeas = new Map(A.st.meas);
+  for (const [m, g] of after) { if (g) newMeas.set(m, g); else newMeas.delete(m); }
+  // 확장 블록 안 데이터도 같은 박 위치를 유지하도록 함께 고침 (한 번에 실행 취소)
+  const list = [{ type: 'meas', before, after }];
+  A.st.blocks.forEach((t, i) => { const nt = C.retimeBlockText(t, A.st.meas, newMeas); if (nt !== t) list.push({ type: 'blk', i, before: t, after: nt }); });
+  commit(list.length > 1 ? { list } : list[0]);
+  toast(`마디 ${ms.length}개를 ${beatLabel(rr)}(으)로 바꿨습니다`);
+}
+
+function renderBlocks() {
+  const tabs = $('#blkTabs'), tx = $('#blkTx');
+  const n = A.st ? A.st.blocks.length : 0;
+  if (A.blkIdx >= n) A.blkIdx = Math.max(0, n - 1);
+  tabs.innerHTML = n ? A.st.blocks.map((t, i) => `<button data-i="${i}" class="${i === A.blkIdx ? 'on' : ''}">블록 ${i + 1}${t && t.trim() ? '' : ' (빔)'}</button>`).join('') : '<span class="dim">확장 블록이 없습니다</span>';
+  tx.value = n ? (A.st.blocks[A.blkIdx] || '') : '';
+  tx.disabled = !n;
+  $('#blkApply').disabled = $('#blkDel').disabled = !n;
+  $('#blkNew').disabled = !A.st;
+  const live = A.st ? A.st.blocks.filter((t) => t && t.trim()).length : 0;
+  $('#expCnt').textContent = live ? `${live}개` : '';
+}
+
+let infoT = 0;
+function scheduleInfo() { clearTimeout(infoT); infoT = setTimeout(() => { renderInfo(); renderWavList(); renderBmpList(); }, 120); }
+function renderInfo() {
+  const bd = $('#infoBd');
+  if (!A.st) { bd.innerHTML = '<div class="dim">파일을 열면 표시됩니다</div>'; return; }
+  let notes = 0, ln = 0, sc = 0, bgm = 0, hid = 0, mine = 0, p2 = 0, bga = 0, k1 = 0, s1 = 0, k2 = 0, s2 = 0, bpmMin = Infinity, bpmMax = -Infinity;
+  const usage = new Map(), usageB = new Map();
+  for (const n of A.st.notes) {
+    if (isKey(n.lane)) {
+      if (n.kind === 'h') hid++; else if (n.kind === 'm') mine++;
+      else { notes++; if (n.lb > 0) ln++; if (n.lane === 'K16' || n.lane === 'K26') sc++; if (n.lane[1] === '2') p2++; const isSc = n.lane === 'K16' || n.lane === 'K26'; if (n.lane[1] === '2') { if (isSc) s2++; else k2++; } else if (isSc) s1++; else k1++; }
+    } else if (n.lane[0] === 'B') bgm++;
+    else if (n.lane[0] === 'G') { bga++; usageB.set(n.v, (usageB.get(n.v) || 0) + 1); }
+    if (isSound(n.lane) && n.kind !== 'm') usage.set(n.v, (usage.get(n.v) || 0) + 1);
+  }
+  A.usageB = usageB;
+  for (const s of A.timing.segs) { if (s.bpm < bpmMin) bpmMin = s.bpm; if (s.bpm > bpmMax) bpmMax = s.bpm; }
+  A.usage = usage;
+  const ld = loadCounts();
+  const rows = [
+    ['파일', esc(A.fileName || '(새 파일 — 아직 저장 안 됨)')],
+    ['인코딩', `${C.ENC_LABEL[A.doc.enc]} · ${A.doc.eol === '\r\n' ? 'CRLF' : 'LF'}`],
+    ['노트', A.dp || p2 ? `${notes}개 (롱노트 ${ln}, 1P ${k1}+${s1}, 2P ${k2}+${s2})` : `${notes}개 (롱노트 ${ln}, 스크래치 ${sc})`],
+    ['숨김 · 지뢰', `${hid}개 · ${mine}개`],
+    ['BGM · BGA', `${bgm}개 · ${bga}개`],
+    ['길이', fmtTime(A.timing.beatToTime(A.lastBeat || 0))],
+    ['BPM', bpmMin === bpmMax ? fmtV(bpmMin) : `${fmtV(bpmMin)} ~ ${fmtV(bpmMax)}`],
+    ['키음', `${A.st.wavs.size}개 정의` + (ld.total ? ` · ${ld.ok}/${ld.total} 불러옴` : '') + (ld.missing ? ` · <span style="color:var(--bad)">없음 ${ld.missing}</span>` : '') + (ld.fail ? ` · <span style="color:var(--bad)">읽기 실패 ${ld.fail}</span>` : '')],
+    ['원본 보존', `편집하지 않는 데이터 줄 ${A.doc.unmanagedData}개 · 확장 블록 ${A.st.blocks.filter((t) => t && t.trim()).length}개`],
+  ];
+  const warn = [];
+  if (A.conflicts) warn.push(`겹친 노트 ${A.conflicts}개 (빨간 테두리) — 저장 전에 정리해 주세요`);
+  if (!A.dp && A.st.notes.some((n) => n.lane[0] === 'K' && n.lane[1] === '2')) warn.push('2P 노트가 있지만 SP 화면입니다. 툴바의 DP 버튼으로 2P 레인을 볼 수 있습니다(노트는 그대로 저장됩니다).');
+  if (A.doc.lntype === 2) warn.push('#LNTYPE 2 파일입니다. 롱노트 채널은 편집하지 않고 원본 그대로 둡니다.');
+  if (!A.fs.provider) warn.push('폴더 없이 연 상태라 키음을 재생할 수 없습니다.');
+  bd.innerHTML = `<table>${rows.map(([a, b]) => `<tr><td>${a}</td><td>${b}</td></tr>`).join('')}</table>` + warn.map((w) => `<div class="w">! ${esc(w)}</div>`).join('');
+}
+function syncOptions() {
+  $('#oName').checked = cfg.showName; $('#oFollow').checked = cfg.follow; $('#oBgm').checked = cfg.playBgm;
+  $('#oKeys').checked = cfg.playKeys; $('#oBackup').checked = cfg.backup; $('#oConfirm').checked = cfg.confirmSave;
+  $('#snapChk').checked = cfg.snap; $('#lockChk').checked = !!cfg.lockH; $('#gridSel').value = String(cfg.grid); $('#zoomR').value = cfg.zoom; $('#zoomXR').value = cfg.zoomX || 1; $('#volR').value = cfg.volume;
+}
+function renderAllPanels() { renderHeader(); renderWavList(); renderBmpList(); renderBeatList(); renderBlocks(); renderInfo(); }
+
+/* BMP 목록 (BGA/LAYER/POOR 레인에서 쓰는 #BMPxx) */
+function renderBmpList() {
+  const el = $('#bmpList');
+  if (!A.st) { el.innerHTML = ''; $('#bmpCnt').textContent = ''; return; }
+  const q = $('#bmpQ').value.trim().toLowerCase(), defOnly = $('#bmpDef').checked;
+  const max = C.idMax(A.doc.base), parts = [], use = A.usageB || new Map();
+  for (let id = 0; id <= max; id++) {
+    const name = A.st.bmps.get(id) || '';
+    if ((defOnly || id === 0) && !name) continue;
+    const s = idS(id);
+    if (q && !(s.toLowerCase().includes(q) || name.toLowerCase().includes(q))) continue;
+    const miss = name && A.bmpMiss && A.bmpMiss.has(normPath(name).toLowerCase());
+    const cls = (id === A.curBmp ? ' cur' : '') + (!name ? ' empty' : '') + (miss ? ' miss' : '');
+    parts.push(`<div class="wr${cls}" data-id="${id}"><b>${s}</b><span title="${esc(name + (miss ? ' (파일 없음)' : ''))}">${esc(name) || '—'}</span><i>${use.get(id) || ''}</i></div>`);
+  }
+  const top = el.scrollTop;
+  el.innerHTML = parts.join('');
+  el.scrollTop = top;
+  $('#bmpCnt').textContent = `${A.st.bmps.size}개 정의`;
+}
+function markCurBmp(scroll) {
+  const el = $('#bmpList');
+  el.querySelectorAll('.wr.cur').forEach((r) => r.classList.remove('cur'));
+  const row = el.querySelector(`.wr[data-id="${A.curBmp}"]`);
+  if (row) { row.classList.add('cur'); if (scroll) row.scrollIntoView({ block: 'nearest' }); }
+  if (A.hover) A.hover.ghost = null;
+}
+function editBmpName(id, row) {
+  const span = row.querySelector('span'), before = A.st.bmps.get(id) || '';
+  const inp = document.createElement('input');
+  inp.type = 'text'; inp.value = before; inp.setAttribute('list', 'imgList'); inp.spellcheck = false;
+  span.replaceWith(inp); inp.focus(); inp.select();
+  let done = false;
+  const finish = (ok) => {
+    if (done) return; done = true;
+    const v = inp.value.trim();
+    if (ok && v !== before) commit({ type: 'bmp', id, before: before || undefined, after: v || undefined });
+    else renderBmpList();
+  };
+  inp.addEventListener('keydown', (e) => { e.stopPropagation(); if (e.key === 'Enter') finish(true); else if (e.key === 'Escape') finish(false); });
+  inp.addEventListener('blur', () => finish(true));
+}
+// 폴더에 BMP 파일이 있는지만 확인 (이미지는 읽지 않음)
+async function checkBmps() {
+  const P = A.fs.provider; A.bmpMiss = new Set();
+  if (!P || !A.st) { renderBmpList(); return; }
+  for (const name of new Set(A.st.bmps.values())) {
+    if (!name) continue;
+    let h = await P.find(name);
+    if (!h) { const stem = normPath(name).replace(/\.[^./]*$/, ''); for (const ext of ['.bmp', '.png', '.jpg', '.jpeg', '.gif', '.mpg', '.mpeg', '.mp4', '.wmv', '.avi', '.webm', '.m4v']) { h = await P.find(stem + ext); if (h) break; } }
+    if (!h) A.bmpMiss.add(normPath(name).toLowerCase());
+  }
+  renderBmpList();
+}
+// SP/DP 화면 전환 (파일 내용은 바꾸지 않음)
+function setDP(on, quiet) {
+  A.dp = !!on;
+  $('#bDP').classList.toggle('on', A.dp); $('#bDP').textContent = A.dp ? 'DP' : 'SP';
+  if (!A.dp) for (const n of [...A.sel]) if (n.lane[0] === 'K' && n.lane[1] === '2') A.sel.delete(n);
+  layout();
+  if (A.st) {
+    refresh();
+    const p2 = A.st.notes.some((n) => n.lane[0] === 'K' && n.lane[1] === '2');
+    if (!quiet) toast(A.dp ? 'DP 화면 (1P + 2P)' + (A.st.headers.get('PLAYER') !== '3' ? ' — 헤더의 플레이를 3 · DP로 바꾸는 것도 잊지 마세요' : '') : 'SP 화면' + (p2 ? ' — 2P 노트는 보이지 않지만 그대로 저장됩니다' : ''), 4000);
+  }
+}
