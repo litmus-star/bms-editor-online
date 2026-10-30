@@ -1,9 +1,14 @@
 /* ───────── 소리 ───────── */
 const Au = {
   ctx: null, master: null, gen: 0, prom: new Map(), state: new Map(), buf: new Map(), preview: null, play: null, active: 0, queue: [],
-  reset() { this.gen++; this.prom.clear(); this.state.clear(); this.buf.clear(); this.queue = []; },
+  stat: null,
+  reset() { this.gen++; this.prom.clear(); this.state.clear(); this.buf.clear(); this.queue = []; this.stat = newStat(); },
 };
 const wavKey = (name) => normPath(name).toLowerCase();
+// 키음 로딩 측정: 단계별 시간(ms)의 합계. 여러 개가 동시에 돌기 때문에 합계는 실제 걸린 시간보다 클 수 있다.
+function newStat() { return { t0: 0, t1: 0, n: 0, wait: 0, find: 0, read: 0, decode: 0, bytes: 0, pcm: 0, dur: 0, peak: 0, ext: {}, slow: [] }; }
+Au.stat = newStat();
+const nowMs = () => performance.now();
 function ensureCtx(resume) {
   if (!Au.ctx) {
     const AC = window.AudioContext || window.webkitAudioContext;
@@ -22,29 +27,41 @@ function limited(fn) {
       finally { Au.active--; const nx = Au.queue.shift(); if (nx) nx(); }
     };
     if (Au.active < 6) run(); else Au.queue.push(run);
+    if (Au.stat && Au.active > Au.stat.peak) Au.stat.peak = Au.active;
   });
 }
 function loadWav(name) {
   const k = wavKey(name);
   if (Au.prom.has(k)) return Au.prom.get(k);
-  const gen = Au.gen;
+  const gen = Au.gen, S = Au.stat, tq = nowMs();
+  if (!S.t0) S.t0 = tq;
   Au.state.set(k, 'loading');
   const p = limited(async () => {
     const P = A.fs.provider;
     if (gen !== Au.gen) return null;
     if (!P) { Au.state.set(k, 'missing'); return null; }
+    const ta = nowMs(); S.wait += ta - tq;
     let h = await P.find(name);
     if (!h) {
       const stem = normPath(name).replace(/\.[^./]*$/, '');
       for (const ext of ['.wav', '.ogg', '.flac', '.mp3']) { h = await P.find(stem + ext); if (h) break; }
     }
     if (gen !== Au.gen) return null;
+    const tb = nowMs(); S.find += tb - ta;
     if (!h) { Au.state.set(k, 'missing'); return null; }
     try {
       const ab = await (await h.getFile()).arrayBuffer();
+      const tc = nowMs(), size = ab.byteLength;
       const ctx = ensureCtx(false); if (!ctx) return null;
       const buf = await ctx.decodeAudioData(ab);
+      const td = nowMs();
       if (gen !== Au.gen) return null;
+      S.read += tc - tb; S.decode += td - tc; S.n++; S.bytes += size; S.t1 = td;
+      S.pcm += buf.length * buf.numberOfChannels * 4; S.dur += buf.duration;
+      const ext = (h.name.match(/\.([^.]+)$/) || [, '?'])[1].toLowerCase();
+      const ex = S.ext[ext] || (S.ext[ext] = { n: 0, read: 0, decode: 0, bytes: 0 });
+      ex.n++; ex.read += tc - tb; ex.decode += td - tc; ex.bytes += size;
+      S.slow.push({ name: h.name, read: tc - tb, decode: td - tc, size }); if (S.slow.length > 40) { S.slow.sort((a, b) => b.read + b.decode - a.read - a.decode); S.slow.length = 5; }
       Au.buf.set(k, buf); Au.state.set(k, 'ok');
       return buf;
     } catch (e) { if (gen === Au.gen) Au.state.set(k, 'fail'); return null; }
@@ -78,6 +95,7 @@ function scheduleLoadStatus() {
     const c = loadCounts();
     $('#sLoad').textContent = !c.total ? '' : c.loading ? `키음 불러오는 중 ${c.ok + c.missing + c.fail}/${c.total}` : `키음 ${c.ok}/${c.total}` + (c.missing + c.fail ? ` · 문제 ${c.missing + c.fail}` : '');
     if (!c.loading) { renderWavList(); renderInfo(); }
+    renderDiag();
   }, 250);
 }
 function preview(id) {

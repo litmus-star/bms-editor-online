@@ -109,6 +109,11 @@
         <label class="chk"><input type="checkbox" id="oConfirm"> 저장할 때 바뀐 줄 확인 창 보기</label>
       </div></details>
       <details id="pnInfo" open><summary>정보</summary><div class="bd" id="infoBd"></div></details>
+      <details id="pnDiag"><summary>키음 로딩 측정</summary><div class="bd">
+        <pre id="diagBd"></pre>
+        <div class="row"><button id="diagRun">동시 처리 비교 테스트</button><button id="diagCopy">결과 복사</button></div>
+        <div class="hint">폴더를 열 때 키음을 불러오면서 단계별 시간을 잽니다. 비교 테스트는 키음 40개를 동시 1·2·4·8·16개로 다시 읽고 디코딩해서 걸린 시간을 비교합니다(편집 내용은 건드리지 않음). 결과 복사를 눌러 붙여넣어 주세요.</div>
+      </div></details>
     </aside>
   </main>
   <footer id="stb">

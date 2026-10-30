@@ -6,7 +6,7 @@ function init() {
   $('#gridSel').innerHTML = GRIDS.map((g) => `<option value="${g}">${g}</option>`).join('');
   $('#encSel').innerHTML = ENC_LIST.map((e) => `<option value="${e}">${C.ENC_LABEL[e]}</option>`).join('');
   syncOptions(); setMode('select'); renderAllPanels(); setDirty(false);
-  for (const id of ['pnHdr', 'pnWav', 'pnBmp', 'pnBeat', 'pnExp', 'pnView', 'pnInfo']) {
+  for (const id of ['pnHdr', 'pnWav', 'pnBmp', 'pnBeat', 'pnExp', 'pnView', 'pnInfo', 'pnDiag']) {
     const el = $('#' + id);
     if (cfg.panels && id in cfg.panels) el.open = !!cfg.panels[id];
     el.addEventListener('toggle', () => { cfg.panels = cfg.panels || {}; cfg.panels[id] = el.open; saveCfg(); });
@@ -133,6 +133,7 @@ function init() {
   });
   A.sc.addEventListener('wheel', onWheel, { passive: false });
   bindTouch();
+  bindDiag();
   if (cfg.sideOff === undefined && window.innerWidth < 1100) { cfg.sideOff = true; applySide(); } // 좁은 화면은 패널을 접고 시작
   document.addEventListener('keydown', onKey);
   document.addEventListener('copy', (e) => {

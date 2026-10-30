@@ -67,6 +67,7 @@ main { flex: 1; display: flex; min-height: 0; }
 #ctxMenu button { min-height: 42px; min-width: 64px; font-size: 15px; }
 body.touch #tb button, body.touch #tb select { min-height: 36px; }
 body.touch #split { width: 14px; }
+#diagBd { margin: 0 0 8px; white-space: pre-wrap; word-break: break-all; font: 11.5px/1.5 Consolas, Menlo, monospace; color: var(--text); }
 #drop { position: absolute; inset: 10px; border: 2px dashed var(--acc); border-radius: 10px; background: rgba(20, 18, 5, .85);
   display: flex; align-items: center; justify-content: center; font-size: 18px; color: var(--acc); pointer-events: none; }
 
@@ -251,6 +252,11 @@ body.side-off #side { display: none; }
         <label class="chk"><input type="checkbox" id="oConfirm"> 저장할 때 바뀐 줄 확인 창 보기</label>
       </div></details>
       <details id="pnInfo" open><summary>정보</summary><div class="bd" id="infoBd"></div></details>
+      <details id="pnDiag"><summary>키음 로딩 측정</summary><div class="bd">
+        <pre id="diagBd"></pre>
+        <div class="row"><button id="diagRun">동시 처리 비교 테스트</button><button id="diagCopy">결과 복사</button></div>
+        <div class="hint">폴더를 열 때 키음을 불러오면서 단계별 시간을 잽니다. 비교 테스트는 키음 40개를 동시 1·2·4·8·16개로 다시 읽고 디코딩해서 걸린 시간을 비교합니다(편집 내용은 건드리지 않음). 결과 복사를 눌러 붙여넣어 주세요.</div>
+      </div></details>
     </aside>
   </main>
   <footer id="stb">
@@ -2759,9 +2765,14 @@ async function writeOut(name, res, enc) {
 /* ───────── 소리 ───────── */
 const Au = {
   ctx: null, master: null, gen: 0, prom: new Map(), state: new Map(), buf: new Map(), preview: null, play: null, active: 0, queue: [],
-  reset() { this.gen++; this.prom.clear(); this.state.clear(); this.buf.clear(); this.queue = []; },
+  stat: null,
+  reset() { this.gen++; this.prom.clear(); this.state.clear(); this.buf.clear(); this.queue = []; this.stat = newStat(); },
 };
 const wavKey = (name) => normPath(name).toLowerCase();
+// 키음 로딩 측정: 단계별 시간(ms)의 합계. 여러 개가 동시에 돌기 때문에 합계는 실제 걸린 시간보다 클 수 있다.
+function newStat() { return { t0: 0, t1: 0, n: 0, wait: 0, find: 0, read: 0, decode: 0, bytes: 0, pcm: 0, dur: 0, peak: 0, ext: {}, slow: [] }; }
+Au.stat = newStat();
+const nowMs = () => performance.now();
 function ensureCtx(resume) {
   if (!Au.ctx) {
     const AC = window.AudioContext || window.webkitAudioContext;
@@ -2780,29 +2791,41 @@ function limited(fn) {
       finally { Au.active--; const nx = Au.queue.shift(); if (nx) nx(); }
     };
     if (Au.active < 6) run(); else Au.queue.push(run);
+    if (Au.stat && Au.active > Au.stat.peak) Au.stat.peak = Au.active;
   });
 }
 function loadWav(name) {
   const k = wavKey(name);
   if (Au.prom.has(k)) return Au.prom.get(k);
-  const gen = Au.gen;
+  const gen = Au.gen, S = Au.stat, tq = nowMs();
+  if (!S.t0) S.t0 = tq;
   Au.state.set(k, 'loading');
   const p = limited(async () => {
     const P = A.fs.provider;
     if (gen !== Au.gen) return null;
     if (!P) { Au.state.set(k, 'missing'); return null; }
+    const ta = nowMs(); S.wait += ta - tq;
     let h = await P.find(name);
     if (!h) {
       const stem = normPath(name).replace(/\.[^./]*$/, '');
       for (const ext of ['.wav', '.ogg', '.flac', '.mp3']) { h = await P.find(stem + ext); if (h) break; }
     }
     if (gen !== Au.gen) return null;
+    const tb = nowMs(); S.find += tb - ta;
     if (!h) { Au.state.set(k, 'missing'); return null; }
     try {
       const ab = await (await h.getFile()).arrayBuffer();
+      const tc = nowMs(), size = ab.byteLength;
       const ctx = ensureCtx(false); if (!ctx) return null;
       const buf = await ctx.decodeAudioData(ab);
+      const td = nowMs();
       if (gen !== Au.gen) return null;
+      S.read += tc - tb; S.decode += td - tc; S.n++; S.bytes += size; S.t1 = td;
+      S.pcm += buf.length * buf.numberOfChannels * 4; S.dur += buf.duration;
+      const ext = (h.name.match(/\.([^.]+)$/) || [, '?'])[1].toLowerCase();
+      const ex = S.ext[ext] || (S.ext[ext] = { n: 0, read: 0, decode: 0, bytes: 0 });
+      ex.n++; ex.read += tc - tb; ex.decode += td - tc; ex.bytes += size;
+      S.slow.push({ name: h.name, read: tc - tb, decode: td - tc, size }); if (S.slow.length > 40) { S.slow.sort((a, b) => b.read + b.decode - a.read - a.decode); S.slow.length = 5; }
       Au.buf.set(k, buf); Au.state.set(k, 'ok');
       return buf;
     } catch (e) { if (gen === Au.gen) Au.state.set(k, 'fail'); return null; }
@@ -2836,6 +2859,7 @@ function scheduleLoadStatus() {
     const c = loadCounts();
     $('#sLoad').textContent = !c.total ? '' : c.loading ? `키음 불러오는 중 ${c.ok + c.missing + c.fail}/${c.total}` : `키음 ${c.ok}/${c.total}` + (c.missing + c.fail ? ` · 문제 ${c.missing + c.fail}` : '');
     if (!c.loading) { renderWavList(); renderInfo(); }
+    renderDiag();
   }, 250);
 }
 function preview(id) {
@@ -3131,6 +3155,87 @@ function bindTouch() {
   act('#tbTouchOff', () => setTouchUI(false));
 }
 
+/* ── app/diag.js ── */
+/* ───────── 키음 로딩 측정 (병목 찾기) ───────── */
+const fmtMs = (ms) => ms >= 10000 ? (ms / 1000).toFixed(1) + '초' : Math.round(ms) + 'ms';
+const fmtMB = (b) => (b / 1048576).toFixed(1) + 'MB';
+A.diagCmp = null;
+function diagText() {
+  const S = Au.stat, P = A.fs.provider, lines = [];
+  const ctx = Au.ctx;
+  lines.push(`기기: 코어 ${navigator.hardwareConcurrency || '?'}개 · 메모리 ${navigator.deviceMemory ? navigator.deviceMemory + 'GB급' : '?'} · 오디오 ${ctx ? ctx.sampleRate + 'Hz' : '아직 안 만듦'}`);
+  lines.push(`폴더 방식: ${P ? ({ dir: '폴더 직접 접근', list: '파일 목록(폴더 선택 대체 방식)', single: '파일 하나' })[P.kind] || P.kind : '없음'}`);
+  lines.push(`브라우저: ${navigator.userAgent.replace(/^Mozilla\/5\.0 /, '').slice(0, 140)}`);
+  if (!S || !S.n) { lines.push('아직 측정한 키음이 없습니다.'); return lines.join('\n'); }
+  const wall = (S.t1 || nowMs()) - S.t0, work = S.read + S.decode + S.find;
+  lines.push('');
+  lines.push(`불러온 키음 ${S.n}개 · 파일 ${fmtMB(S.bytes)} → 푼 소리 ${fmtMB(S.pcm)} (총 ${Math.round(S.dur)}초 분량)`);
+  lines.push(`전체 걸린 시간: ${fmtMs(wall)} (동시 처리 최대 ${S.peak}개)`);
+  lines.push(`단계별 합계: 찾기 ${fmtMs(S.find)} · 파일 읽기 ${fmtMs(S.read)} · 디코딩 ${fmtMs(S.decode)}`);
+  lines.push(`키음 하나 평균: 읽기 ${(S.read / S.n).toFixed(1)}ms · 디코딩 ${(S.decode / S.n).toFixed(1)}ms`);
+  lines.push(`비율: 읽기 ${Math.round(S.read / work * 100)}% · 디코딩 ${Math.round(S.decode / work * 100)}% · 찾기 ${Math.round(S.find / work * 100)}%`);
+  for (const [e, x] of Object.entries(S.ext)) lines.push(`  .${e}: ${x.n}개 · 평균 읽기 ${(x.read / x.n).toFixed(1)}ms · 평균 디코딩 ${(x.decode / x.n).toFixed(1)}ms · 평균 ${(x.bytes / x.n / 1024).toFixed(0)}KB`);
+  const slow = [...S.slow].sort((a, b) => b.read + b.decode - a.read - a.decode).slice(0, 3);
+  if (slow.length) lines.push('가장 오래 걸린 것: ' + slow.map((s) => `${s.name}(읽기 ${Math.round(s.read)} / 디코딩 ${Math.round(s.decode)}ms, ${(s.size / 1024).toFixed(0)}KB)`).join(', '));
+  if (A.diagCmp) { lines.push(''); lines.push(...A.diagCmp); }
+  return lines.join('\n');
+}
+function renderDiag() {
+  const bd = $('#diagBd'); if (!bd) return;
+  bd.textContent = diagText();
+  const c = loadCounts();
+  $('#diagRun').disabled = !A.fs.provider || !A.st || c.loading > 0 || !!A.diagBusy;
+}
+// 동시 처리 개수를 바꿔 가며 같은 키음들을 다시 읽고 디코딩해서 걸린 시간을 비교한다
+async function runDiagCompare() {
+  if (A.diagBusy || !A.fs.provider || !A.st) return;
+  A.diagBusy = true; renderDiag();
+  const out = ['[동시 처리 비교 테스트]'];
+  try {
+    const ctx = ensureCtx(false), P = A.fs.provider;
+    const names = [...new Set(A.st.wavs.values())].filter((n) => n && Au.state.get(wavKey(n)) === 'ok');
+    // 앞에서부터 고르면 비슷한 소리만 몰릴 수 있어 고르게 뽑는다
+    const pick = (cnt, off) => { const r = []; const step = Math.max(1, Math.floor(names.length / cnt)); for (let i = off; i < names.length && r.length < cnt; i += step) r.push(names[i]); return r; };
+    const sample = pick(Math.min(40, names.length), 0);
+    const files = [];
+    for (const n of sample) { let h = await P.find(n); if (!h) { const st = normPath(n).replace(/\.[^./]*$/, ''); for (const e of ['.wav', '.ogg', '.flac', '.mp3']) { h = await P.find(st + e); if (h) break; } } if (h) files.push(h); }
+    const pool = async (items, conc, fn) => { let i = 0; const t0 = nowMs(); await Promise.all(Array.from({ length: Math.min(conc, items.length) }, async () => { while (i < items.length) { const it = items[i++]; await fn(it); } })); return nowMs() - t0; };
+    const levels = [1, 2, 4, 8, 16];
+    $('#diagBd').textContent = diagText() + '\n\n테스트 중… (파일 읽기)';
+    // 1) 파일 읽기만: 같은 파일을 여러 번 읽으면 캐시 때문에 빨라지므로 모든 단계에서 똑같이 한 번 미리 읽어 둔다
+    for (const h of files) await (await h.getFile()).arrayBuffer();
+    const bufs = [];
+    out.push(''); // 표본 정보는 아래에서 채움
+    for (const c of levels) {
+      const ms = await pool(files, c, async (h) => { await (await h.getFile()).arrayBuffer(); });
+      out.push(`  파일 읽기 · 동시 ${String(c).padStart(2)}개: ${fmtMs(ms)} (${(files.length / ms * 1000).toFixed(0)}개/초)`);
+      $('#diagBd').textContent = diagText() + '\n\n' + out.join('\n') + '\n테스트 중…';
+    }
+    for (const h of files) bufs.push(await (await h.getFile()).arrayBuffer());
+    const total = bufs.reduce((a, b) => a + b.byteLength, 0);
+    out[1] = `표본 ${files.length}개 · ${fmtMB(total)}`;
+    // 2) 디코딩만: 메모리에 올려 둔 데이터를 복사해서 디코딩 (decodeAudioData는 넘긴 데이터를 비워 버림)
+    for (const c of levels) {
+      const ms = await pool(bufs, c, async (b) => { try { await ctx.decodeAudioData(b.slice(0)); } catch (e) { /* 무시 */ } });
+      out.push(`  디코딩 · 동시 ${String(c).padStart(2)}개: ${fmtMs(ms)} (${(bufs.length / ms * 1000).toFixed(0)}개/초)`);
+      $('#diagBd').textContent = diagText() + '\n\n' + out.join('\n') + '\n테스트 중…';
+    }
+    out.push('  ※ 개/초가 동시 개수에 따라 늘면 병렬 처리가 효과 있음, 그대로면 효과 없음');
+  } catch (e) {
+    out.push('테스트 실패: ' + (e && e.message || e));
+  }
+  A.diagCmp = out; A.diagBusy = false; renderDiag();
+}
+function bindDiag() {
+  $('#diagRun').addEventListener('click', runDiagCompare);
+  $('#diagCopy').addEventListener('click', async () => {
+    const t = diagText();
+    try { await navigator.clipboard.writeText(t); toast('측정 결과를 복사했습니다'); }
+    catch (e) { const ta = document.createElement('textarea'); ta.value = t; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); toast('측정 결과를 복사했습니다'); } catch (e2) { toast('복사하지 못했습니다'); } ta.remove(); }
+  });
+  renderDiag();
+}
+
 /* ── app/main.js ── */
 /* ───────── 시작 ───────── */
 function init() {
@@ -3140,7 +3245,7 @@ function init() {
   $('#gridSel').innerHTML = GRIDS.map((g) => `<option value="${g}">${g}</option>`).join('');
   $('#encSel').innerHTML = ENC_LIST.map((e) => `<option value="${e}">${C.ENC_LABEL[e]}</option>`).join('');
   syncOptions(); setMode('select'); renderAllPanels(); setDirty(false);
-  for (const id of ['pnHdr', 'pnWav', 'pnBmp', 'pnBeat', 'pnExp', 'pnView', 'pnInfo']) {
+  for (const id of ['pnHdr', 'pnWav', 'pnBmp', 'pnBeat', 'pnExp', 'pnView', 'pnInfo', 'pnDiag']) {
     const el = $('#' + id);
     if (cfg.panels && id in cfg.panels) el.open = !!cfg.panels[id];
     el.addEventListener('toggle', () => { cfg.panels = cfg.panels || {}; cfg.panels[id] = el.open; saveCfg(); });
@@ -3267,6 +3372,7 @@ function init() {
   });
   A.sc.addEventListener('wheel', onWheel, { passive: false });
   bindTouch();
+  bindDiag();
   if (cfg.sideOff === undefined && window.innerWidth < 1100) { cfg.sideOff = true; applySide(); } // 좁은 화면은 패널을 접고 시작
   document.addEventListener('keydown', onKey);
   document.addEventListener('copy', (e) => {
