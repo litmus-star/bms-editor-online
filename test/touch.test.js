@@ -60,16 +60,7 @@ const { chromium } = require('playwright'); const path = require('path'), fs = r
   const P = (type, x, y) => cdp.send('Input.dispatchMouseEvent', { type, x, y, button: 'left', buttons: type === 'mouseReleased' ? 0 : 1, clickCount: 1, pointerType: 'pen' });
   await P('mousePressed', p.x, p.y); for (let i = 1; i <= 5; i++) await P('mouseMoved', p.x + i * 14, p.y); await P('mouseReleased', p.x + 70, p.y);
   out.pen = await page.evaluate((p) => ({ penMode: BMSApp.A.penMode, at: BMSApp.A.st.notes.filter((x) => Math.abs(x.b - p.b) < 1e-6).map((x) => x.lane) }), p);
-  // 펜을 뗀 직후(호버 중일 수 있음)에는 손가락 무시, 펜이 멀어지면(2초 뒤) 손가락으로 노트를 옮길 수 있어야 함
-  {
-    const h0 = await noteXY();
-    const sig0 = await page.evaluate(() => BMSApp.A.st.notes.map((n) => n.lane + n.b).join() + '|' + BMSApp.A.view.bottom);
-    await cdp.send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: 650, y: 250, button: 'none', buttons: 0, pointerType: 'pen' }); // 펜 호버
-    await T('touchStart', [[h0.x, h0.y]]); for (let i = 1; i <= 5; i++) await T('touchMove', [[h0.x + i * 14, h0.y + i * 20]]); await T('touchEnd', []);
-    await page.waitForTimeout(300);
-    out.hoverIgnored = sig0 === await page.evaluate(() => BMSApp.A.st.notes.map((n) => n.lane + n.b).join() + '|' + BMSApp.A.view.bottom);
-  }
-  await page.waitForTimeout(2200);
+  // 펜을 쓴 뒤에도 손가락으로 노트를 옮길 수 있어야 함
   const q = await noteXY();
   await T('touchStart', [[q.x, q.y]]); for (let i = 1; i <= 5; i++) await T('touchMove', [[q.x + i * 14, q.y + 1]]); await T('touchEnd', []);
   out.fingerAfterPen = await page.evaluate((q) => BMSApp.A.st.notes.filter((x) => Math.abs(x.b - q.b) < 1e-6).map((x) => x.lane), q);

@@ -38,7 +38,7 @@ function onDown(e) {
   const n = noteAt(h);
   if (e.button === 2) { if (n) commit({ del: [n], add: [] }); return; }
   if (e.button === 1) { // 가운데 버튼 드래그: 화면 잡고 끌기 (애프터이펙트 손 도구처럼)
-    A.drag = { kind: 'pan', sx: e.clientX, sy: e.clientY, b0: A.view.bottom, l0: A.view.left };
+    A.drag = { kind: 'pan', sx: e.clientX, sy: e.clientY, b0: A.view.bottom, l0: A.view.left, lockX: h.mx < A.fixW }; // 플레이 영역에서 시작하면 세로로만
     A.sc.style.cursor = 'grabbing'; return;
   }
   if (e.button !== 0) return;
@@ -117,7 +117,7 @@ function onMove(e) {
   if (d.kind === 'pan') {
     setBottom(d.b0 + (e.clientY - d.sy) / A.ppb);
     const maxL = Math.max(0, A.sc.scrollWidth - A.sc.clientWidth);
-    A.view.left = Math.min(maxL, Math.max(0, d.l0 - (e.clientX - d.sx)));
+    if (!d.lockX) A.view.left = Math.min(maxL, Math.max(0, d.l0 - (e.clientX - d.sx)));
     syncScroll(); draw(); return;
   }
   statusPos(h);

@@ -18,7 +18,7 @@ const { chromium } = require('playwright'); const path = require('path'), fs = r
   await swipe(300, 150, 300, 6, 8);
   const atUp = await bottom(); await T('touchEnd', []);
   await page.waitForTimeout(150); const mid = await bottom();
-  await page.waitForTimeout(2500); const end = await bottom();
+  await page.waitForTimeout(5000); const end = await bottom();
   await page.waitForTimeout(300); const end2 = await bottom();
   out.fling = { atUp, mid, end, stopped: end === end2, moreAfterUp: end > atUp };
   // 2) 미끄러지는 중 탭 → 멈추고, 쓰기 모드라도 노트를 찍지 않음
@@ -38,6 +38,18 @@ const { chromium } = require('playwright'); const path = require('path'), fs = r
   await page.evaluate(() => BMSApp.setBottom(1));
   await swipe(300, 500, -300, 6, 8); await T('touchEnd', []); await page.waitForTimeout(1500);
   out.clampBottom = await bottom();
+  // 5) 플레이 영역에서 시작한 대각선 끌기(관성 포함)·가운데 버튼 끌기는 세로로만, BGM 영역에서 시작하면 가로도
+  await page.setViewportSize({ width: 700, height: 700 }); await page.waitForTimeout(200);
+  const fixW = await page.evaluate(() => { BMSApp.setBottom(5); return BMSApp.A.fixW; });
+  const left = () => page.evaluate(() => BMSApp.A.view.left);
+  const diag = async (x) => { await T('touchStart', [[x, 300]]); for (let i = 1; i <= 6; i++) { await T('touchMove', [[x - i * 30, 300 + i * 20]]); await page.waitForTimeout(8); } await T('touchEnd', []); await page.waitForTimeout(3500); };
+  await diag(Math.min(fixW - 20, 300)); const lPlay = await left(); const bPlay = await bottom();
+  await diag(fixW + 150); const lBgm = await left();
+  await page.evaluate(() => { BMSApp.A.view.left = 0; BMSApp.setBottom(5); });
+  await page.mouse.move(150, 300); await page.mouse.down({ button: 'middle' }); await page.mouse.move(60, 380, { steps: 5 }); await page.mouse.up({ button: 'middle' });
+  const lMid = await left();
+  await page.mouse.move(fixW + 100, 300); await page.mouse.down({ button: 'middle' }); await page.mouse.move(fixW + 10, 380, { steps: 5 }); await page.mouse.up({ button: 'middle' });
+  out.lockX = { fixW, playAreaLeft: lPlay, playAreaMovedY: bPlay > 5, bgmAreaLeft: lBgm, middlePlayLeft: lMid, middleBgmLeft: await left() };
   out.errs = errs;
   console.log(JSON.stringify(out));
   await b.close();

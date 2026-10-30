@@ -1792,7 +1792,7 @@ function onDown(e) {
   const n = noteAt(h);
   if (e.button === 2) { if (n) commit({ del: [n], add: [] }); return; }
   if (e.button === 1) { // 가운데 버튼 드래그: 화면 잡고 끌기 (애프터이펙트 손 도구처럼)
-    A.drag = { kind: 'pan', sx: e.clientX, sy: e.clientY, b0: A.view.bottom, l0: A.view.left };
+    A.drag = { kind: 'pan', sx: e.clientX, sy: e.clientY, b0: A.view.bottom, l0: A.view.left, lockX: h.mx < A.fixW }; // 플레이 영역에서 시작하면 세로로만
     A.sc.style.cursor = 'grabbing'; return;
   }
   if (e.button !== 0) return;
@@ -1871,7 +1871,7 @@ function onMove(e) {
   if (d.kind === 'pan') {
     setBottom(d.b0 + (e.clientY - d.sy) / A.ppb);
     const maxL = Math.max(0, A.sc.scrollWidth - A.sc.clientWidth);
-    A.view.left = Math.min(maxL, Math.max(0, d.l0 - (e.clientX - d.sx)));
+    if (!d.lockX) A.view.left = Math.min(maxL, Math.max(0, d.l0 - (e.clientX - d.sx)));
     syncScroll(); draw(); return;
   }
   statusPos(h);
@@ -3094,6 +3094,7 @@ const TAP_MOVE = 8, LONG_MS = 500;
    FLING_FRICTION: 1ms마다 속도에 곱하는 값. 1에 가까울수록 오래 미끄러짐 (0.9985 ≈ 0.67초마다 속도가 1/e로, 1이면 영영 안 멈춤) */
 const FLING_FRICTION = 0.9985, FLING_MIN_START = 0.25, FLING_MIN_STOP = 0.02, FLING_MAX = 8, FLING_WINDOW = 100;
 const F = { on: false, vx: 0, vy: 0, t: 0, raf: 0 };
+// 플레이 영역(고정 구역)에서 시작한 끌기·관성은 세로로만: BGA·BGM 영역의 가로 스크롤이 같이 움직이지 않게
 function stopFling() { if (!F.on) return false; F.on = false; cancelAnimationFrame(F.raf); A.userScroll = false; return true; }
 function panBy(dx, dy) { // 손가락 기준 이동량(px): 아래로 끌면 앞(곡 시작 쪽)으로
   const maxL = Math.max(0, A.sc.scrollWidth - A.sc.clientWidth);
@@ -3110,7 +3111,7 @@ function startFling(s, tUp) {
   for (let i = hs.length - 1; i >= 0 && last.t - hs[i].t <= FLING_WINDOW; i--) first = hs[i];
   const dt = last.t - first.t; if (dt < 8) return;
   const clamp = (v) => Math.max(-FLING_MAX, Math.min(FLING_MAX, v));
-  F.vx = clamp((last.x - first.x) / dt); F.vy = clamp((last.y - first.y) / dt);
+  F.vx = s.lockX ? 0 : clamp((last.x - first.x) / dt); F.vy = clamp((last.y - first.y) / dt);
   if (Math.hypot(F.vx, F.vy) < FLING_MIN_START) return;
   F.on = true; F.t = performance.now(); A.userScroll = true;
   const step = (now) => {
@@ -3173,7 +3174,7 @@ function touchDown(e) {
   A.hover = { note: null, ghost: null, h }; // 붙여넣기 위치 기준
   const t0 = e.timeStamp || performance.now();
   T.st = { x: e.clientX, y: e.clientY, ev: e, h, note: n, phase: 'pending', b0: A.view.bottom, l0: A.view.left, stopTap: wasFling,
-    px: e.clientX, py: e.clientY, hist: [{ t: t0, x: e.clientX, y: e.clientY }] };
+    px: e.clientX, py: e.clientY, hist: [{ t: t0, x: e.clientX, y: e.clientY }], lockX: h.mx < A.fixW };
   clearTimeout(T.lp);
   if (!wasFling) T.lp = setTimeout(longPress, LONG_MS);
   if (n && !(h.lane && h.lane.type === 'meas')) { // 노트를 잡으면 바로 선택·이동 준비 (마우스와 같은 경로)
@@ -3192,7 +3193,7 @@ function touchMove(e) {
   if (s.phase === 'note' || s.phase === 'band') { onMove(fakeMouse(e)); return; }
   if (s.phase === 'pending' && moved) { s.phase = 'pan'; A.userScroll = true; }
   if (s.phase === 'pan') {
-    panBy(e.clientX - s.px, e.clientY - s.py);
+    panBy(s.lockX ? 0 : e.clientX - s.px, e.clientY - s.py);
     s.px = e.clientX; s.py = e.clientY;
     const t = e.timeStamp || performance.now();
     s.hist.push({ t, x: e.clientX, y: e.clientY });
