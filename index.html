@@ -247,6 +247,9 @@ body.side-off #side { display: none; }
       </div></details>
       <details id="pnView"><summary>보기 · 재생 · 저장</summary><div class="bd col">
         <label class="chk"><input type="checkbox" id="oName"> 노트에 키음 파일명 표시</label>
+        <label class="chk" title="SP 화면에서 스크래치 레인을 7키 오른쪽에 둡니다. 보이는 순서만 바뀌고 파일은 그대로입니다."><input type="checkbox" id="oScRight"> SP: 스크래치를 오른쪽에</label>
+        <label class="chk" title="끄면 BGA·LAYER·POOR 레인을 숨깁니다(노트는 그대로 저장)"><input type="checkbox" id="oHideBga"> BGA 영역 보이기</label>
+        <label class="chk" title="끄면 BPM·STOP 레인을 숨깁니다(노트와 박자 계산은 그대로)"><input type="checkbox" id="oHideBpm"> BPM · STOP 영역 보이기</label>
         <label class="chk"><input type="checkbox" id="oFollow"> 재생 중 화면 따라가기</label>
         <label class="chk"><input type="checkbox" id="oBgm"> 재생: BGM 레인 소리</label>
         <label class="chk"><input type="checkbox" id="oKeys"> 재생: 키 레인 소리</label>
@@ -1340,19 +1343,27 @@ function layout() {
   const zx = cfg.zoomX || 1, W = (w) => Math.max(14, Math.round(w * zx)); // 가로 확대
   const add = (o) => { if (o.type !== 'meas') o.w = W(o.w); o.x = x; x += o.w; L.push(o); };
   add({ key: 'M', type: 'meas', w: MEAS_W, label: '#' });
-  add({ key: 'BPM', type: 'bpm', col: 'bpm', w: 56, label: 'BPM' });
-  add({ key: 'STOP', type: 'stop', col: 'stop', w: 48, label: 'STOP' });
+  if (!cfg.hideBpm) { // BPM·STOP 영역 숨기기 (보기만, 노트와 박자 계산은 그대로)
+    add({ key: 'BPM', type: 'bpm', col: 'bpm', w: 56, label: 'BPM' });
+    add({ key: 'STOP', type: 'stop', col: 'stop', w: 48, label: 'STOP' });
+  }
   x += 8;
   if (A.pms) C.PMS_LANES.forEach((k) => add({ key: k.key, type: 'key', p: 0, col: k.col, w: 42, label: k.label }));
-  else C.KEY_LANES.filter((k) => k.p === 1).forEach((k, i) => add({ key: k.key, type: 'key', p: 1, col: i === 0 ? 'sc' : (i % 2 ? 'w' : 'b'), w: i === 0 ? 54 : 42, label: k.label }));
+  else {
+    const p1 = C.KEY_LANES.filter((k) => k.p === 1).map((k, i) => ({ key: k.key, type: 'key', p: 1, col: i === 0 ? 'sc' : (i % 2 ? 'w' : 'b'), w: i === 0 ? 54 : 42, label: k.label }));
+    if (cfg.scRight && !A.dp) p1.push(p1.shift()); // SP: 스크래치를 오른쪽에 (보이는 순서만, 채널은 그대로)
+    p1.forEach(add);
+  }
   if (A.dp && !A.pms) {
     x += 8;
     C.KEY_LANES.filter((k) => k.p === 2).forEach((k, i) => add({ key: k.key, type: 'key', p: 2, col: i === 7 ? 'sc' : (i % 2 ? 'b' : 'w'), w: i === 7 ? 54 : 42, label: k.label }));
   }
   x += 8;
   A.fixW = x; // 여기까지(플레이 영역)는 가로 스크롤해도 고정, 이후 BGA+BGM이 함께 스크롤
-  C.BGA_LANES.forEach((g) => add({ key: g.key, type: 'bga', col: 'bga', w: 50, label: g.label }));
-  x += 8;
+  if (!cfg.hideBga) { // BGA·LAYER·POOR 영역 숨기기 (보기만)
+    C.BGA_LANES.forEach((g) => add({ key: g.key, type: 'bga', col: 'bga', w: 50, label: g.label }));
+    x += 8;
+  }
   for (let k = 0; k < A.bgmCount; k++) add({ key: 'B' + k, type: 'bgm', col: 'bgm', w: 42, label: 'B' + (k + 1) });
   A.lanes = L; A.laneMap = new Map(L.map((l) => [l.key, l])); A.totalW = x + 30;
   A.grp = { snd: L.filter((l) => l.type === 'key' || l.type === 'bgm'), bga: L.filter((l) => l.type === 'bga') };
@@ -2396,6 +2407,7 @@ function renderInfo() {
 }
 function syncOptions() {
   $('#oName').checked = cfg.showName; $('#oFollow').checked = cfg.follow; $('#oBgm').checked = cfg.playBgm;
+  $('#oScRight').checked = !!cfg.scRight; $('#oHideBga').checked = !cfg.hideBga; $('#oHideBpm').checked = !cfg.hideBpm;
   $('#oKeys').checked = cfg.playKeys; $('#oBackup').checked = cfg.backup; $('#oConfirm').checked = cfg.confirmSave; $('#oOpenMode').value = cfg.openMode || 'auto';
   $('#snapChk').checked = cfg.snap; $('#lockChk').checked = !!cfg.lockH; $('#gridSel').value = String(cfg.grid); $('#zoomR').value = cfg.zoom; $('#zoomXR').value = cfg.zoomX || 1; $('#volR').value = cfg.volume;
 }
@@ -2463,7 +2475,7 @@ function setPlayMode(m, quiet) {
   A.dp = m === 'dp'; A.pms = m === 'pms';
   const b = $('#bDP'); b.classList.toggle('on', m !== 'sp'); b.textContent = m.toUpperCase();
   layout();
-  for (const n of [...A.sel]) if (n.lane[0] === 'K' && !A.laneMap.has(n.lane)) A.sel.delete(n); // 화면에서 사라진 레인의 선택은 해제
+  for (const n of [...A.sel]) if (!A.laneMap.has(n.lane)) A.sel.delete(n); // 화면에서 사라진 레인의 선택은 해제
   if (A.st) {
     refresh();
     const hiddenKeys = A.st.notes.filter((n) => n.lane[0] === 'K' && !A.laneMap.has(n.lane)).length;
@@ -3422,6 +3434,11 @@ function init() {
   $('#volR').addEventListener('input', (e) => { cfg.volume = +e.target.value; saveCfg(); if (Au.master) Au.master.gain.value = cfg.volume; });
   const opt = (id, key, after) => $(id).addEventListener('change', (e) => { cfg[key] = e.target.checked; saveCfg(); if (after) after(); });
   opt('#oName', 'showName', draw); opt('#oFollow', 'follow'); opt('#oBgm', 'playBgm'); opt('#oKeys', 'playKeys'); opt('#oBackup', 'backup'); opt('#oConfirm', 'confirmSave');
+  // 화면 배치 옵션: 레인을 다시 배치 (파일 내용은 그대로)
+  const relayout = () => setPlayMode(playMode(), true);
+  opt('#oScRight', 'scRight', relayout);
+  $('#oHideBga').addEventListener('change', (e) => { cfg.hideBga = !e.target.checked; saveCfg(); relayout(); });
+  $('#oHideBpm').addEventListener('change', (e) => { cfg.hideBpm = !e.target.checked; saveCfg(); relayout(); });
   $('#oOpenMode').addEventListener('change', (e) => { cfg.openMode = e.target.value; saveCfg(); });
 
   $('#fileSel').addEventListener('change', async (e) => {

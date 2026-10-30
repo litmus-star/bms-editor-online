@@ -29,6 +29,11 @@ function init() {
   $('#volR').addEventListener('input', (e) => { cfg.volume = +e.target.value; saveCfg(); if (Au.master) Au.master.gain.value = cfg.volume; });
   const opt = (id, key, after) => $(id).addEventListener('change', (e) => { cfg[key] = e.target.checked; saveCfg(); if (after) after(); });
   opt('#oName', 'showName', draw); opt('#oFollow', 'follow'); opt('#oBgm', 'playBgm'); opt('#oKeys', 'playKeys'); opt('#oBackup', 'backup'); opt('#oConfirm', 'confirmSave');
+  // 화면 배치 옵션: 레인을 다시 배치 (파일 내용은 그대로)
+  const relayout = () => setPlayMode(playMode(), true);
+  opt('#oScRight', 'scRight', relayout);
+  $('#oHideBga').addEventListener('change', (e) => { cfg.hideBga = !e.target.checked; saveCfg(); relayout(); });
+  $('#oHideBpm').addEventListener('change', (e) => { cfg.hideBpm = !e.target.checked; saveCfg(); relayout(); });
   $('#oOpenMode').addEventListener('change', (e) => { cfg.openMode = e.target.value; saveCfg(); });
 
   $('#fileSel').addEventListener('change', async (e) => {

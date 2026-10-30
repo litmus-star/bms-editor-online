@@ -172,6 +172,7 @@ function renderInfo() {
 }
 function syncOptions() {
   $('#oName').checked = cfg.showName; $('#oFollow').checked = cfg.follow; $('#oBgm').checked = cfg.playBgm;
+  $('#oScRight').checked = !!cfg.scRight; $('#oHideBga').checked = !cfg.hideBga; $('#oHideBpm').checked = !cfg.hideBpm;
   $('#oKeys').checked = cfg.playKeys; $('#oBackup').checked = cfg.backup; $('#oConfirm').checked = cfg.confirmSave; $('#oOpenMode').value = cfg.openMode || 'auto';
   $('#snapChk').checked = cfg.snap; $('#lockChk').checked = !!cfg.lockH; $('#gridSel').value = String(cfg.grid); $('#zoomR').value = cfg.zoom; $('#zoomXR').value = cfg.zoomX || 1; $('#volR').value = cfg.volume;
 }
@@ -239,7 +240,7 @@ function setPlayMode(m, quiet) {
   A.dp = m === 'dp'; A.pms = m === 'pms';
   const b = $('#bDP'); b.classList.toggle('on', m !== 'sp'); b.textContent = m.toUpperCase();
   layout();
-  for (const n of [...A.sel]) if (n.lane[0] === 'K' && !A.laneMap.has(n.lane)) A.sel.delete(n); // 화면에서 사라진 레인의 선택은 해제
+  for (const n of [...A.sel]) if (!A.laneMap.has(n.lane)) A.sel.delete(n); // 화면에서 사라진 레인의 선택은 해제
   if (A.st) {
     refresh();
     const hiddenKeys = A.st.notes.filter((n) => n.lane[0] === 'K' && !A.laneMap.has(n.lane)).length;

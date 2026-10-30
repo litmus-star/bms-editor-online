@@ -4,19 +4,27 @@ function layout() {
   const zx = cfg.zoomX || 1, W = (w) => Math.max(14, Math.round(w * zx)); // 가로 확대
   const add = (o) => { if (o.type !== 'meas') o.w = W(o.w); o.x = x; x += o.w; L.push(o); };
   add({ key: 'M', type: 'meas', w: MEAS_W, label: '#' });
-  add({ key: 'BPM', type: 'bpm', col: 'bpm', w: 56, label: 'BPM' });
-  add({ key: 'STOP', type: 'stop', col: 'stop', w: 48, label: 'STOP' });
+  if (!cfg.hideBpm) { // BPM·STOP 영역 숨기기 (보기만, 노트와 박자 계산은 그대로)
+    add({ key: 'BPM', type: 'bpm', col: 'bpm', w: 56, label: 'BPM' });
+    add({ key: 'STOP', type: 'stop', col: 'stop', w: 48, label: 'STOP' });
+  }
   x += 8;
   if (A.pms) C.PMS_LANES.forEach((k) => add({ key: k.key, type: 'key', p: 0, col: k.col, w: 42, label: k.label }));
-  else C.KEY_LANES.filter((k) => k.p === 1).forEach((k, i) => add({ key: k.key, type: 'key', p: 1, col: i === 0 ? 'sc' : (i % 2 ? 'w' : 'b'), w: i === 0 ? 54 : 42, label: k.label }));
+  else {
+    const p1 = C.KEY_LANES.filter((k) => k.p === 1).map((k, i) => ({ key: k.key, type: 'key', p: 1, col: i === 0 ? 'sc' : (i % 2 ? 'w' : 'b'), w: i === 0 ? 54 : 42, label: k.label }));
+    if (cfg.scRight && !A.dp) p1.push(p1.shift()); // SP: 스크래치를 오른쪽에 (보이는 순서만, 채널은 그대로)
+    p1.forEach(add);
+  }
   if (A.dp && !A.pms) {
     x += 8;
     C.KEY_LANES.filter((k) => k.p === 2).forEach((k, i) => add({ key: k.key, type: 'key', p: 2, col: i === 7 ? 'sc' : (i % 2 ? 'b' : 'w'), w: i === 7 ? 54 : 42, label: k.label }));
   }
   x += 8;
   A.fixW = x; // 여기까지(플레이 영역)는 가로 스크롤해도 고정, 이후 BGA+BGM이 함께 스크롤
-  C.BGA_LANES.forEach((g) => add({ key: g.key, type: 'bga', col: 'bga', w: 50, label: g.label }));
-  x += 8;
+  if (!cfg.hideBga) { // BGA·LAYER·POOR 영역 숨기기 (보기만)
+    C.BGA_LANES.forEach((g) => add({ key: g.key, type: 'bga', col: 'bga', w: 50, label: g.label }));
+    x += 8;
+  }
   for (let k = 0; k < A.bgmCount; k++) add({ key: 'B' + k, type: 'bgm', col: 'bgm', w: 42, label: 'B' + (k + 1) });
   A.lanes = L; A.laneMap = new Map(L.map((l) => [l.key, l])); A.totalW = x + 30;
   A.grp = { snd: L.filter((l) => l.type === 'key' || l.type === 'bgm'), bga: L.filter((l) => l.type === 'bga') };
