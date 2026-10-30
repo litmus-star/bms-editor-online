@@ -219,6 +219,7 @@ function hoverUpdate(h, e) {
 }
 function onWheel(e) {
   if (!A.st) return;
+  stopFling();
   if ((e.ctrlKey || e.metaKey) && e.shiftKey) { // Ctrl+Shift+휠: 가로 확대
     e.preventDefault();
     const d = e.deltaY || e.deltaX;

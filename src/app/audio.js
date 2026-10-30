@@ -161,7 +161,7 @@ function tick() {
   const P = Au.play; if (!P) return;
   const t = Au.ctx.currentTime - P.start + P.t0;
   A.playBeat = t <= P.t0 ? P.fromBeat : A.timing.timeToBeat(t);
-  if (cfg.follow && !A.drag) setBottom(A.playBeat - (A.H - HEAD_H) * 0.2 / A.ppb); else draw();
+  if (cfg.follow && !A.drag && !A.userScroll) setBottom(A.playBeat - (A.H - HEAD_H) * 0.2 / A.ppb); else draw();
   P.raf = requestAnimationFrame(tick);
 }
 function stopPlay() {

@@ -6,8 +6,45 @@
 const T = { pts: new Map(), st: null, pinch: null, lp: 0, mousePid: null };
 const TAP_MOVE = 8, LONG_MS = 500;
 
+/* 관성 스크롤: 손가락으로 빈 곳을 끌다 놓으면 그 속도로 미끄러지다 서서히 멈춘다.
+   FLING_FRICTION: 1ms마다 속도에 곱하는 값. 1에 가까울수록 오래 미끄러짐 (0.997 ≈ 0.33초마다 속도가 1/e로) */
+const FLING_FRICTION = 0.997, FLING_MIN_START = 0.25, FLING_MIN_STOP = 0.02, FLING_MAX = 8, FLING_WINDOW = 100;
+const F = { on: false, vx: 0, vy: 0, t: 0, raf: 0 };
+function stopFling() { if (!F.on) return false; F.on = false; cancelAnimationFrame(F.raf); A.userScroll = false; return true; }
+function panBy(dx, dy) { // 손가락 기준 이동량(px): 아래로 끌면 앞(곡 시작 쪽)으로
+  const maxL = Math.max(0, A.sc.scrollWidth - A.sc.clientWidth);
+  A.view.bottom = Math.max(0, A.view.bottom + dy / A.ppb);
+  A.view.left = Math.min(maxL, Math.max(0, A.view.left - dx));
+  syncScroll(); draw();
+  return { atBottom: A.view.bottom <= 0, atEdgeX: A.view.left <= 0 || A.view.left >= maxL };
+}
+function startFling(s, tUp) {
+  const hs = s.hist; if (!hs || hs.length < 2) return;
+  const last = hs[hs.length - 1];
+  if (tUp - last.t > 60) return; // 멈췄다가 뗐으면 미끄러지지 않음
+  let first = last;
+  for (let i = hs.length - 1; i >= 0 && last.t - hs[i].t <= FLING_WINDOW; i--) first = hs[i];
+  const dt = last.t - first.t; if (dt < 8) return;
+  const clamp = (v) => Math.max(-FLING_MAX, Math.min(FLING_MAX, v));
+  F.vx = clamp((last.x - first.x) / dt); F.vy = clamp((last.y - first.y) / dt);
+  if (Math.hypot(F.vx, F.vy) < FLING_MIN_START) return;
+  F.on = true; F.t = performance.now(); A.userScroll = true;
+  const step = (now) => {
+    if (!F.on) return;
+    const dt2 = Math.min(50, Math.max(0, now - F.t)); F.t = now;
+    const r = panBy(F.vx * dt2, F.vy * dt2);
+    if (r.atBottom && F.vy < 0) F.vy = 0;
+    if (r.atEdgeX) F.vx = 0;
+    const k = Math.pow(FLING_FRICTION, dt2); F.vx *= k; F.vy *= k;
+    if (Math.hypot(F.vx, F.vy) < FLING_MIN_STOP) { stopFling(); return; }
+    F.raf = requestAnimationFrame(step);
+  };
+  F.raf = requestAnimationFrame(step);
+}
+
 function onPointerDown(e) {
   A.lastPtr = e.pointerType;
+  if (e.pointerType !== 'touch') stopFling();
   if (e.pointerType === 'touch') { touchDown(e); return; }
   if (e.pointerType === 'pen') { A.penMode = true; setTouchUI(true); }
   if (T.mousePid !== null) return;
@@ -35,16 +72,19 @@ function touchDown(e) {
   setTouchUI(true);
   T.pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
   try { A.sc.setPointerCapture(e.pointerId); } catch (err) { /* 무시 */ }
+  const wasFling = stopFling(); // 미끄러지는 중에 닿으면 멈추기만 (탭으로 선택·찍기 안 함)
   if (T.pts.size === 2) { startPinch(); return; }
   if (T.pts.size > 2 || T.pinch) return;
   hideCtx();
   const h = hitAt(e);
   if (!A.st || !h.inArea || h.head) { T.st = null; return; }
-  A.slop = 12; const n = A.penMode ? null : noteAt(h); A.slop = 0;
+  A.slop = 12; const n = A.penMode || wasFling ? null : noteAt(h); A.slop = 0;
   A.hover = { note: null, ghost: null, h }; // 붙여넣기 위치 기준
-  T.st = { x: e.clientX, y: e.clientY, ev: e, h, note: n, phase: 'pending', b0: A.view.bottom, l0: A.view.left };
+  const t0 = e.timeStamp || performance.now();
+  T.st = { x: e.clientX, y: e.clientY, ev: e, h, note: n, phase: 'pending', b0: A.view.bottom, l0: A.view.left, stopTap: wasFling,
+    px: e.clientX, py: e.clientY, hist: [{ t: t0, x: e.clientX, y: e.clientY }] };
   clearTimeout(T.lp);
-  if (!A.penMode) T.lp = setTimeout(longPress, LONG_MS);
+  if (!A.penMode && !wasFling) T.lp = setTimeout(longPress, LONG_MS);
   if (n && !(h.lane && h.lane.type === 'meas')) { // 노트를 잡으면 바로 선택·이동 준비 (마우스와 같은 경로)
     T.st.phase = 'note';
     A.slop = 12; onDown(fakeMouse(e)); A.slop = 0;
@@ -59,12 +99,13 @@ function touchMove(e) {
   const moved = Math.hypot(e.clientX - s.x, e.clientY - s.y) > TAP_MOVE;
   if (moved) clearTimeout(T.lp);
   if (s.phase === 'note' || s.phase === 'band') { onMove(fakeMouse(e)); return; }
-  if (s.phase === 'pending' && moved) s.phase = 'pan';
+  if (s.phase === 'pending' && moved) { s.phase = 'pan'; A.userScroll = true; }
   if (s.phase === 'pan') {
-    setBottom(s.b0 + (e.clientY - s.y) / A.ppb);
-    const maxL = Math.max(0, A.sc.scrollWidth - A.sc.clientWidth);
-    A.view.left = Math.min(maxL, Math.max(0, s.l0 - (e.clientX - s.x)));
-    syncScroll(); draw();
+    panBy(e.clientX - s.px, e.clientY - s.py);
+    s.px = e.clientX; s.py = e.clientY;
+    const t = e.timeStamp || performance.now();
+    s.hist.push({ t, x: e.clientX, y: e.clientY });
+    while (s.hist.length > 2 && t - s.hist[0].t > FLING_WINDOW * 2) s.hist.shift();
   }
 }
 function touchUp(e) {
@@ -75,7 +116,8 @@ function touchUp(e) {
   const s = T.st; T.st = null;
   if (!s) return;
   if (s.phase === 'note' || s.phase === 'band') { onUp(fakeMouse(e)); return; }
-  if (s.phase === 'pending' && !A.penMode) { // 빈 곳 탭: 선택 해제 / 쓰기 모드는 노트 찍기 / 마디 칸은 재생 시작선
+  if (s.phase === 'pan') { A.userScroll = false; if (e.type !== 'pointercancel') startFling(s, e.timeStamp || performance.now()); return; }
+  if (s.phase === 'pending' && !A.penMode && !s.stopTap) { // 빈 곳 탭: 선택 해제 / 쓰기 모드는 노트 찍기 / 마디 칸은 재생 시작선
     onDown(fakeMouse(s.ev)); onUp(fakeMouse(s.ev));
   }
 }
@@ -95,7 +137,7 @@ function longPress() {
   }
 }
 function startPinch() {
-  clearTimeout(T.lp); hideCtx();
+  clearTimeout(T.lp); hideCtx(); stopFling(); A.userScroll = false;
   if (T.st && (T.st.phase === 'note' || T.st.phase === 'band')) { A.drag = null; draw(); } // 편집 중이던 끌기는 취소
   T.st = null;
   const [a, b] = [...T.pts.values()];

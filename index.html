@@ -1922,6 +1922,7 @@ function hoverUpdate(h, e) {
 }
 function onWheel(e) {
   if (!A.st) return;
+  stopFling();
   if ((e.ctrlKey || e.metaKey) && e.shiftKey) { // Ctrl+Shift+휠: 가로 확대
     e.preventDefault();
     const d = e.deltaY || e.deltaX;
@@ -2471,7 +2472,7 @@ function showHelp() {
 <tr><td>+ − · Ctrl+휠</td><td>세로 확대 축소</td></tr>
 <tr><td>[ ] · Ctrl+Shift+휠</td><td>가로 확대 축소</td></tr></table>
 <h4>DP · BGA · 숨김 · 지뢰</h4><p>#PLAYER 3이거나 2P 노트가 있으면 DP 화면으로 엽니다. 툴바의 SP/DP 버튼으로 바꿀 수 있습니다. 가로 스크롤하면 플레이 영역은 고정되고 BGA·LAYER·POOR와 BGM 칼럼이 함께 움직입니다. BGA 레인에는 BMP 목록에서 고른 번호가 찍히고, BGA 노트는 BGA 레인끼리만 옮겨집니다. 숨김 노트는 흐리게, 지뢰는 진한 빨강(✕)으로 보이며 키 레인 안에서만 옮길 수 있습니다.</p>
-<h4>태블릿 (손가락 · S펜)</h4><ul><li>손가락: 노트를 끌면 이동, 빈 곳을 끌면 화면 이동, 두 손가락을 벌리고 오므리면 확대·축소(세로로 벌리면 세로, 가로로 벌리면 가로)</li><li>탭: 노트 선택 · 빈 곳은 선택 해제 · 쓰기 모드에서는 노트 찍기</li><li>길게 누르기: 빈 곳은 범위 선택 시작, 노트는 메뉴(삭제 · 값 바꾸기 · 복사)</li><li>안드로이드에서는 폴더를 빠른 방식(폴더 고르기)으로 엽니다. 처음 저장할 때 같은 폴더를 한 번 더 골라 주면 그 뒤로는 그 폴더에 바로 저장합니다. '보기 · 재생 · 저장' 칸에서 방식을 바꿀 수 있습니다.</li><li>S펜: 마우스와 똑같이 편집합니다(펜 옆 버튼 = 오른쪽 클릭 = 삭제). 펜을 한 번 쓰면 그 뒤로 손가락은 화면 이동·확대만 합니다(손바닥 오작동 방지).</li><li>아래 도구 막대: 실행 취소 · ▲▼◀▶ 한 칸 옮기기 · 복사 · 붙여넣기 · 삭제 · 복사 모드(끌면 복사, Ctrl 대신) · 그리드 무시(Shift 대신)</li></ul><h4>재생</h4><p>마디 번호 칸을 클릭하면 재생 시작선(초록)이 생깁니다. F6·Space는 시작선부터, 시작선이 없으면 화면 맨 아래 마디부터 재생합니다. 같은 키음이 다시 울리면 앞 소리는 끊깁니다(BMS 플레이어와 같은 방식). BPM 변화와 STOP도 반영합니다.</p>
+<h4>태블릿 (손가락 · S펜)</h4><ul><li>손가락: 노트를 끌면 이동, 빈 곳을 끌면 화면 이동(빠르게 쓸고 놓으면 관성으로 미끄러지고, 그때 탭하면 멈춤), 두 손가락을 벌리고 오므리면 확대·축소(세로로 벌리면 세로, 가로로 벌리면 가로)</li><li>탭: 노트 선택 · 빈 곳은 선택 해제 · 쓰기 모드에서는 노트 찍기</li><li>길게 누르기: 빈 곳은 범위 선택 시작, 노트는 메뉴(삭제 · 값 바꾸기 · 복사)</li><li>안드로이드에서는 폴더를 빠른 방식(폴더 고르기)으로 엽니다. 처음 저장할 때 같은 폴더를 한 번 더 골라 주면 그 뒤로는 그 폴더에 바로 저장합니다. '보기 · 재생 · 저장' 칸에서 방식을 바꿀 수 있습니다.</li><li>S펜: 마우스와 똑같이 편집합니다(펜 옆 버튼 = 오른쪽 클릭 = 삭제). 펜을 한 번 쓰면 그 뒤로 손가락은 화면 이동·확대만 합니다(손바닥 오작동 방지).</li><li>아래 도구 막대: 실행 취소 · ▲▼◀▶ 한 칸 옮기기 · 복사 · 붙여넣기 · 삭제 · 복사 모드(끌면 복사, Ctrl 대신) · 그리드 무시(Shift 대신)</li></ul><h4>재생</h4><p>마디 번호 칸을 클릭하면 재생 시작선(초록)이 생깁니다. F6·Space는 시작선부터, 시작선이 없으면 화면 맨 아래 마디부터 재생합니다. 같은 키음이 다시 울리면 앞 소리는 끊깁니다(BMS 플레이어와 같은 방식). BPM 변화와 STOP도 반영합니다.</p>
 <h4>저장</h4><p>편집한 채널(BGM · BPM · STOP · 1P 키 · 롱노트 · 마디 길이)과 고친 헤더 · WAV 줄만 다시 쓰고, 나머지 줄(BGA, 2P, 숨김 노트, 지뢰, 주석, 모르는 명령, #RANDOM 블록)은 원본 바이트 그대로 둡니다. 저장 직전에 결과를 다시 읽어 편집 내용과 일치하는지 확인하고, 바뀐 줄을 보여 줍니다. 기본 인코딩은 Shift-JIS입니다.</p>
 <h4>복사 · 붙여넣기</h4><p>iBMSC 클립보드 형식("iBMSC Clipboard Data")을 씁니다. iBMSC에서 복사한 노트나 ibmsc_clip.py가 만든 텍스트를 붙여넣을 수 있고, 여기서 복사한 노트를 iBMSC에 붙여넣을 수도 있습니다. 위치는 마우스가 있는 마디의 시작점 기준입니다.</p>
 <h4>로컬 전용</h4><p>이 페이지는 파일 하나로 동작하며 서버가 없습니다. 패턴과 키음은 브라우저 안에서만 읽고 쓰고, 외부로 나가는 통신은 페이지의 보안 정책(CSP)으로 막혀 있습니다. 폴더에 바로 저장하려면 크롬이나 엣지를 쓰세요. 다른 브라우저에서는 저장할 때 파일이 다운로드됩니다.</p>
@@ -2959,7 +2960,7 @@ function tick() {
   const P = Au.play; if (!P) return;
   const t = Au.ctx.currentTime - P.start + P.t0;
   A.playBeat = t <= P.t0 ? P.fromBeat : A.timing.timeToBeat(t);
-  if (cfg.follow && !A.drag) setBottom(A.playBeat - (A.H - HEAD_H) * 0.2 / A.ppb); else draw();
+  if (cfg.follow && !A.drag && !A.userScroll) setBottom(A.playBeat - (A.H - HEAD_H) * 0.2 / A.ppb); else draw();
   P.raf = requestAnimationFrame(tick);
 }
 function stopPlay() {
@@ -3020,8 +3021,45 @@ function toast(msg, ms) {
 const T = { pts: new Map(), st: null, pinch: null, lp: 0, mousePid: null };
 const TAP_MOVE = 8, LONG_MS = 500;
 
+/* 관성 스크롤: 손가락으로 빈 곳을 끌다 놓으면 그 속도로 미끄러지다 서서히 멈춘다.
+   FLING_FRICTION: 1ms마다 속도에 곱하는 값. 1에 가까울수록 오래 미끄러짐 (0.997 ≈ 0.33초마다 속도가 1/e로) */
+const FLING_FRICTION = 0.997, FLING_MIN_START = 0.25, FLING_MIN_STOP = 0.02, FLING_MAX = 8, FLING_WINDOW = 100;
+const F = { on: false, vx: 0, vy: 0, t: 0, raf: 0 };
+function stopFling() { if (!F.on) return false; F.on = false; cancelAnimationFrame(F.raf); A.userScroll = false; return true; }
+function panBy(dx, dy) { // 손가락 기준 이동량(px): 아래로 끌면 앞(곡 시작 쪽)으로
+  const maxL = Math.max(0, A.sc.scrollWidth - A.sc.clientWidth);
+  A.view.bottom = Math.max(0, A.view.bottom + dy / A.ppb);
+  A.view.left = Math.min(maxL, Math.max(0, A.view.left - dx));
+  syncScroll(); draw();
+  return { atBottom: A.view.bottom <= 0, atEdgeX: A.view.left <= 0 || A.view.left >= maxL };
+}
+function startFling(s, tUp) {
+  const hs = s.hist; if (!hs || hs.length < 2) return;
+  const last = hs[hs.length - 1];
+  if (tUp - last.t > 60) return; // 멈췄다가 뗐으면 미끄러지지 않음
+  let first = last;
+  for (let i = hs.length - 1; i >= 0 && last.t - hs[i].t <= FLING_WINDOW; i--) first = hs[i];
+  const dt = last.t - first.t; if (dt < 8) return;
+  const clamp = (v) => Math.max(-FLING_MAX, Math.min(FLING_MAX, v));
+  F.vx = clamp((last.x - first.x) / dt); F.vy = clamp((last.y - first.y) / dt);
+  if (Math.hypot(F.vx, F.vy) < FLING_MIN_START) return;
+  F.on = true; F.t = performance.now(); A.userScroll = true;
+  const step = (now) => {
+    if (!F.on) return;
+    const dt2 = Math.min(50, Math.max(0, now - F.t)); F.t = now;
+    const r = panBy(F.vx * dt2, F.vy * dt2);
+    if (r.atBottom && F.vy < 0) F.vy = 0;
+    if (r.atEdgeX) F.vx = 0;
+    const k = Math.pow(FLING_FRICTION, dt2); F.vx *= k; F.vy *= k;
+    if (Math.hypot(F.vx, F.vy) < FLING_MIN_STOP) { stopFling(); return; }
+    F.raf = requestAnimationFrame(step);
+  };
+  F.raf = requestAnimationFrame(step);
+}
+
 function onPointerDown(e) {
   A.lastPtr = e.pointerType;
+  if (e.pointerType !== 'touch') stopFling();
   if (e.pointerType === 'touch') { touchDown(e); return; }
   if (e.pointerType === 'pen') { A.penMode = true; setTouchUI(true); }
   if (T.mousePid !== null) return;
@@ -3049,16 +3087,19 @@ function touchDown(e) {
   setTouchUI(true);
   T.pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
   try { A.sc.setPointerCapture(e.pointerId); } catch (err) { /* 무시 */ }
+  const wasFling = stopFling(); // 미끄러지는 중에 닿으면 멈추기만 (탭으로 선택·찍기 안 함)
   if (T.pts.size === 2) { startPinch(); return; }
   if (T.pts.size > 2 || T.pinch) return;
   hideCtx();
   const h = hitAt(e);
   if (!A.st || !h.inArea || h.head) { T.st = null; return; }
-  A.slop = 12; const n = A.penMode ? null : noteAt(h); A.slop = 0;
+  A.slop = 12; const n = A.penMode || wasFling ? null : noteAt(h); A.slop = 0;
   A.hover = { note: null, ghost: null, h }; // 붙여넣기 위치 기준
-  T.st = { x: e.clientX, y: e.clientY, ev: e, h, note: n, phase: 'pending', b0: A.view.bottom, l0: A.view.left };
+  const t0 = e.timeStamp || performance.now();
+  T.st = { x: e.clientX, y: e.clientY, ev: e, h, note: n, phase: 'pending', b0: A.view.bottom, l0: A.view.left, stopTap: wasFling,
+    px: e.clientX, py: e.clientY, hist: [{ t: t0, x: e.clientX, y: e.clientY }] };
   clearTimeout(T.lp);
-  if (!A.penMode) T.lp = setTimeout(longPress, LONG_MS);
+  if (!A.penMode && !wasFling) T.lp = setTimeout(longPress, LONG_MS);
   if (n && !(h.lane && h.lane.type === 'meas')) { // 노트를 잡으면 바로 선택·이동 준비 (마우스와 같은 경로)
     T.st.phase = 'note';
     A.slop = 12; onDown(fakeMouse(e)); A.slop = 0;
@@ -3073,12 +3114,13 @@ function touchMove(e) {
   const moved = Math.hypot(e.clientX - s.x, e.clientY - s.y) > TAP_MOVE;
   if (moved) clearTimeout(T.lp);
   if (s.phase === 'note' || s.phase === 'band') { onMove(fakeMouse(e)); return; }
-  if (s.phase === 'pending' && moved) s.phase = 'pan';
+  if (s.phase === 'pending' && moved) { s.phase = 'pan'; A.userScroll = true; }
   if (s.phase === 'pan') {
-    setBottom(s.b0 + (e.clientY - s.y) / A.ppb);
-    const maxL = Math.max(0, A.sc.scrollWidth - A.sc.clientWidth);
-    A.view.left = Math.min(maxL, Math.max(0, s.l0 - (e.clientX - s.x)));
-    syncScroll(); draw();
+    panBy(e.clientX - s.px, e.clientY - s.py);
+    s.px = e.clientX; s.py = e.clientY;
+    const t = e.timeStamp || performance.now();
+    s.hist.push({ t, x: e.clientX, y: e.clientY });
+    while (s.hist.length > 2 && t - s.hist[0].t > FLING_WINDOW * 2) s.hist.shift();
   }
 }
 function touchUp(e) {
@@ -3089,7 +3131,8 @@ function touchUp(e) {
   const s = T.st; T.st = null;
   if (!s) return;
   if (s.phase === 'note' || s.phase === 'band') { onUp(fakeMouse(e)); return; }
-  if (s.phase === 'pending' && !A.penMode) { // 빈 곳 탭: 선택 해제 / 쓰기 모드는 노트 찍기 / 마디 칸은 재생 시작선
+  if (s.phase === 'pan') { A.userScroll = false; if (e.type !== 'pointercancel') startFling(s, e.timeStamp || performance.now()); return; }
+  if (s.phase === 'pending' && !A.penMode && !s.stopTap) { // 빈 곳 탭: 선택 해제 / 쓰기 모드는 노트 찍기 / 마디 칸은 재생 시작선
     onDown(fakeMouse(s.ev)); onUp(fakeMouse(s.ev));
   }
 }
@@ -3109,7 +3152,7 @@ function longPress() {
   }
 }
 function startPinch() {
-  clearTimeout(T.lp); hideCtx();
+  clearTimeout(T.lp); hideCtx(); stopFling(); A.userScroll = false;
   if (T.st && (T.st.phase === 'note' || T.st.phase === 'band')) { A.drag = null; draw(); } // 편집 중이던 끌기는 취소
   T.st = null;
   const [a, b] = [...T.pts.values()];
