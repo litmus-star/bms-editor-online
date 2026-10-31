@@ -55,6 +55,7 @@ main { flex: 1; display: flex; min-height: 0; }
 #ctxMenu button:hover:not(:disabled) { background: #33415e; }
 #ctxMenu button.on span::before { content: "✓ "; color: var(--acc); }
 #ctxMenu button kbd { font-size: 11px; }
+#lpTip { position: fixed; z-index: 16; pointer-events: none; background: rgba(20, 21, 25, .92); color: #e8e8e8; border: 1px solid #555b66; border-radius: 14px; padding: 5px 12px; font-size: 13px; white-space: nowrap; box-shadow: 0 4px 16px rgba(0,0,0,.5); }
 #ctxMenu .sep { height: 1px; background: #3c4049; margin: 4px 6px; }
 #ctxMenu.touchmenu button { padding: 10px 14px; font-size: 15px; }
 .wr.flash { animation: flash .9s; }

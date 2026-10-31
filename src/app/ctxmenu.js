@@ -53,13 +53,13 @@ function showCtx(n, x, y, touch) {
   statusNote(); draw();
 }
 // 빈 곳을 우클릭: h는 우클릭한 위치(붙여넣기 기준 마디)
-function showBlankCtx(h, x, y) {
+function showBlankCtx(h, x, y, touch) {
   A.hover = { note: null, ghost: null, h };
   const canPaste = !!A.clip || !!(navigator.clipboard && navigator.clipboard.readText);
   openMenu([
     { label: '여기에 붙여넣기', key: 'Ctrl+V', disabled: !canPaste, fn: () => pasteHere(h) },
     { label: '모두 선택', key: 'Ctrl+A', fn: selectAll },
-  ], x, y, false);
+  ], x, y, !!touch);
 }
 async function pasteHere(h) {
   A.hover = { note: null, ghost: null, h };

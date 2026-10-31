@@ -55,6 +55,13 @@ const { chromium } = require('playwright'); const path = require('path');
   await T('touchEnd', []);
   out.touchJitterNoMove = before === await notes();
   await page.evaluate(() => { document.getElementById('ctxMenu').hidden = true; BMSApp.A.sel = new Set(); });
+  // 빈 곳 길게 누르기: 누르는 동안 안내 말풍선, 그대로 떼면 빈 곳 메뉴
+  { const q = await xy('K15', 9); await T('touchStart', [[q.x, q.y]]); await page.waitForTimeout(600);
+    out.holdTip = await page.evaluate(() => { const t = document.getElementById('lpTip'); return t && !t.hidden ? t.textContent : null; });
+    await T('touchEnd', []); await page.waitForTimeout(100);
+    out.holdReleaseMenu = await items();
+    out.tipAfter = await page.evaluate(() => { const t = document.getElementById('lpTip'); return !t || t.hidden; });
+    await page.evaluate(() => { document.getElementById('ctxMenu').hidden = true; }); }
   p = await xy('K13', 6); await page.mouse.click(p.x, p.y, { button: 'right' }); await click('삭제'); out.afterDelete = await notes();
   // 더블클릭: 값 바꾸기 창이 안 떠야 함
   p = await xy('K11', 4); await page.mouse.dblclick(p.x, p.y); out.dblModal = await page.evaluate(() => !document.getElementById('modal').hidden);

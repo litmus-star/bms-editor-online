@@ -111,6 +111,12 @@ function touchMove(e) {
   // 노트를 누른 손가락은 TAP_MOVE 넘게 움직여야 이동 시작 (실제 손가락은 가만히 있어도 몇 px씩 흔들려서, 그대로 두면 길게 누르기 메뉴가 안 뜸)
   if (s.phase === 'note' && !s.dragging) { if (!moved) return; s.dragging = true; }
   if (s.phase === 'note' || s.phase === 'band') { onMove(fakeMouse(e)); return; }
+  if (s.phase === 'hold') { // 빈 곳을 길게 누른 상태: 끌기 시작하면 범위 선택(선택 모드), 쓰기 모드는 취소
+    if (Math.hypot(e.clientX - s.lx, e.clientY - s.ly) <= TAP_MOVE) return;
+    hideTip();
+    if (A.mode === 'select') { s.phase = 'band'; onDown(fakeMouse(s.ev)); onMove(fakeMouse(e)); } else s.phase = 'cancel';
+    return;
+  }
   if (s.phase === 'pending' && moved) { s.phase = 'pan'; A.userScroll = true; }
   if (s.phase === 'pan') {
     panBy(s.lockX ? 0 : e.clientX - s.px, e.clientY - s.py);
@@ -129,6 +135,11 @@ function touchUp(e) {
   const s = T.st; T.st = null;
   if (!s) return;
   if (s.phase === 'note' || s.phase === 'band') { onUp(fakeMouse(e)); return; }
+  if (s.phase === 'hold') { // 길게 눌렀다가 그대로 떼면 빈 곳 메뉴
+    hideTip();
+    if (e.type !== 'pointercancel') showBlankCtx(s.h, s.x, s.y, true);
+    return;
+  }
   if (s.phase === 'pan') { A.userScroll = false; if (e.type !== 'pointercancel') startFling(s, e.timeStamp || performance.now()); return; }
   if (s.phase === 'pending' && !s.stopTap) { // 빈 곳 탭: 선택 해제 / 쓰기 모드는 노트 찍기
     onDown(fakeMouse(s.ev)); onUp(fakeMouse(s.ev));
@@ -145,14 +156,26 @@ function longPress() {
     showCtx(s.note, s.x, s.y, true);
     return;
   }
-  if (s.phase === 'pending' && A.mode === 'select') { // 빈 곳 길게 누르기: 범위 선택 시작
-    s.phase = 'band';
+  if (s.phase === 'pending') { // 빈 곳 길게 누르기: 떼면 메뉴, 끌면 범위 선택 — 어느 쪽인지 안내 말풍선
+    s.phase = 'hold';
+    const cur = [...T.pts.values()][0] || { x: s.x, y: s.y };
+    s.lx = cur.x; s.ly = cur.y;
     if (navigator.vibrate) try { navigator.vibrate(15); } catch (err) { /* 무시 */ }
-    onDown(fakeMouse(s.ev));
+    showTip(A.mode === 'select' ? '떼면 메뉴 · 끌면 범위 선택' : '떼면 메뉴', s.x, s.y);
   }
 }
+// 길게 누르는 동안 손가락 위에 띄우는 짧은 안내
+function showTip(text, x, y) {
+  let el = document.getElementById('lpTip');
+  if (!el) { el = document.createElement('div'); el.id = 'lpTip'; document.body.appendChild(el); }
+  el.textContent = text; el.hidden = false;
+  const r = el.getBoundingClientRect();
+  el.style.left = Math.min(window.innerWidth - r.width - 8, Math.max(8, x - r.width / 2)) + 'px';
+  el.style.top = Math.max(8, y - r.height - 56) + 'px';
+}
+function hideTip() { const el = document.getElementById('lpTip'); if (el) el.hidden = true; }
 function startPinch() {
-  clearTimeout(T.lp); hideCtx(); stopFling(); A.userScroll = false;
+  clearTimeout(T.lp); hideCtx(); hideTip(); stopFling(); A.userScroll = false;
   if (T.st && (T.st.phase === 'note' || T.st.phase === 'band')) { A.drag = null; draw(); } // 편집 중이던 끌기는 취소
   T.st = null;
   const [a, b] = [...T.pts.values()];
