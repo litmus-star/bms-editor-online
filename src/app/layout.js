@@ -123,7 +123,7 @@ function checkMuri() {
 function muriLabel(m) {
   const mm = measureAt(m.b + 1e-9), off = m.b - A.ms.Sf[mm], len = rf(lenOf(mm)) * 4;
   const g = [4, 8, 12, 16, 24, 32, 48, 64, 96, 192].find((d) => Math.abs(off / len * d - Math.round(off / len * d)) < 1e-6) || 192;
-  return `마디 ${C.pad3(mm)} · ${Math.round(off / len * g)}/${g} · ${m.btns.join('-')}` + (m.held ? ' (롱노트 포함)' : '');
+  return tr('info.muri.item', { m: C.pad3(mm), pos: `${Math.round(off / len * g)}/${g}`, btns: m.btns.join('-') }) + (m.held ? tr('info.muri.held') : '');
 }
 function refresh() {
   if (!A.st) return;

@@ -28,27 +28,27 @@ function openMenu(items, x, y, touch) {
 // 노트를 우클릭: 선택 안 된 노트면 그것만 선택하고, 선택된 노트면 선택 전체에 적용
 function showCtx(n, x, y, touch) {
   if (!A.sel.has(n)) A.sel = new Set([n]);
-  const sel = [...A.sel], cnt = sel.length > 1 ? ` (${sel.length}개)` : '';
+  const sel = [...A.sel], cnt = sel.length > 1 ? tr('ctx.count', { n: sel.length }) : '';
   const items = [];
-  items.push({ label: '값 바꾸기…', fn: () => { const kind = (x2) => (isSound(x2.lane) ? 's' : x2.lane); editValue([n, ...sel.filter((x2) => x2 !== n && kind(x2) === kind(n))]); } });
+  items.push({ label: tr('ctx.editValue'), fn: () => { const kind = (x2) => (isSound(x2.lane) ? 's' : x2.lane); editValue([n, ...sel.filter((x2) => x2 !== n && kind(x2) === kind(n))]); } });
   items.push('-');
-  items.push({ label: '잘라내기' + cnt, key: 'Ctrl+X', fn: () => { menuCopy(); const c = A.sel.size; deleteSel(); toast(`노트 ${c}개 잘라냄`); } });
-  items.push({ label: '복사' + cnt, key: 'Ctrl+C', fn: () => { menuCopy(); toast(`노트 ${A.sel.size}개 복사`); } });
-  items.push({ label: '삭제' + cnt, key: 'Del', fn: deleteSel });
+  items.push({ label: tr('ctx.cut') + cnt, key: 'Ctrl+X', fn: () => { menuCopy(); const c = A.sel.size; deleteSel(); toast(tr('toast.cut', { n: c })); } });
+  items.push({ label: tr('ctx.copy') + cnt, key: 'Ctrl+C', fn: () => { menuCopy(); toast(tr('toast.copy', { n: A.sel.size })); } });
+  items.push({ label: tr('ctx.delete') + cnt, key: 'Del', fn: deleteSel });
   items.push('-');
-  if (n.lane[0] === 'G') items.push({ label: 'BMP 목록에서 보기', fn: () => showInList('bmp', n.v) });
-  else if (isSound(n.lane) && n.kind !== 'm') items.push({ label: 'WAV 목록에서 보기', fn: () => showInList('wav', n.v) });
+  if (n.lane[0] === 'G') items.push({ label: tr('ctx.showBmp'), fn: () => showInList('bmp', n.v) });
+  else if (isSound(n.lane) && n.kind !== 'm') items.push({ label: tr('ctx.showWav'), fn: () => showInList('wav', n.v) });
   // 노트 종류: 키 레인의 롱노트가 아닌 노트만 (숨김·지뢰 롱노트 채널은 없음)
   const kindable = sel.filter((x2) => isKey(x2.lane) && !(x2.lb > 0));
   if (kindable.length) {
     items.push('-');
     const cur = new Set(kindable.map((x2) => x2.kind || 'n'));
-    for (const [k, label] of [['n', '일반 노트'], ['h', '숨김 노트'], ['m', '지뢰']]) {
+    for (const [k, label] of [['n', tr('kind.long.n')], ['h', tr('kind.long.h')], ['m', tr('kind.long.m')]]) {
       items.push({ label, on: cur.size === 1 && cur.has(k), fn: () => setKindOf(kindable, k) });
     }
   }
   const lns = sel.filter((x2) => x2.lb > 0);
-  if (lns.length) { items.push('-'); items.push({ label: '롱노트 풀기' + (lns.length > 1 ? ` (${lns.length}개)` : ''), fn: () => unLN(lns) }); }
+  if (lns.length) { items.push('-'); items.push({ label: tr('ctx.unLN') + (lns.length > 1 ? tr('ctx.count', { n: lns.length }) : ''), fn: () => unLN(lns) }); }
   openMenu(items, x, y, touch);
   statusNote(); draw();
 }
@@ -57,8 +57,8 @@ function showBlankCtx(h, x, y, touch) {
   A.hover = { note: null, ghost: null, h };
   const canPaste = !!A.clip || !!(navigator.clipboard && navigator.clipboard.readText);
   openMenu([
-    { label: '여기에 붙여넣기', key: 'Ctrl+V', disabled: !canPaste, fn: () => pasteHere(h) },
-    { label: '모두 선택', key: 'Ctrl+A', fn: selectAll },
+    { label: tr('ctx.pasteHere'), key: 'Ctrl+V', disabled: !canPaste, fn: () => pasteHere(h) },
+    { label: tr('ctx.selectAll'), key: 'Ctrl+A', fn: selectAll },
   ], x, y, !!touch);
 }
 async function pasteHere(h) {
@@ -66,7 +66,7 @@ async function pasteHere(h) {
   let text = null;
   try { if (navigator.clipboard && navigator.clipboard.readText) text = await navigator.clipboard.readText(); } catch (e) { /* 권한 없음: 편집기 안 클립보드 사용 */ }
   if (!text || !/^iBMSC Clipboard Data/.test(text)) text = A.clip ? A.clip.text : text;
-  if (!text) { toast('붙여넣을 노트가 없습니다'); return; }
+  if (!text) { toast(tr('toast.paste.empty')); return; }
   A.hover = { note: null, ghost: null, h };
   pasteText(text);
 }
@@ -96,7 +96,7 @@ function setKindOf(notes, k) {
   });
   const keep = [...A.sel].filter((x) => !targets.includes(x));
   commit({ del: targets, add }); A.sel = new Set(keep.concat(add)); statusNote(); draw();
-  toast(`노트 ${targets.length}개를 ${({ n: '일반 노트', h: '숨김 노트', m: '지뢰' })[k]}(으)로 바꿨습니다`);
+  toast(tr('toast.kindChanged', { n: targets.length, kind: tr('kind.long.' + k) }));
 }
 function unLN(notes) {
   const add = notes.map((x) => cloneNote(x, { len: null }));

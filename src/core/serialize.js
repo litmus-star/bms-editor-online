@@ -20,7 +20,7 @@ function serialize(doc, st, opt) {
   const newBpm = new Map(), newStop = new Map();
   const alloc = (used) => {
     for (let i = 1; i <= idMax(base); i++) if (!used.has(i)) { used.add(i); return i; }
-    throw new Error('#BPM/#STOP 정의 번호가 부족합니다');
+    throw coreError('core.save.noFreeDefId');
   };
   let lost = 0;
   for (const n of st.notes) {
@@ -63,7 +63,7 @@ function serialize(doc, st, opt) {
       else put(L.m, ld.ch, L.f, ids(n.v));
     }
   }
-  if (lost) warnings.push(`저장할 수 없는 노트 ${lost}개 (마디 999 밖이거나 값이 잘못됨)`);
+  if (lost) warnings.push(msg('core.save.lost', { n: lost }));
 
   // 2) 원본과 비교해서 바뀐 부분만 다시 쓰기
   const rep = new Map(), insA = new Map(), insB = new Map(), tail = [];
@@ -261,15 +261,15 @@ function serialize(doc, st, opt) {
   let off = 0;
   for (const c of chunks) { bytes.set(c, off); off += c.length; }
 
-  if (conflicts.length) warnings.push(`같은 자리에 겹친 노트가 있어 ${conflicts.length}개가 저장되지 않습니다 (${[...new Set(conflicts)].slice(0, 4).join(', ')}${conflicts.length > 4 ? ' …' : ''})`);
+  if (conflicts.length) warnings.push(msg('core.save.conflicts', { n: conflicts.length, list: [...new Set(conflicts)].slice(0, 4).join(', ') + (conflicts.length > 4 ? ' …' : '') }));
   let verify;
   try {
     const re = parse(bytes, enc);
     verify = compareStates(st, stateFromDoc(re));
-    if (re.bom !== withBom) { verify.problems.push('BOM 위치가 달라졌습니다'); verify.ok = false; }
-  } catch (e) { verify = { ok: false, problems: ['저장 결과를 다시 읽지 못했습니다: ' + e.message] }; }
+    if (re.bom !== withBom) { verify.problems.push(msg('core.verify.bom')); verify.ok = false; }
+  } catch (e) { verify = { ok: false, problems: [msg('core.verify.reread', { err: e })] }; }
   const det = encodingInfo(bytes);
-  if (det.enc !== enc && !det.ambiguous) warnings.push(`이 파일을 나중에 열면 ${ENC_LABEL[det.enc]}(으)로 잘못 알아볼 수 있습니다. 열 때 아래쪽 인코딩을 ${ENC_LABEL[enc]}(으)로 맞춰 주세요.`);
+  if (det.enc !== enc && !det.ambiguous) warnings.push(msg('core.save.encMisdetect', { detected: ENC_LABEL[det.enc], enc: ENC_LABEL[enc] }));
   let kept = 0;
   for (const p of out) if (p.i !== undefined) kept++;
   return {
@@ -299,24 +299,24 @@ function compareStates(a, b) {
     const miss = [], extra = [];
     for (const [k, c] of ca) if (c > (cb.get(k) || 0)) miss.push(k);
     for (const [k, c] of cb) if (c > (ca.get(k) || 0)) extra.push(k);
-    problems.push(`노트 불일치: 저장본에서 빠짐 ${miss.length}종, 예상과 다름 ${extra.length}종` + (miss.length ? ` (예: ${miss[0]})` : ''));
+    problems.push(miss.length ? msg('core.verify.notesEx', { miss: miss.length, extra: extra.length, ex: miss[0] }) : msg('core.verify.notes', { miss: miss.length, extra: extra.length }));
   }
   const ms = new Set([...a.meas.keys(), ...b.meas.keys()]);
   for (const m of ms) {
     const x = a.meas.get(m), y = b.meas.get(m);
-    if (!req(x ? x.r : R1, y ? y.r : R1)) problems.push(`마디 ${pad3(m)} 길이 불일치`);
+    if (!req(x ? x.r : R1, y ? y.r : R1)) problems.push(msg('core.verify.measLen', { m: pad3(m) }));
   }
   const hs = new Set([...a.headers.keys(), ...b.headers.keys()]);
-  for (const k of hs) if (canonJP(a.headers.get(k)) !== canonJP(b.headers.get(k))) problems.push(`헤더 #${k} 불일치`);
+  for (const k of hs) if (canonJP(a.headers.get(k)) !== canonJP(b.headers.get(k))) problems.push(msg('core.verify.header', { k }));
   const ws = new Set([...a.wavs.keys(), ...b.wavs.keys()]);
   let wbad = 0;
   for (const k of ws) if (canonJP(a.wavs.get(k)) !== canonJP(b.wavs.get(k))) wbad++;
-  if (wbad) problems.push(`#WAV 정의 ${wbad}개 불일치`);
+  if (wbad) problems.push(msg('core.verify.wav', { n: wbad }));
   const bs = new Set([...(a.bmps || new Map()).keys(), ...(b.bmps || new Map()).keys()]);
   let bbad = 0;
   for (const k of bs) if (canonJP((a.bmps || new Map()).get(k)) !== canonJP((b.bmps || new Map()).get(k))) bbad++;
-  if (bbad) problems.push(`#BMP 정의 ${bbad}개 불일치`);
+  if (bbad) problems.push(msg('core.verify.bmp', { n: bbad }));
   const flat = (arr) => arr.join('\n').split('\n').map((s) => s.trim()).filter(Boolean).join('\n');
-  if (flat(a.blocks) !== flat(b.blocks)) problems.push('확장 블록 내용 불일치');
+  if (flat(a.blocks) !== flat(b.blocks)) problems.push(msg('core.verify.blocks'));
   return { ok: problems.length === 0, problems };
 }

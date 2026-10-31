@@ -87,3 +87,11 @@ iBMSC를 참고해 만든 7키 SP·DP용 BMS 패턴 편집기. HTML 파일 하�
 - 소스는 `src/core/`(파싱·저장·인코딩·타이밍, DOM 없음)와 `src/app/`(화면·조작·파일·재생)에 기능별로 나뉘어 있다.
 - `node build.js` → 루트의 `index.html`(배포용 단일 파일)을 만든다. 원본을 고친 뒤에는 꼭 다시 빌드한다.
 - `npm test`: 저장 로직 테스트(Node만 필요). `npm run test:ui`: 브라우저 조작 테스트(`npm i` 후 Playwright 필요).
+
+## 화면 문구 (다국어 준비)
+
+- 화면에 보이는 문구는 모두 `src/i18n/ko.json`에 키로 모여 있다. 문구를 고칠 때는 여기만 고치고 `npm run build`.
+- 코드에서는 `tr('키', { 이름: 값 })`, HTML에서는 `data-i18n="키"`(글자) · `data-i18n-html` · `data-i18n-title` · `data-i18n-placeholder`를 쓴다.
+- 코어(`src/core`)는 문구를 만들지 않고 `{ code, params }`(경고·검증 문제)나 `code`가 붙은 오류를 넘긴다. 문구는 사전의 `core.…` 키.
+- 다른 언어는 `src/i18n/ja.json` 같은 파일을 같은 키로 만들면 빌드에 함께 묶인다(빠진 키는 한국어로 보임). 언어 전환 메뉴는 아직 없음.
+- 도움말 창과 '키음 로딩 측정' 패널의 결과 글은 아직 한국어로 코드 안에 있다.

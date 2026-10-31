@@ -56,7 +56,7 @@ function makeListProvider(entries, name) {
     async find(rel) { const e = map.get(normPath(rel).toLowerCase()); return e ? { name: e.file.name, getFile: async () => e.file } : null; },
     async read(rel) { const h = await this.find(rel); return h ? new Uint8Array(await (await h.getFile()).arrayBuffer()) : null; },
     async ensureWrite() { return false; },
-    async write() { throw new Error('이 방식으로 연 폴더에는 쓸 수 없습니다'); },
+    async write() { throw appError('err.readOnlyFolder'); },
   };
 }
 function makeSingleProvider(file, handle) {
@@ -72,7 +72,7 @@ function makeSingleProvider(file, handle) {
       } catch (e) { return false; }
     },
     async write(name, bytes) {
-      if (name !== file.name) throw new Error('파일 하나만 연 상태라 다른 이름으로는 쓸 수 없습니다');
+      if (name !== file.name) throw appError('err.singleFileRename');
       const w = await handle.createWritable(); await w.write(bytes); await w.close();
     },
   };
@@ -119,16 +119,16 @@ async function openFolder() {
 }
 // 파일 목록 방식으로 연 폴더에 저장할 수 있게, 같은 폴더를 직접 접근으로 한 번 골라 받는다
 async function attachWriteDir(P) {
-  const pick = await modal('저장할 폴더 고르기', `<p>빠른 방식으로 연 폴더라서 바로 저장하려면 폴더 접근 권한이 한 번 필요합니다. 다음 창에서 <b>${esc(P.name || '이 곡')}</b> 폴더를 골라 주세요.</p><p class="dim">한 번 고르면 이 폴더를 닫을 때까지 다시 묻지 않습니다. 취소하면 이번 저장은 다운로드로 합니다.</p>`, [
-    { label: '다운로드로 저장', value: null },
-    { label: '폴더 고르기', primary: true, value: () => window.showDirectoryPicker({ id: 'bms-folder', mode: 'readwrite' }).catch(() => null) },
+  const pick = await modal(tr('dlg.pickSave.title'), `<p>${tr('dlg.pickSave.body', { name: esc(P.name || tr('dlg.pickSave.thisSong')) })}</p><p class="dim">${tr('dlg.pickSave.note')}</p>`, [
+    { label: tr('dlg.pickSave.download'), value: null },
+    { label: tr('dlg.pickFolder'), primary: true, value: () => window.showDirectoryPicker({ id: 'bms-folder', mode: 'readwrite' }).catch(() => null) },
   ]);
   if (!pick) return false;
   const D = makeDirProvider(pick);
   const same = pick.name === P.name && (!A.fileName || !!(await D.find(A.fileName)));
   if (!same) {
-    const go = await modal('다른 폴더인 것 같습니다', `<p>고른 폴더 <b>${esc(pick.name)}</b>가 지금 연 폴더 <b>${esc(P.name || '')}</b>와 다르거나, 그 안에 <b>${esc(A.fileName || '')}</b> 파일이 없습니다.</p><p>그래도 이 폴더에 저장할까요?</p>`, [
-      { label: '취소', value: false, primary: true }, { label: '이 폴더에 저장', value: true }]);
+    const go = await modal(tr('dlg.otherFolder.title'), `<p>${tr('dlg.otherFolder.body', { picked: esc(pick.name), opened: esc(P.name || ''), file: esc(A.fileName || '') })}</p><p>${tr('dlg.otherFolder.ask')}</p>`, [
+      { label: tr('btn.cancel'), value: false, primary: true }, { label: tr('dlg.otherFolder.save'), value: true }]);
     if (!go) return false;
   }
   P.writer = D; P.canWrite = true;
@@ -139,12 +139,12 @@ async function attachWriteDir(P) {
 // 폴더 선택 창을 쓸 수 없는 환경(다른 페이지 안에 띄워진 경우, 모바일 등): 일반 파일 선택으로 대신
 function fallbackPick(why) {
   const mobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
-  modal('폴더 열기', `<p>이 화면에서는 폴더를 직접 열 수 없어 파일 선택 창으로 불러옵니다. 이 방식으로 연 파일은 <b>저장할 때 다운로드</b>됩니다.</p>`
-    + `<p class="dim">폴더에 바로 저장하려면 HTML 파일을 내려받아 크롬·엣지에서 직접 열거나, 폴더를 이 창에 끌어다 놓으세요.${mobile ? ' 안드로이드에서는 패턴 파일과 키음 파일을 한꺼번에 여러 개 고르면 됩니다.' : ''}</p>`
+  modal(tr('dlg.openFiles.title'), `<p>${tr('dlg.openFiles.body')}</p>`
+    + `<p class="dim">${tr('dlg.openFiles.note')}${mobile ? tr('dlg.openFiles.android') : ''}</p>`
     + (why ? `<p class="dim" style="font-size:11px">${esc(why)}</p>` : ''), [
-    { label: '취소', value: null },
-    { label: '파일 여러 개 고르기', value: () => { $('#filesIn').click(); return null; }, primary: mobile },
-    { label: '폴더 고르기', value: () => { $('#dirIn').click(); return null; }, primary: !mobile },
+    { label: tr('btn.cancel'), value: null },
+    { label: tr('dlg.openFiles.pickFiles'), value: () => { $('#filesIn').click(); return null; }, primary: mobile },
+    { label: tr('dlg.pickFolder'), value: () => { $('#dirIn').click(); return null; }, primary: !mobile },
   ]);
 }
 async function useProvider(P, prefer) {
@@ -153,19 +153,19 @@ async function useProvider(P, prefer) {
   Au.reset();
   await refreshFileList();
   const files = A.fs.files;
-  if (!files.length) { toast('폴더에 BMS 파일(.bms .bme .bml .pms)이 없어 새 파일을 만들었습니다', 4500); newChart(true); return; }
+  if (!files.length) { toast(tr('toast.noChartInFolder'), 4500); newChart(true); return; }
   await openChart(prefer && files.includes(prefer) ? prefer : files[0]);
 }
 async function refreshFileList(select) {
   const P = A.fs.provider, sel = $('#fileSel');
-  if (!P) { sel.innerHTML = '<option>(폴더 없음)</option>'; sel.disabled = true; return; }
+  if (!P) { sel.innerHTML = `<option>${esc(tr('file.noFolder'))}</option>`; sel.disabled = true; return; }
   const all = await P.list();
   const names = all.filter((n) => CHART_EXT.test(n)).sort((a, b) => a.localeCompare(b));
   A.fs.files = names;
   const opts = names.slice();
   if (select && !opts.includes(select)) opts.push(select);
-  sel.innerHTML = opts.length ? opts.map((n) => `<option value="${esc(n)}">${esc(n)}</option>`).join('') : '<option>(패턴 파일 없음)</option>';
-  if (!A.fileName && A.st) sel.insertAdjacentHTML('afterbegin', '<option value="">(새 파일)</option>');
+  sel.innerHTML = opts.length ? opts.map((n) => `<option value="${esc(n)}">${esc(n)}</option>`).join('') : `<option>${esc(tr('file.noCharts'))}</option>`;
+  if (!A.fileName && A.st) sel.insertAdjacentHTML('afterbegin', `<option value="">${esc(tr('file.newOption'))}</option>`);
   sel.disabled = !opts.length;
   sel.value = select !== undefined ? select : (A.fileName || '');
   $('#audioList').innerHTML = all.filter((n) => AUDIO_EXT.test(n)).sort().map((n) => `<option value="${esc(n)}">`).join('');
@@ -174,9 +174,9 @@ async function refreshFileList(select) {
 async function openChart(name, enc) {
   const P = A.fs.provider;
   const bytes = P && await P.read(name);
-  if (!bytes) { toast('파일을 읽을 수 없습니다: ' + name, 4000); return; }
+  if (!bytes) { toast(tr('toast.cantRead', { name }), 4000); return; }
   let doc;
-  try { doc = C.parse(bytes, enc); } catch (e) { toast('읽기 실패: ' + e.message, 5000); return; }
+  try { doc = C.parse(bytes, enc); } catch (e) { toast(tr('toast.readFailed', { err: e }), 5000); return; }
   loadDoc(doc, name);
 }
 function loadDoc(doc, name) {
@@ -196,10 +196,10 @@ function loadDoc(doc, name) {
   $('#encSel').value = doc.enc;
   startPreload(); checkBmps();
   const notes = [];
-  if (A.dp) notes.push('DP 패턴으로 열었습니다');
-  if (A.pms) notes.push('PMS(9버튼) 패턴으로 열었습니다');
-  if (doc.lntype === 2) notes.push('LNTYPE 2 롱노트는 편집하지 않고 보존합니다');
-  if (doc.encAmbiguous) notes.push('인코딩을 Shift-JIS로 추정했습니다. 글자가 깨져 보이면 아래쪽 인코딩을 바꿔 보세요');
+  if (A.dp) notes.push(tr('open.note.dp'));
+  if (A.pms) notes.push(tr('open.note.pms'));
+  if (doc.lntype === 2) notes.push(tr('open.note.lntype2'));
+  if (doc.encAmbiguous) notes.push(tr('open.note.encGuess'));
   if (notes.length) toast(notes.join(' · '), 5000);
 }
 function newChart(skipConfirm) {

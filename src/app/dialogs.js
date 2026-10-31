@@ -29,16 +29,16 @@ function modal(title, body, buttons) {
 function promptText(title, label, value, hint) {
   const w = document.createElement('div');
   w.innerHTML = `<label class="fl">${esc(label)} <input type="text" id="ptIn" value="${esc(value || '')}" spellcheck="false" autocomplete="off"></label>${hint ? `<div class="hint">${esc(hint)}</div>` : ''}`;
-  return modal(title, w, [{ label: '취소', value: null }, { label: '확인', primary: true, value: () => w.querySelector('#ptIn').value }]);
+  return modal(title, w, [{ label: tr('btn.cancel'), value: null }, { label: tr('btn.ok'), primary: true, value: () => w.querySelector('#ptIn').value }]);
 }
 async function confirmDiscard() {
   if (!A.dirty) return true;
-  const r = await modal('저장하지 않은 변경 사항', '<p>지금 패턴에 저장하지 않은 변경 사항이 있습니다. 버리고 계속할까요?</p>', [
-    { label: '취소', value: false, primary: true }, { label: '버리고 계속', value: true }]);
+  const r = await modal(tr('dlg.unsaved.title'), `<p>${tr('dlg.unsaved.body')}</p>`, [
+    { label: tr('btn.cancel'), value: false, primary: true }, { label: tr('dlg.unsaved.discard'), value: true }]);
   return !!r;
 }
 function showHelp() {
-  modal('도움말', `<div class="help">
+  modal(tr('dlg.help.title'), `<div class="help">
 <h4>모드</h4><ul>
 <li><b>선택 (F1)</b> — 클릭: 선택 · 빈 곳 드래그: 범위 선택 · 노트 드래그: 이동 (좌우로 끌면 레인 이동, BGM ↔ 키 레인 포함) · Ctrl+드래그: 복사 · 롱노트 윗끝 드래그: 길이 조절</li>
 <li><b>쓰기 (F3)</b> — 클릭: WAV 목록에서 고른 키음으로 노트 찍기 · 키 레인에서 위로 끌기: 롱노트 · 기존 노트 클릭: 그 키음을 집어오기 (위로 끌면 롱노트로) · BPM/STOP 레인 클릭: 값 입력</li>
@@ -62,5 +62,5 @@ function showHelp() {
 <h4>저장</h4><p>편집한 채널(BGM · BPM · STOP · 1P 키 · 롱노트 · 마디 길이)과 고친 헤더 · WAV 줄만 다시 쓰고, 나머지 줄(BGA, 2P, 숨김 노트, 지뢰, 주석, 모르는 명령, #RANDOM 블록)은 원본 바이트 그대로 둡니다. 저장 직전에 결과를 다시 읽어 편집 내용과 일치하는지 확인하고, 바뀐 줄을 보여 줍니다. 기본 인코딩은 Shift-JIS입니다.</p>
 <h4>복사 · 붙여넣기</h4><p>iBMSC 클립보드 형식("iBMSC Clipboard Data")을 씁니다. iBMSC에서 복사한 노트나 ibmsc_clip.py가 만든 텍스트를 붙여넣을 수 있고, 여기서 복사한 노트를 iBMSC에 붙여넣을 수도 있습니다. 위치는 마우스가 있는 마디의 시작점 기준입니다.</p>
 <h4>로컬 전용</h4><p>이 페이지는 파일 하나로 동작하며 서버가 없습니다. 패턴과 키음은 브라우저 안에서만 읽고 쓰고, 외부로 나가는 통신은 페이지의 보안 정책(CSP)으로 막혀 있습니다. 폴더에 바로 저장하려면 크롬이나 엣지를 쓰세요. 다른 브라우저에서는 저장할 때 파일이 다운로드됩니다.</p>
-</div>`, [{ label: '닫기', value: null, primary: true }]);
+</div>`, [{ label: tr('btn.close'), value: null, primary: true }]);
 }

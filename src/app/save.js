@@ -12,7 +12,7 @@ async function save(asNew) {
   if (!A.fileName) asNew = true;
   let res;
   try { res = C.serialize(A.doc, A.st, { encoding: A.doc.enc }); }
-  catch (e) { await modal('저장할 수 없습니다', `<p>${esc(e.message)}</p>`, [{ label: '닫기', value: null, primary: true }]); return; }
+  catch (e) { await modal(tr('dlg.saveFail.title'), `<p>${esc(msgText(e))}</p>`, [{ label: tr('btn.close'), value: null, primary: true }]); return; }
   let name = asNew ? suggestName() : A.fileName, enc = A.doc.enc;
   const problem = !res.verify.ok || res.badChars.length || res.warnings.length;
   if (asNew || cfg.confirmSave || problem) {
@@ -29,37 +29,37 @@ function saveDialog(res0, name, asNew) {
   w.className = 'savedlg';
   const render = (keepName) => {
     const v = res.verify, items = [];
-    items.push(v.ok ? '<li class="ok">다시 읽어서 확인: 편집한 내용과 정확히 일치합니다</li>'
-      : `<li class="bad">다시 읽어서 확인: 문제 ${v.problems.length}건<ul>${v.problems.map((p) => `<li>${esc(p)}</li>`).join('')}</ul></li>`);
-    items.push(res.reencode ? `<li class="warn">인코딩을 ${C.ENC_LABEL[res.enc]}(으)로 바꿔 모든 줄을 다시 씁니다</li>`
-      : `<li class="ok">편집하지 않은 줄 ${res.kept}개는 원본 바이트 그대로입니다</li>`);
-    if (res.badChars.length) items.push(`<li class="bad">${C.ENC_LABEL[res.enc]}로 쓸 수 없는 글자: ${esc(res.badChars.slice(0, 24).join(' '))} — '?'로 바뀝니다. 인코딩을 UTF-8로 바꾸거나 글자를 고쳐 주세요.</li>`);
-    for (const x of res.warnings) items.push(`<li class="warn">${esc(x)}</li>`);
-    if (res.newDefs) items.push(`<li class="ok">새 #BPM/#STOP 정의 ${res.newDefs}개를 추가합니다</li>`);
+    items.push(v.ok ? `<li class="ok">${tr('save.verify.ok')}</li>`
+      : `<li class="bad">${tr('save.verify.bad', { n: v.problems.length })}<ul>${v.problems.map((p) => `<li>${esc(msgText(p))}</li>`).join('')}</ul></li>`);
+    items.push(res.reencode ? `<li class="warn">${tr('save.reencode', { enc: C.ENC_LABEL[res.enc] })}</li>`
+      : `<li class="ok">${tr('save.kept', { n: res.kept })}</li>`);
+    if (res.badChars.length) items.push(`<li class="bad">${tr('save.badChars', { enc: C.ENC_LABEL[res.enc], chars: esc(res.badChars.slice(0, 24).join(' ')) })}</li>`);
+    for (const x of res.warnings) items.push(`<li class="warn">${esc(msgText(x))}</li>`);
+    if (res.newDefs) items.push(`<li class="ok">${tr('save.newDefs', { n: res.newDefs })}</li>`);
     const minus = res.diff.filter((d) => d.op === '-').length, plus = res.diff.length - minus;
     const LIM = 500;
     const diffHtml = res.diff.slice(0, LIM).map((d) => `<div class="${d.op === '-' ? 'dm' : 'dp'}">${d.op === '-' ? '−' : '+'} <span class="ln">${d.n || ''}</span>${esc(trunc(d.t, 200))}</div>`).join('')
-      + (res.diff.length > LIM ? `<div class="dim">… ${res.diff.length - LIM}줄 더</div>` : '');
-    w.innerHTML = (asNew ? `<label class="fl">파일 이름 <input id="sdName" type="text" value="${esc(keepName || name)}" spellcheck="false"></label>` : `<div class="fl">파일: <b>${esc(name)}</b></div>`)
-      + `<label class="fl">인코딩 <select id="sdEnc">${ENC_LIST.map((e) => `<option value="${e}"${e === enc ? ' selected' : ''}>${C.ENC_LABEL[e]}${e === A.doc.enc ? ' (원본)' : ''}</option>`).join('')}</select></label>`
+      + (res.diff.length > LIM ? `<div class="dim">${tr('save.diffMore', { n: res.diff.length - LIM })}</div>` : '');
+    w.innerHTML = (asNew ? `<label class="fl">${tr('save.fileName')} <input id="sdName" type="text" value="${esc(keepName || name)}" spellcheck="false"></label>` : `<div class="fl">${tr('save.file')} <b>${esc(name)}</b></div>`)
+      + `<label class="fl">${tr('stb.enc')} <select id="sdEnc">${ENC_LIST.map((e) => `<option value="${e}"${e === enc ? ' selected' : ''}>${C.ENC_LABEL[e]}${e === A.doc.enc ? tr('save.encOriginal') : ''}</option>`).join('')}</select></label>`
       + `<ul class="chk">${items.join('')}</ul>`
-      + `<div class="dh">바뀐 줄 — 지움 ${minus} · 새로 씀 ${plus}</div>`
-      + `<div class="diff">${diffHtml || '<div class="dim">바뀐 줄이 없습니다</div>'}</div>`
-      + `<label class="chkl"><input type="checkbox" id="sdBak"${cfg.backup ? ' checked' : ''}> 처음 덮어쓸 때 원본을 .bak으로 백업</label>`
-      + `<label class="chkl"><input type="checkbox" id="sdQuiet"${cfg.confirmSave ? '' : ' checked'}> 다음부터 이 창 없이 바로 저장 (문제가 있을 때만 표시)</label>`;
+      + `<div class="dh">${tr('save.diffHead', { minus, plus })}</div>`
+      + `<div class="diff">${diffHtml || `<div class="dim">${tr('save.noDiff')}</div>`}</div>`
+      + `<label class="chkl"><input type="checkbox" id="sdBak"${cfg.backup ? ' checked' : ''}> ${tr('pn.view.backup')}</label>`
+      + `<label class="chkl"><input type="checkbox" id="sdQuiet"${cfg.confirmSave ? '' : ' checked'}> ${tr('save.quiet')}</label>`;
     w.querySelector('#sdEnc').onchange = (e) => {
       const nm = asNew ? w.querySelector('#sdName').value : '';
       try { res = C.serialize(A.doc, A.st, { encoding: e.target.value }); enc = e.target.value; render(nm); }
-      catch (err) { toast(err.message, 5000); }
+      catch (err) { toast(msgText(err), 5000); }
     };
   };
   render();
-  return modal(asNew ? '다른 이름으로 저장' : '저장 확인', w, [
-    { label: '취소', value: null },
-    { label: res0.verify.ok && !res0.badChars.length ? '저장' : '그래도 저장', primary: true, value: () => {
+  return modal(asNew ? tr('save.titleAs') : tr('save.title'), w, [
+    { label: tr('btn.cancel'), value: null },
+    { label: res0.verify.ok && !res0.badChars.length ? tr('save.ok') : tr('save.anyway'), primary: true, value: () => {
       cfg.backup = w.querySelector('#sdBak').checked; cfg.confirmSave = !w.querySelector('#sdQuiet').checked; saveCfg(); syncOptions();
       const nm = asNew ? w.querySelector('#sdName').value.trim().replace(/[\\/:*?"<>|]/g, '') : name;
-      if (!nm) { toast('파일 이름을 넣어 주세요'); return undefined; }
+      if (!nm) { toast(tr('toast.needFileName')); return undefined; }
       return { name: nm, enc, res };
     } },
   ]);
@@ -77,17 +77,17 @@ async function writeOut(name, res, enc) {
   const isDir = P && (P.kind === 'dir' || !!P.writer);
   if (P && P.canWrite) {
     try {
-      if (!(await P.ensureWrite())) throw new Error('쓰기 권한을 받지 못했습니다');
+      if (!(await P.ensureWrite())) throw appError('err.noWritePermission');
       const lower = name.toLowerCase();
       if (cfg.backup && isDir && A.fileName && lower === A.fileName.toLowerCase() && A.doc.bytes.length && !A.backedUp.has(lower)) {
-        await P.write(name + '.bak', A.doc.bytes); A.backedUp.add(lower); backup = ` (원본은 ${name}.bak)`;
+        await P.write(name + '.bak', A.doc.bytes); A.backedUp.add(lower); backup = tr('toast.saved.backup', { name });
       }
       if (isDir && lower !== (A.fileName || '').toLowerCase() && A.fs.files.some((f) => f.toLowerCase() === lower)) {
-        const ok = await modal('덮어쓰기', `<p>폴더에 <b>${esc(name)}</b> 파일이 이미 있습니다. 덮어쓸까요?</p>`, [{ label: '취소', value: false }, { label: '덮어쓰기', value: true, primary: true }]);
+        const ok = await modal(tr('dlg.overwrite.title'), `<p>${tr('dlg.overwrite.body', { name: esc(name) })}</p>`, [{ label: tr('btn.cancel'), value: false }, { label: tr('dlg.overwrite.ok'), value: true, primary: true }]);
         if (!ok) return;
       }
       await P.write(name, res.bytes); wrote = true;
-    } catch (e) { toast('폴더에 쓰지 못해 다운로드로 저장합니다: ' + e.message, 6000); }
+    } catch (e) { toast(tr('toast.writeFailedDownload', { err: e }), 6000); }
   }
   if (!wrote) download(name, res.bytes);
   // 저장한 내용을 새 기준으로 (실행 취소 기록은 유지)
@@ -100,5 +100,5 @@ async function writeOut(name, res, enc) {
   await refreshFileList(name);
   renderBlocks(); renderInfo();
   $('#encSel').value = enc;
-  toast(wrote ? `저장했습니다: ${name}${backup}` : `다운로드했습니다: ${name}`, 4000);
+  toast(wrote ? tr('toast.saved', { name }) + backup : tr('toast.downloaded', { name }), 4000);
 }

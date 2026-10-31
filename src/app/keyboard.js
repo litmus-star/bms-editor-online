@@ -16,7 +16,7 @@ function onKey(e) {
     e.preventDefault();
     if (k === 'F1') setMode('select');
     else if (k === 'F3') setMode('write');
-    else if (k === 'F2') toast('시간 선택 모드는 아직 없습니다');
+    else if (k === 'F2') toast(tr('toast.noTimeSelect'));
     else if (k === 'F5') play(0);
     else if (k === 'F6') play(A.st ? hereBeat() : 0);
     else if (k === 'F7') stopPlay();
@@ -54,9 +54,9 @@ function onKey(e) {
     default: break;
   }
   if (k === '\\') { A.toggleSide(); return; }
-  if (lk === 'n') { const order = ['n', 'h', 'm'], nk = order[(order.indexOf(A.noteKind) + 1) % 3]; A.setKind(nk); toast(`쓰기 노트 종류: ${KIND_NAME[nk]}`); return; }
-  if (lk === 'h') { cfg.lockH = !cfg.lockH; saveCfg(); $('#lockChk').checked = cfg.lockH; toast(cfg.lockH ? '노트 이동: 옆으로만' : '노트 이동: 위아래·옆 모두'); return; }
-  if (lk === 'g') { cfg.snap = !cfg.snap; saveCfg(); $('#snapChk').checked = cfg.snap; toast(cfg.snap ? '스냅 켬' : '스냅 끔 (1/192 단위)'); }
+  if (lk === 'n') { const order = ['n', 'h', 'm'], nk = order[(order.indexOf(A.noteKind) + 1) % 3]; A.setKind(nk); toast(tr('toast.writeKind', { kind: tr(KIND_NAME[nk]) })); return; }
+  if (lk === 'h') { cfg.lockH = !cfg.lockH; saveCfg(); $('#lockChk').checked = cfg.lockH; toast(cfg.lockH ? tr('toast.lockH.on') : tr('toast.lockH.off')); return; }
+  if (lk === 'g') { cfg.snap = !cfg.snap; saveCfg(); $('#snapChk').checked = cfg.snap; toast(cfg.snap ? tr('toast.snap.on') : tr('toast.snap.off')); }
 }
 function setMode(m) {
   A.mode = m;

@@ -190,7 +190,7 @@ function paint() {
     clipB(l); ctx.fillText(l.label, laneX(l) + l.w / 2, HEAD_H / 2); ctx.restore();
   }
   ctx.fillStyle = '#1a1b1f'; ctx.fillRect(0, 0, MEAS_W, HEAD_H - 1);
-  ctx.fillStyle = '#9a9a9a'; ctx.fillText('마디', MEAS_W / 2, HEAD_H / 2);
+  ctx.fillStyle = '#9a9a9a'; ctx.fillText(tr('view.measure'), MEAS_W / 2, HEAD_H / 2);
   ctx.fillStyle = SEP_COL;
   for (const sx of A.sepX || []) ctx.fillRect(sx - 1, 0, 2, HEAD_H); // 머리줄 위에도
 }

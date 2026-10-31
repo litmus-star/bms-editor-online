@@ -57,7 +57,7 @@ const scrolls = (l) => l.type === 'bgm' || l.type === 'bga'; // 가로 스크롤
 const laneX = (l) => (scrolls(l) ? l.x - A.view.left : l.x);
 // 같은 그룹 안에서만 옆으로 옮길 수 있음: 키음(키+BGM), BGA
 const grpOf = (lane) => (lane[0] === 'K' || lane[0] === 'B' ? 'snd' : lane[0] === 'G' ? 'bga' : null);
-const KIND_NAME = { n: '일반', h: '숨김', m: '지뢰' };
+const KIND_NAME = { n: 'kind.n', h: 'kind.h', m: 'kind.m' }; // 노트 종류 이름의 문구 키 (짧은 이름)
 const isSound = (lane) => lane[0] === 'K' || lane[0] === 'B';
 const isKey = (lane) => lane[0] === 'K';
 const lenOf = (m) => { const g = A.st && A.st.meas.get(m); return g ? g.r : R1; };

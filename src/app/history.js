@@ -36,20 +36,20 @@ function undo() {
   const a = A.undo.pop(); if (!a) return;
   applyAct(a, true); A.redo.push(a); setDirty(true);
   const n = pickNotes(a, 'del'); if (n.length) A.sel = new Set(n);
-  afterChange(a); toast('실행 취소');
+  afterChange(a); toast(tr('toast.undo'));
 }
 function redo() {
   const a = A.redo.pop(); if (!a) return;
   applyAct(a, false); A.undo.push(a); setDirty(true);
   const n = pickNotes(a, 'add'); if (n.length) A.sel = new Set(n);
-  afterChange(a); toast('다시 실행');
+  afterChange(a); toast(tr('toast.redo'));
 }
 function setDirty(v) {
   A.dirty = v;
   const el = $('#sFile');
-  el.textContent = !A.st ? '' : (v ? '● 저장 안 됨' : '저장됨');
+  el.textContent = !A.st ? '' : (v ? tr('stb.unsaved') : tr('stb.saved'));
   el.classList.toggle('dirty', !!v);
-  document.title = (v ? '● ' : '') + (A.fileName || (A.st ? '새 파일' : 'BMS 웹 에디터')) + (A.st ? ' — BMS 웹 에디터' : '');
+  document.title = (v ? '● ' : '') + (A.fileName || (A.st ? tr('file.new') : tr('app.name'))) + (A.st ? ' — ' + tr('app.name') : '');
 }
 
 /* 같은 자리 충돌 처리: 이동·붙여넣기는 밀려난 노트를 빈 BGM 레인으로, 쓰기는 덮어쓰기 */

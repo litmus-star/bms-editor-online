@@ -39,7 +39,7 @@ function pasteText(text) {
   } else {
     const lines = String(text).split(/\r?\n/);
     const head = (lines[0] || '').trim();
-    if (!/^iBMSC Clipboard Data/.test(head)) { toast('붙여넣을 수 있는 노트 데이터(iBMSC 형식)가 아닙니다'); return; }
+    if (!/^iBMSC Clipboard Data/.test(head)) { toast(tr('toast.paste.badFormat')); return; }
     const nt = /xNT/.test(head);
     let raw = [];
     for (const ln of lines.slice(1)) {
@@ -79,9 +79,9 @@ function pasteText(text) {
   const before = notes.length;
   notes = notes.filter((n) => n.b >= 0 && n.b + n.lb < A.ms.Sf[1000]);
   skipped += before - notes.length;
-  if (!notes.length) { toast('붙여넣을 노트가 없습니다'); return; }
+  if (!notes.length) { toast(tr('toast.paste.empty')); return; }
   const act = { del: [], add: notes };
   const nd = resolveConflicts(act, 'displace');
   commit(act); A.sel = new Set(notes); draw();
-  toast(`노트 ${notes.length}개를 마디 ${C.pad3(measureAt(rf(base)))}에 붙여넣었습니다` + (nd ? ` · 겹친 ${nd}개는 빈 BGM 레인으로` : '') + (skipped ? ` · 건너뜀 ${skipped}개(숨김/지뢰/2P 등)` : ''), 4000);
+  toast(tr('toast.paste.done', { n: notes.length, m: C.pad3(measureAt(rf(base))) }) + (nd ? tr('toast.paste.moved', { n: nd }) : '') + (skipped ? tr('toast.paste.skipped', { n: skipped }) : ''), 4000);
 }

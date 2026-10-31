@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; media-src blob: data:; font-src data:; connect-src 'none'; form-action 'none'; base-uri 'none'">
-<title>BMS 웹 에디터</title>
+<title data-i18n="app.name">BMS 웹 에디터</title>
 <style>:root {
   --bg: #15161a; --panel: #1d1f24; --panel2: #24272d; --line: #31353c; --text: #dadde3; --dim: #8a909b;
   --acc: #ffd84d; --blue: #5c88ff; --bad: #ff6b6b; --ok: #5fd66f; --warn: #ffb347;
@@ -158,42 +158,42 @@ body.side-off #side { display: none; }
 <div id="app">
   <header id="tb">
     <div class="g">
-      <button id="bOpen" title="곡 폴더 열기 (Ctrl+O)">폴더 열기</button>
-      <select id="fileSel" title="폴더 안의 패턴 파일" disabled><option>(폴더 없음)</option></select>
-      <button id="bNew" title="빈 패턴 만들기">새 파일</button>
-      <button id="bSave" class="pri" title="저장 (Ctrl+S)">저장</button>
-      <button id="bSaveAs" title="다른 이름으로 저장 (Ctrl+Shift+S)">다른 이름으로</button>
+      <button id="bOpen" data-i18n="tb.open" data-i18n-title="tb.open.tip" title="곡 폴더 열기 (Ctrl+O)">폴더 열기</button>
+      <select id="fileSel" data-i18n-title="tb.fileSel.tip" disabled title="폴더 안의 패턴 파일"><option data-i18n="file.noFolder">(폴더 없음)</option></select>
+      <button id="bNew" data-i18n="tb.new" data-i18n-title="tb.new.tip" title="빈 패턴 만들기">새 파일</button>
+      <button id="bSave" class="pri" data-i18n="tb.save" data-i18n-title="tb.save.tip" title="저장 (Ctrl+S)">저장</button>
+      <button id="bSaveAs" data-i18n="tb.saveAs" data-i18n-title="tb.saveAs.tip" title="다른 이름으로 저장 (Ctrl+Shift+S)">다른 이름으로</button>
     </div>
     <div class="g">
-      <button id="bUndo" class="ic" title="실행 취소 (Ctrl+Z)">↶</button>
-      <button id="bRedo" class="ic" title="다시 실행 (Ctrl+Y)">↷</button>
+      <button id="bUndo" class="ic" data-i18n-title="tb.undo.tip" title="실행 취소 (Ctrl+Z)">↶</button>
+      <button id="bRedo" class="ic" data-i18n-title="tb.redo.tip" title="다시 실행 (Ctrl+Y)">↷</button>
     </div>
     <div class="g">
-      <button id="bDP" title="SP → DP → PMS 화면 전환 — 파일을 열 때 .pms이거나 팝픈 9버튼 레인만 쓰면 PMS, #PLAYER 3이거나 2P 노트가 있으면 DP로 엽니다">SP</button>
+      <button id="bDP" data-i18n-title="tb.playMode.tip" title="SP → DP → PMS 화면 전환 — 파일을 열 때 .pms이거나 팝픈 9버튼 레인만 쓰면 PMS, #PLAYER 3이거나 2P 노트가 있으면 DP로 엽니다">SP</button>
     </div>
     <div class="g seg">
-      <button id="mSel" title="선택 모드 (F1)">선택 <kbd>F1</kbd></button>
-      <button id="mWrite" title="쓰기 모드 (F3)">쓰기 <kbd>F3</kbd></button>
+      <button id="mSel" data-i18n-title="tb.modeSelect.tip" title="선택 모드 (F1)"><span data-i18n="tb.modeSelect">선택</span> <kbd>F1</kbd></button>
+      <button id="mWrite" data-i18n-title="tb.modeWrite.tip" title="쓰기 모드 (F3)"><span data-i18n="tb.modeWrite">쓰기</span> <kbd>F3</kbd></button>
     </div>
     <div class="g">
-      <select id="kindSel" title="쓰기 모드에서 키 레인에 찍을 노트 종류 (N)"><option value="n">일반 노트</option><option value="h">숨김 노트</option><option value="m">지뢰</option></select>
-      <input id="mineVal" type="text" value="01" maxlength="2" title="새 지뢰의 값(피해량)" style="width:38px" hidden>
+      <select id="kindSel" data-i18n-title="tb.kind.tip" title="쓰기 모드에서 키 레인에 찍을 노트 종류 (N)"><option value="n" data-i18n="kind.long.n">일반 노트</option><option value="h" data-i18n="kind.long.h">숨김 노트</option><option value="m" data-i18n="kind.long.m">지뢰</option></select>
+      <input id="mineVal" type="text" value="01" maxlength="2" data-i18n-title="tb.mineVal.tip" style="width:38px" hidden title="새 지뢰의 값(피해량)">
     </div>
     <div class="g">
-      <button id="pStart" title="처음부터 재생 (F5)">⏮ 처음부터</button>
-      <button id="pHere" title="화면 맨 아래 마디부터 재생 (F6, Space)">▶ 재생</button>
-      <button id="pStop" title="정지 (F7, Space)">■ 정지</button>
+      <button id="pStart" data-i18n-title="tb.playStart.tip" title="처음부터 재생 (F5)">⏮ <span data-i18n="tb.playStart">처음부터</span></button>
+      <button id="pHere" data-i18n-title="tb.playHere.tip" title="화면 맨 아래 마디부터 재생 (F6, Space)">▶ <span data-i18n="tb.playHere">재생</span></button>
+      <button id="pStop" data-i18n-title="tb.stop.tip" title="정지 (F7, Space)">■ <span data-i18n="tb.stop">정지</span></button>
     </div>
     <div class="g">
-      <label>그리드 <select id="gridSel"></select></label>
-      <label class="chk" title="G"><input type="checkbox" id="snapChk"> 스냅</label>
-      <label class="chk" title="노트를 옮길 때 위아래로는 움직이지 않음 (H)"><input type="checkbox" id="lockChk"> 옆으로만</label>
+      <label><span data-i18n="tb.grid">그리드</span> <select id="gridSel"></select></label>
+      <label class="chk" title="G"><input type="checkbox" id="snapChk"> <span data-i18n="tb.snap">스냅</span></label>
+      <label class="chk" data-i18n-title="tb.lockH.tip" title="노트를 옮길 때 위아래로는 움직이지 않음 (H)"><input type="checkbox" id="lockChk"> <span data-i18n="tb.lockH">옆으로만</span></label>
     </div>
-    <div class="g"><label title="세로 확대 (Ctrl+휠, + −)">세로 <input type="range" id="zoomR" min="0.25" max="8" step="0.25"></label><label title="가로 확대 (Ctrl+Shift+휠, [ ])">가로 <input type="range" id="zoomXR" min="0.4" max="4" step="0.05"></label></div>
-    <div class="g"><label>음량 <input type="range" id="volR" min="0" max="1" step="0.05"></label></div>
+    <div class="g"><label data-i18n-title="tb.zoomY.tip" title="세로 확대 (Ctrl+휠, + −)"><span data-i18n="tb.zoomY">세로</span> <input type="range" id="zoomR" min="0.25" max="8" step="0.25"></label><label data-i18n-title="tb.zoomX.tip" title="가로 확대 (Ctrl+Shift+휠, [ ])"><span data-i18n="tb.zoomX">가로</span> <input type="range" id="zoomXR" min="0.4" max="4" step="0.05"></label></div>
+    <div class="g"><label><span data-i18n="tb.volume">음량</span> <input type="range" id="volR" min="0" max="1" step="0.05"></label></div>
     <div class="g end">
-      <span class="lock" title="파일은 이 브라우저 안에서만 읽고 씁니다. 외부로 나가는 통신은 보안 정책(CSP)으로 막혀 있습니다.">● 로컬 전용</span>
-      <button id="bHelp" title="도움말 · 단축키">?</button>
+      <span class="lock" data-i18n-title="tb.localOnly.tip" title="파일은 이 브라우저 안에서만 읽고 씁니다. 외부로 나가는 통신은 보안 정책(CSP)으로 막혀 있습니다.">● <span data-i18n="tb.localOnly">로컬 전용</span></span>
+      <button id="bHelp" data-i18n-title="tb.help.tip" title="도움말 · 단축키">?</button>
     </div>
   </header>
   <main>
@@ -201,63 +201,63 @@ body.side-off #side { display: none; }
       <canvas id="cv"></canvas>
       <div id="sc" tabindex="0"><div id="sp"></div></div>
       <div id="empty">
-        <h2>BMS 웹 에디터</h2>
-        <p>BMS 곡 폴더를 열면 패턴 파일과 키음을 함께 불러옵니다.<br>폴더를 이 창으로 끌어다 놓아도 됩니다.</p>
-        <div class="row"><button id="eOpen" class="pri">폴더 열기</button><button id="eNew">새 파일</button></div>
-        <p class="dim">파일은 이 컴퓨터 안에서만 처리되고, 어디에도 업로드되지 않습니다.</p>
+        <h2 data-i18n="app.name">BMS 웹 에디터</h2>
+        <p data-i18n-html="empty.intro">BMS 곡 폴더를 열면 패턴 파일과 키음을 함께 불러옵니다.<br>폴더를 이 창으로 끌어다 놓아도 됩니다.</p>
+        <div class="row"><button id="eOpen" class="pri" data-i18n="tb.open">폴더 열기</button><button id="eNew" data-i18n="tb.new">새 파일</button></div>
+        <p class="dim" data-i18n="empty.privacy">파일은 이 컴퓨터 안에서만 처리되고, 어디에도 업로드되지 않습니다.</p>
         <p class="dim" id="eNote"></p>
       </div>
       <div id="ctxMenu" hidden></div>
-      <div id="drop" hidden>여기에 놓으면 폴더를 엽니다</div>
+      <div id="drop" hidden data-i18n="drop.hint">여기에 놓으면 폴더를 엽니다</div>
     </section>
-    <div id="split" title="끌어서 패널 너비 조절 · 더블클릭: 접기/펼치기"><button id="sideTgl" title="오른쪽 패널 접기/펼치기 (\\)">▶</button></div>
+    <div id="split" data-i18n-title="side.split.tip" title="끌어서 패널 너비 조절 · 더블클릭: 접기/펼치기"><button id="sideTgl" data-i18n-title="side.toggle.tip" title="오른쪽 패널 접기/펼치기 (\)">▶</button></div>
     <aside id="side">
-      <details id="pnHdr" open><summary>헤더</summary><div class="bd" id="hdrBd"></div></details>
+      <details id="pnHdr" open><summary data-i18n="pn.hdr">헤더</summary><div class="bd" id="hdrBd"></div></details>
       <details id="pnWav" open><summary>WAV <span id="wavCnt" class="dim"></span></summary><div class="bd">
-        <div class="row"><input id="wavQ" type="search" placeholder="번호·파일명 검색" spellcheck="false"><label class="chk"><input type="checkbox" id="wavDef"> 정의된 것만</label></div>
+        <div class="row"><input id="wavQ" type="search" data-i18n-placeholder="pn.search.ph" spellcheck="false" placeholder="번호·파일명 검색"><label class="chk"><input type="checkbox" id="wavDef"> <span data-i18n="pn.definedOnly">정의된 것만</span></label></div>
         <div id="wavList" class="list"></div>
-        <div class="hint">클릭: 쓰기 모드에서 찍을 키음 고르기 + 미리듣기 · 더블클릭: 파일명 바꾸기 · 빨간색: 파일 없음</div>
+        <div class="hint" data-i18n="pn.wav.hint">클릭: 쓰기 모드에서 찍을 키음 고르기 + 미리듣기 · 더블클릭: 파일명 바꾸기 · 빨간색: 파일 없음</div>
       </div></details>
       <details id="pnBmp"><summary>BMP (BGA) <span id="bmpCnt" class="dim"></span></summary><div class="bd">
-        <div class="row"><input id="bmpQ" type="search" placeholder="번호·파일명 검색" spellcheck="false"><label class="chk"><input type="checkbox" id="bmpDef" checked> 정의된 것만</label></div>
+        <div class="row"><input id="bmpQ" type="search" data-i18n-placeholder="pn.search.ph" spellcheck="false" placeholder="번호·파일명 검색"><label class="chk"><input type="checkbox" id="bmpDef" checked> <span data-i18n="pn.definedOnly">정의된 것만</span></label></div>
         <div id="bmpList" class="list"></div>
-        <div class="hint">클릭: 쓰기 모드에서 BGA·LAYER·POOR 레인에 찍을 이미지 고르기 · 더블클릭: 파일명 바꾸기 · 빨간색: 파일 없음</div>
+        <div class="hint" data-i18n="pn.bmp.hint">클릭: 쓰기 모드에서 BGA·LAYER·POOR 레인에 찍을 이미지 고르기 · 더블클릭: 파일명 바꾸기 · 빨간색: 파일 없음</div>
       </div></details>
-      <details id="pnBeat"><summary>박자 (마디 길이)</summary><div class="bd">
-        <div class="row"><input id="bN" type="number" min="1" max="999" value="3"><span>/</span><input id="bD" type="number" min="1" max="64" value="4"><button id="bApply">선택 마디에 적용</button><button id="bReset" title="선택 마디를 4/4로">4/4</button></div>
+      <details id="pnBeat"><summary data-i18n="pn.beat">박자 (마디 길이)</summary><div class="bd">
+        <div class="row"><input id="bN" type="number" min="1" max="999" value="3"><span>/</span><input id="bD" type="number" min="1" max="64" value="4"><button id="bApply" data-i18n="pn.beat.apply">선택 마디에 적용</button><button id="bReset" data-i18n-title="pn.beat.reset.tip" title="선택 마디를 4/4로">4/4</button></div>
         <div id="beatList" class="list"></div>
-        <div class="hint">마디를 클릭해서 고르고(Shift: 범위, Ctrl: 추가) 적용하세요. 노트는 제자리에 있고 마디선만 움직입니다.</div>
+        <div class="hint" data-i18n="pn.beat.hint">마디를 클릭해서 고르고(Shift: 범위, Ctrl: 추가) 적용하세요. 노트는 제자리에 있고 마디선만 움직입니다.</div>
       </div></details>
-      <details id="pnExp"><summary>확장 코드 <span id="expCnt" class="dim"></span></summary><div class="bd">
+      <details id="pnExp"><summary><span data-i18n="pn.exp">확장 코드</span> <span id="expCnt" class="dim"></span></summary><div class="bd">
         <div id="blkTabs" class="tabs"></div>
-        <textarea id="blkTx" spellcheck="false" placeholder="#RANDOM / #IF 블록"></textarea>
-        <div class="row"><button id="blkApply">적용</button><button id="blkNew">새 블록</button><button id="blkDel">이 블록 비우기</button></div>
-        <div class="hint">#RANDOM · #IF 블록은 파일 안 원래 자리에 그대로 저장됩니다. 블록 안 노트는 편집 화면에 회색 점선으로 보입니다(편집 불가).</div>
+        <textarea id="blkTx" spellcheck="false" data-i18n-placeholder="pn.exp.ph" placeholder="#RANDOM / #IF 블록"></textarea>
+        <div class="row"><button id="blkApply" data-i18n="pn.exp.apply">적용</button><button id="blkNew" data-i18n="pn.exp.new">새 블록</button><button id="blkDel" data-i18n="pn.exp.clear">이 블록 비우기</button></div>
+        <div class="hint" data-i18n="pn.exp.hint">#RANDOM · #IF 블록은 파일 안 원래 자리에 그대로 저장됩니다. 블록 안 노트는 편집 화면에 회색 점선으로 보입니다(편집 불가).</div>
       </div></details>
-      <details id="pnView"><summary>보기 · 재생 · 저장</summary><div class="bd col">
-        <label class="chk"><input type="checkbox" id="oName"> 노트에 키음 파일명 표시</label>
-        <label class="chk" title="SP 화면에서 스크래치 레인을 7키 오른쪽에 둡니다. 보이는 순서만 바뀌고 파일은 그대로입니다."><input type="checkbox" id="oScRight"> SP: 스크래치를 오른쪽에</label>
-        <label class="chk" title="끄면 BGA·LAYER·POOR 레인을 숨깁니다(노트는 그대로 저장)"><input type="checkbox" id="oHideBga"> BGA 영역 보이기</label>
-        <label class="chk" title="끄면 BPM·STOP 레인을 숨깁니다(노트와 박자 계산은 그대로)"><input type="checkbox" id="oHideBpm"> BPM · STOP 영역 보이기</label>
-        <label class="chk"><input type="checkbox" id="oFollow"> 재생 중 화면 따라가기</label>
-        <label class="chk"><input type="checkbox" id="oBgm"> 재생: BGM 레인 소리</label>
-        <label class="chk"><input type="checkbox" id="oKeys"> 재생: 키 레인 소리</label>
-        <label class="chk"><input type="checkbox" id="oBackup"> 처음 덮어쓸 때 원본을 .bak으로 백업</label>
-        <label class="chk"><input type="checkbox" id="oConfirm"> 저장할 때 바뀐 줄 확인 창 보기</label>
-        <label title="안드로이드 크롬은 '폴더 직접 접근'으로 열면 키음을 읽는 데 몇 분씩 걸려서, 자동이면 '폴더 고르기' 방식으로 엽니다(10여 초). 이 방식은 처음 저장할 때 같은 폴더를 한 번 더 고릅니다.">폴더 열기 방식 <select id="oOpenMode"><option value="auto">자동 (안드로이드는 빠른 방식)</option><option value="direct">폴더 직접 접근</option><option value="pick">폴더 고르기 (빠름, 저장 시 폴더 한 번 더 선택)</option></select></label>
+      <details id="pnView"><summary data-i18n="pn.view">보기 · 재생 · 저장</summary><div class="bd col">
+        <label class="chk"><input type="checkbox" id="oName"> <span data-i18n="pn.view.name">노트에 키음 파일명 표시</span></label>
+        <label class="chk" data-i18n-title="pn.view.scRight.tip" title="SP 화면에서 스크래치 레인을 7키 오른쪽에 둡니다. 보이는 순서만 바뀌고 파일은 그대로입니다."><input type="checkbox" id="oScRight"> <span data-i18n="pn.view.scRight">SP: 스크래치를 오른쪽에</span></label>
+        <label class="chk" data-i18n-title="pn.view.bga.tip" title="끄면 BGA·LAYER·POOR 레인을 숨깁니다(노트는 그대로 저장)"><input type="checkbox" id="oHideBga"> <span data-i18n="pn.view.bga">BGA 영역 보이기</span></label>
+        <label class="chk" data-i18n-title="pn.view.bpm.tip" title="끄면 BPM·STOP 레인을 숨깁니다(노트와 박자 계산은 그대로)"><input type="checkbox" id="oHideBpm"> <span data-i18n="pn.view.bpm">BPM · STOP 영역 보이기</span></label>
+        <label class="chk"><input type="checkbox" id="oFollow"> <span data-i18n="pn.view.follow">재생 중 화면 따라가기</span></label>
+        <label class="chk"><input type="checkbox" id="oBgm"> <span data-i18n="pn.view.bgm">재생: BGM 레인 소리</span></label>
+        <label class="chk"><input type="checkbox" id="oKeys"> <span data-i18n="pn.view.keys">재생: 키 레인 소리</span></label>
+        <label class="chk"><input type="checkbox" id="oBackup"> <span data-i18n="pn.view.backup">처음 덮어쓸 때 원본을 .bak으로 백업</span></label>
+        <label class="chk"><input type="checkbox" id="oConfirm"> <span data-i18n="pn.view.confirm">저장할 때 바뀐 줄 확인 창 보기</span></label>
+        <label data-i18n-title="pn.view.openMode.tip" title="안드로이드 크롬은 '폴더 직접 접근'으로 열면 키음을 읽는 데 몇 분씩 걸려서, 자동이면 '폴더 고르기' 방식으로 엽니다(10여 초). 이 방식은 처음 저장할 때 같은 폴더를 한 번 더 고릅니다."><span data-i18n="pn.view.openMode">폴더 열기 방식</span> <select id="oOpenMode"><option value="auto" data-i18n="pn.view.openMode.auto">자동 (안드로이드는 빠른 방식)</option><option value="direct" data-i18n="pn.view.openMode.direct">폴더 직접 접근</option><option value="pick" data-i18n="pn.view.openMode.pick">폴더 고르기 (빠름, 저장 시 폴더 한 번 더 선택)</option></select></label>
       </div></details>
-      <details id="pnInfo" open><summary>정보</summary><div class="bd" id="infoBd"></div></details>
-      <details id="pnDiag"><summary>키음 로딩 측정</summary><div class="bd">
+      <details id="pnInfo" open><summary data-i18n="pn.info">정보</summary><div class="bd" id="infoBd"></div></details>
+      <details id="pnDiag"><summary data-i18n="pn.diag">키음 로딩 측정</summary><div class="bd">
         <pre id="diagBd"></pre>
-        <div class="row"><button id="diagRun">동시 처리 비교 테스트</button><button id="diagCopy">결과 복사</button></div>
-        <div class="hint">폴더를 열 때 키음을 불러오면서 단계별 시간을 잽니다. 비교 테스트는 키음 40개를 동시 1·2·4·8·16개로 다시 읽고 디코딩해서 걸린 시간을 비교합니다(편집 내용은 건드리지 않음). 결과 복사를 눌러 붙여넣어 주세요.</div>
+        <div class="row"><button id="diagRun" data-i18n="pn.diag.run">동시 처리 비교 테스트</button><button id="diagCopy" data-i18n="pn.diag.copy">결과 복사</button></div>
+        <div class="hint" data-i18n="pn.diag.hint">폴더를 열 때 키음을 불러오면서 단계별 시간을 잽니다. 비교 테스트는 키음 40개를 동시 1·2·4·8·16개로 다시 읽고 디코딩해서 걸린 시간을 비교합니다(편집 내용은 건드리지 않음). 결과 복사를 눌러 붙여넣어 주세요.</div>
       </div></details>
     </aside>
   </main>
   <footer id="stb">
     <span id="sPos"></span><span id="sNote"></span><span class="fill"></span>
     <span id="sLoad"></span>
-    <label title="파일을 읽을 때 쓸 인코딩. 글자가 깨져 보이면 바꿔 보세요">인코딩 <select id="encSel"></select></label>
+    <label data-i18n-title="stb.enc.tip" title="파일을 읽을 때 쓸 인코딩. 글자가 깨져 보이면 바꿔 보세요"><span data-i18n="stb.enc">인코딩</span> <select id="encSel"></select></label>
     <span id="sFile"></span>
   </footer>
 </div>
@@ -270,6 +270,12 @@ body.side-off #side { display: none; }
 <script>/* BMS Web Editor — core (DOM 없음) */
 (function (G) {
 'use strict';
+/* ── core/msg.js ── */
+/* 메시지: 코어는 화면 문구를 만들지 않는다. 경고·문제는 { code, params }로, 오류는 code · params가 붙은 Error로 넘기고
+   문구는 앱 쪽(tr · msgText)이 src/i18n 사전의 같은 키(core.…)로 붙인다. */
+const msg = (code, params) => ({ code, params: params || {} });
+function coreError(code, params, Ctor) { const e = new (Ctor || Error)(code); e.code = code; e.params = params || {}; return e; }
+
 /* ── core/rational.js ── */
 
 /* ───────────── 유리수 (위치 계산은 전부 정확한 분수로) ───────────── */
@@ -279,7 +285,7 @@ function lcm(a, b) { return (a / gcd(a, b)) * b; }
 function bgcd(a, b) { if (a < 0n) a = -a; if (b < 0n) b = -b; while (b) { const t = a % b; a = b; b = t; } return a; }
 function R(n, d) {
   if (d === undefined) d = 1;
-  if (d === 0) throw new RangeError('분모가 0입니다');
+  if (d === 0) throw coreError('core.zeroDenominator', null, RangeError);
   if (d < 0) { n = -n; d = -d; }
   const g = gcd(n, d) || 1;
   return { n: n / g, d: d / g };
@@ -288,7 +294,7 @@ function RB(n, d) {
   if (d < 0n) { n = -n; d = -d; }
   const g = bgcd(n, d) || 1n; n /= g; d /= g;
   const a = Number(n), b = Number(d);
-  if (!safe(a) || !safe(b)) throw new RangeError('위치 계산 범위를 넘었습니다');
+  if (!safe(a) || !safe(b)) throw coreError('core.overflow', null, RangeError);
   return { n: a, d: b };
 }
 const R0 = { n: 0, d: 1 }, R1 = { n: 1, d: 1 }, R4 = { n: 4, d: 1 };
@@ -305,7 +311,7 @@ function rmul(a, b) {
   return RB(BigInt(a.n) * BigInt(b.n), BigInt(a.d) * BigInt(b.d));
 }
 function rdiv(a, b) {
-  if (b.n === 0) throw new RangeError('0으로 나눌 수 없습니다');
+  if (b.n === 0) throw coreError('core.divByZero', null, RangeError);
   return rmul(a, b.n < 0 ? { n: -b.d, d: -b.n } : { n: b.d, d: b.n });
 }
 function rcmp(a, b) {
@@ -554,7 +560,7 @@ function parseRaw(data) {
 function makeLine(m, ch, entries, conflicts) {
   let res = 1;
   for (const e of entries) res = lcm(res, e.f.d);
-  if (!safe(res) || res > 200000) throw new RangeError(`#${pad3(m)}${ch}: 줄이 너무 길어 저장할 수 없습니다`);
+  if (!safe(res) || res > 200000) throw coreError('core.lineTooLong', { line: `#${pad3(m)}${ch}` }, RangeError);
   const arr = new Array(res).fill('00');
   for (const e of entries) {
     const i = e.f.n * (res / e.f.d);
@@ -873,7 +879,7 @@ function serialize(doc, st, opt) {
   const newBpm = new Map(), newStop = new Map();
   const alloc = (used) => {
     for (let i = 1; i <= idMax(base); i++) if (!used.has(i)) { used.add(i); return i; }
-    throw new Error('#BPM/#STOP 정의 번호가 부족합니다');
+    throw coreError('core.save.noFreeDefId');
   };
   let lost = 0;
   for (const n of st.notes) {
@@ -916,7 +922,7 @@ function serialize(doc, st, opt) {
       else put(L.m, ld.ch, L.f, ids(n.v));
     }
   }
-  if (lost) warnings.push(`저장할 수 없는 노트 ${lost}개 (마디 999 밖이거나 값이 잘못됨)`);
+  if (lost) warnings.push(msg('core.save.lost', { n: lost }));
 
   // 2) 원본과 비교해서 바뀐 부분만 다시 쓰기
   const rep = new Map(), insA = new Map(), insB = new Map(), tail = [];
@@ -1114,15 +1120,15 @@ function serialize(doc, st, opt) {
   let off = 0;
   for (const c of chunks) { bytes.set(c, off); off += c.length; }
 
-  if (conflicts.length) warnings.push(`같은 자리에 겹친 노트가 있어 ${conflicts.length}개가 저장되지 않습니다 (${[...new Set(conflicts)].slice(0, 4).join(', ')}${conflicts.length > 4 ? ' …' : ''})`);
+  if (conflicts.length) warnings.push(msg('core.save.conflicts', { n: conflicts.length, list: [...new Set(conflicts)].slice(0, 4).join(', ') + (conflicts.length > 4 ? ' …' : '') }));
   let verify;
   try {
     const re = parse(bytes, enc);
     verify = compareStates(st, stateFromDoc(re));
-    if (re.bom !== withBom) { verify.problems.push('BOM 위치가 달라졌습니다'); verify.ok = false; }
-  } catch (e) { verify = { ok: false, problems: ['저장 결과를 다시 읽지 못했습니다: ' + e.message] }; }
+    if (re.bom !== withBom) { verify.problems.push(msg('core.verify.bom')); verify.ok = false; }
+  } catch (e) { verify = { ok: false, problems: [msg('core.verify.reread', { err: e })] }; }
   const det = encodingInfo(bytes);
-  if (det.enc !== enc && !det.ambiguous) warnings.push(`이 파일을 나중에 열면 ${ENC_LABEL[det.enc]}(으)로 잘못 알아볼 수 있습니다. 열 때 아래쪽 인코딩을 ${ENC_LABEL[enc]}(으)로 맞춰 주세요.`);
+  if (det.enc !== enc && !det.ambiguous) warnings.push(msg('core.save.encMisdetect', { detected: ENC_LABEL[det.enc], enc: ENC_LABEL[enc] }));
   let kept = 0;
   for (const p of out) if (p.i !== undefined) kept++;
   return {
@@ -1152,25 +1158,25 @@ function compareStates(a, b) {
     const miss = [], extra = [];
     for (const [k, c] of ca) if (c > (cb.get(k) || 0)) miss.push(k);
     for (const [k, c] of cb) if (c > (ca.get(k) || 0)) extra.push(k);
-    problems.push(`노트 불일치: 저장본에서 빠짐 ${miss.length}종, 예상과 다름 ${extra.length}종` + (miss.length ? ` (예: ${miss[0]})` : ''));
+    problems.push(miss.length ? msg('core.verify.notesEx', { miss: miss.length, extra: extra.length, ex: miss[0] }) : msg('core.verify.notes', { miss: miss.length, extra: extra.length }));
   }
   const ms = new Set([...a.meas.keys(), ...b.meas.keys()]);
   for (const m of ms) {
     const x = a.meas.get(m), y = b.meas.get(m);
-    if (!req(x ? x.r : R1, y ? y.r : R1)) problems.push(`마디 ${pad3(m)} 길이 불일치`);
+    if (!req(x ? x.r : R1, y ? y.r : R1)) problems.push(msg('core.verify.measLen', { m: pad3(m) }));
   }
   const hs = new Set([...a.headers.keys(), ...b.headers.keys()]);
-  for (const k of hs) if (canonJP(a.headers.get(k)) !== canonJP(b.headers.get(k))) problems.push(`헤더 #${k} 불일치`);
+  for (const k of hs) if (canonJP(a.headers.get(k)) !== canonJP(b.headers.get(k))) problems.push(msg('core.verify.header', { k }));
   const ws = new Set([...a.wavs.keys(), ...b.wavs.keys()]);
   let wbad = 0;
   for (const k of ws) if (canonJP(a.wavs.get(k)) !== canonJP(b.wavs.get(k))) wbad++;
-  if (wbad) problems.push(`#WAV 정의 ${wbad}개 불일치`);
+  if (wbad) problems.push(msg('core.verify.wav', { n: wbad }));
   const bs = new Set([...(a.bmps || new Map()).keys(), ...(b.bmps || new Map()).keys()]);
   let bbad = 0;
   for (const k of bs) if (canonJP((a.bmps || new Map()).get(k)) !== canonJP((b.bmps || new Map()).get(k))) bbad++;
-  if (bbad) problems.push(`#BMP 정의 ${bbad}개 불일치`);
+  if (bbad) problems.push(msg('core.verify.bmp', { n: bbad }));
   const flat = (arr) => arr.join('\n').split('\n').map((s) => s.trim()).filter(Boolean).join('\n');
-  if (flat(a.blocks) !== flat(b.blocks)) problems.push('확장 블록 내용 불일치');
+  if (flat(a.blocks) !== flat(b.blocks)) problems.push(msg('core.verify.blocks'));
   return { ok: problems.length === 0, problems };
 }
 
@@ -1253,6 +1259,36 @@ G.BMSCore = {
 <script>/* BMS Web Editor — UI */
 (function () {
 'use strict';
+/* ── app/i18n.js ── */
+/* ───────── 화면 문구 (i18n) ─────────
+   화면에 보이는 문구는 src/i18n/<언어>.json에 키로 모아 두고, build.js가 아래 I18N.dicts 자리에 묶어 넣는다.
+   tr(키, { 이름: 값 }) → 문구 안의 {이름}을 값으로 바꾼 글자. 지금 언어에 없는 키는 한국어, 그것도 없으면 키 그대로.
+     값으로 코어 메시지({ code, params })나 오류 객체를 넘기면 그것도 문구로 바꿔 넣는다(msgText).
+   HTML: data-i18n(글자) · data-i18n-html(태그 포함) · data-i18n-title · data-i18n-placeholder 속성에 키를 적는다.
+     빌드할 때 한국어로 채워 두고, applyI18n()이 지금 언어로 다시 채운다.
+   주의: 문구 값에 태그가 들어 있으면(<b> 등) innerHTML 자리에서만 쓴다. 값에 넣는 사용자 글자(파일명 등)는 부르는 쪽에서 esc(). */
+const I18N = { dicts: {"ko":{"app.name":"BMS 웹 에디터","tb.open":"폴더 열기","tb.open.tip":"곡 폴더 열기 (Ctrl+O)","tb.fileSel.tip":"폴더 안의 패턴 파일","tb.new":"새 파일","tb.new.tip":"빈 패턴 만들기","tb.save":"저장","tb.save.tip":"저장 (Ctrl+S)","tb.saveAs":"다른 이름으로","tb.saveAs.tip":"다른 이름으로 저장 (Ctrl+Shift+S)","tb.undo.tip":"실행 취소 (Ctrl+Z)","tb.redo.tip":"다시 실행 (Ctrl+Y)","tb.playMode.tip":"SP → DP → PMS 화면 전환 — 파일을 열 때 .pms이거나 팝픈 9버튼 레인만 쓰면 PMS, #PLAYER 3이거나 2P 노트가 있으면 DP로 엽니다","tb.modeSelect":"선택","tb.modeSelect.tip":"선택 모드 (F1)","tb.modeWrite":"쓰기","tb.modeWrite.tip":"쓰기 모드 (F3)","tb.kind.tip":"쓰기 모드에서 키 레인에 찍을 노트 종류 (N)","tb.mineVal.tip":"새 지뢰의 값(피해량)","tb.playStart":"처음부터","tb.playStart.tip":"처음부터 재생 (F5)","tb.playHere":"재생","tb.playHere.tip":"화면 맨 아래 마디부터 재생 (F6, Space)","tb.stop":"정지","tb.stop.tip":"정지 (F7, Space)","tb.grid":"그리드","tb.snap":"스냅","tb.lockH":"옆으로만","tb.lockH.tip":"노트를 옮길 때 위아래로는 움직이지 않음 (H)","tb.zoomY":"세로","tb.zoomY.tip":"세로 확대 (Ctrl+휠, + −)","tb.zoomX":"가로","tb.zoomX.tip":"가로 확대 (Ctrl+Shift+휠, [ ])","tb.volume":"음량","tb.localOnly":"로컬 전용","tb.localOnly.tip":"파일은 이 브라우저 안에서만 읽고 씁니다. 외부로 나가는 통신은 보안 정책(CSP)으로 막혀 있습니다.","tb.help.tip":"도움말 · 단축키","file.noFolder":"(폴더 없음)","file.noCharts":"(패턴 파일 없음)","file.newOption":"(새 파일)","file.new":"새 파일","kind.long.n":"일반 노트","kind.long.h":"숨김 노트","kind.long.m":"지뢰","kind.n":"일반","kind.h":"숨김","kind.m":"지뢰","empty.intro":"BMS 곡 폴더를 열면 패턴 파일과 키음을 함께 불러옵니다.<br>폴더를 이 창으로 끌어다 놓아도 됩니다.","empty.privacy":"파일은 이 컴퓨터 안에서만 처리되고, 어디에도 업로드되지 않습니다.","empty.noDirPicker":"이 브라우저는 폴더에 바로 저장하는 기능이 없어 저장할 때 파일이 다운로드됩니다. 크롬이나 엣지를 권장합니다.","drop.hint":"여기에 놓으면 폴더를 엽니다","side.split.tip":"끌어서 패널 너비 조절 · 더블클릭: 접기/펼치기","side.toggle.tip":"오른쪽 패널 접기/펼치기 (\\)","pn.hdr":"헤더","pn.search.ph":"번호·파일명 검색","pn.definedOnly":"정의된 것만","pn.wav.hint":"클릭: 쓰기 모드에서 찍을 키음 고르기 + 미리듣기 · 더블클릭: 파일명 바꾸기 · 빨간색: 파일 없음","pn.bmp.hint":"클릭: 쓰기 모드에서 BGA·LAYER·POOR 레인에 찍을 이미지 고르기 · 더블클릭: 파일명 바꾸기 · 빨간색: 파일 없음","pn.beat":"박자 (마디 길이)","pn.beat.apply":"선택 마디에 적용","pn.beat.reset.tip":"선택 마디를 4/4로","pn.beat.hint":"마디를 클릭해서 고르고(Shift: 범위, Ctrl: 추가) 적용하세요. 노트는 제자리에 있고 마디선만 움직입니다.","pn.exp":"확장 코드","pn.exp.ph":"#RANDOM / #IF 블록","pn.exp.apply":"적용","pn.exp.new":"새 블록","pn.exp.clear":"이 블록 비우기","pn.exp.hint":"#RANDOM · #IF 블록은 파일 안 원래 자리에 그대로 저장됩니다. 블록 안 노트는 편집 화면에 회색 점선으로 보입니다(편집 불가).","pn.view":"보기 · 재생 · 저장","pn.view.name":"노트에 키음 파일명 표시","pn.view.scRight":"SP: 스크래치를 오른쪽에","pn.view.scRight.tip":"SP 화면에서 스크래치 레인을 7키 오른쪽에 둡니다. 보이는 순서만 바뀌고 파일은 그대로입니다.","pn.view.bga":"BGA 영역 보이기","pn.view.bga.tip":"끄면 BGA·LAYER·POOR 레인을 숨깁니다(노트는 그대로 저장)","pn.view.bpm":"BPM · STOP 영역 보이기","pn.view.bpm.tip":"끄면 BPM·STOP 레인을 숨깁니다(노트와 박자 계산은 그대로)","pn.view.follow":"재생 중 화면 따라가기","pn.view.bgm":"재생: BGM 레인 소리","pn.view.keys":"재생: 키 레인 소리","pn.view.backup":"처음 덮어쓸 때 원본을 .bak으로 백업","pn.view.confirm":"저장할 때 바뀐 줄 확인 창 보기","pn.view.openMode":"폴더 열기 방식","pn.view.openMode.tip":"안드로이드 크롬은 '폴더 직접 접근'으로 열면 키음을 읽는 데 몇 분씩 걸려서, 자동이면 '폴더 고르기' 방식으로 엽니다(10여 초). 이 방식은 처음 저장할 때 같은 폴더를 한 번 더 고릅니다.","pn.view.openMode.auto":"자동 (안드로이드는 빠른 방식)","pn.view.openMode.direct":"폴더 직접 접근","pn.view.openMode.pick":"폴더 고르기 (빠름, 저장 시 폴더 한 번 더 선택)","pn.info":"정보","pn.diag":"키음 로딩 측정","pn.diag.run":"동시 처리 비교 테스트","pn.diag.copy":"결과 복사","pn.diag.hint":"폴더를 열 때 키음을 불러오면서 단계별 시간을 잽니다. 비교 테스트는 키음 40개를 동시 1·2·4·8·16개로 다시 읽고 디코딩해서 걸린 시간을 비교합니다(편집 내용은 건드리지 않음). 결과 복사를 눌러 붙여넣어 주세요.","pn.openToShow":"파일을 열면 표시됩니다","hdr.TITLE":"제목","hdr.SUBTITLE":"부제","hdr.ARTIST":"아티스트","hdr.SUBARTIST":"서브 아티스트","hdr.GENRE":"장르","hdr.BPM":"시작 BPM","hdr.PLAYLEVEL":"레벨","hdr.PLAYER":"플레이","hdr.RANK":"판정 RANK","hdr.DIFFICULTY":"난이도","hdr.none":"(없음)","hdr.readOnly":" — 읽기 전용","list.missing":" (파일 없음)","list.failed":" (읽기 실패)","list.defined":"{n}개 정의","blk.tab":"블록 {n}","blk.emptyMark":" (빔)","blk.none":"확장 블록이 없습니다","blk.count":"{n}개","info.muri.item":"마디 {m} · {pos} · {btns}","info.muri.held":" (롱노트 포함)","info.file":"파일","info.file.new":"(새 파일 — 아직 저장 안 됨)","info.enc":"인코딩","info.notes":"노트","info.notes.pms":"{n}개 (롱노트 {ln})","info.notes.dp":"{n}개 (롱노트 {ln}, 1P {k1}+{s1}, 2P {k2}+{s2})","info.notes.sp":"{n}개 (롱노트 {ln}, 스크래치 {sc})","info.hidMine":"숨김 · 지뢰","info.hidMine.v":"{hid}개 · {mine}개","info.bgmBga.v":"{bgm}개 · {bga}개","info.length":"길이","info.keys":"키음","info.keys.loaded":" · {ok}/{total} 불러옴","info.keys.missing":"없음 {n}","info.keys.failed":"읽기 실패 {n}","info.preserved":"원본 보존","info.preserved.v":"편집하지 않는 데이터 줄 {lines}개 · 확장 블록 {blocks}개","info.muri.more":"외 {n}곳","warn.conflicts":"겹친 노트 {n}개 (빨간 테두리) — 저장 전에 정리해 주세요","warn.muri":"무리배치 {n}곳 (주황 테두리) — 한 손이 연속된 버튼 3개까지만 누를 수 있다고 보고, 완전히 같은 타이밍의 동시치기(누르고 있는 롱노트 포함)만 검사합니다","warn.pmsOffLanes":"PMS에서 쓰지 않는 레인(스크래치·6·7키·2P 1키 등)에 노트 {n}개가 있습니다. 화면에는 보이지 않지만 그대로 저장됩니다.","warn.p2InSp":"2P 노트가 있지만 SP 화면입니다. 툴바의 DP 버튼으로 2P 레인을 볼 수 있습니다(노트는 그대로 저장됩니다).","warn.lntype2":"#LNTYPE 2 파일입니다. 롱노트 채널은 편집하지 않고 원본 그대로 둡니다.","warn.noFolder":"폴더 없이 연 상태라 키음을 재생할 수 없습니다.","stb.enc":"인코딩","stb.enc.tip":"파일을 읽을 때 쓸 인코딩. 글자가 깨져 보이면 바꿔 보세요","stb.keysLoading":"키음 불러오는 중 {n}/{total}","stb.keysLoaded":"키음 {ok}/{total}","stb.keysProblem":" · 문제 {n}","stb.playPrep":"재생 준비: 키음 {n}개 불러오는 중…","stb.unsaved":"● 저장 안 됨","stb.saved":"저장됨","stb.pos":"마디 {m} · {pos} · {time}","stb.selected":"선택 {n}개","note.button":"버튼 ","note.undefined":"(정의 없음)","note.mine":"{lane} · 지뢰 · 값 {v}","note.hidden":" · 숨김","note.ln":" · 롱노트 {beats}박","note.lnDangling":" · 끝이 없는 롱노트","view.measure":"마디","tip.hold.select":"떼면 메뉴 · 끌면 범위 선택","tip.hold.write":"떼면 메뉴","ctx.count":" ({n}개)","ctx.editValue":"값 바꾸기…","ctx.cut":"잘라내기","ctx.copy":"복사","ctx.delete":"삭제","ctx.showBmp":"BMP 목록에서 보기","ctx.showWav":"WAV 목록에서 보기","ctx.unLN":"롱노트 풀기","ctx.pasteHere":"여기에 붙여넣기","ctx.selectAll":"모두 선택","btn.cancel":"취소","btn.ok":"확인","btn.close":"닫기","dlg.unsaved.title":"저장하지 않은 변경 사항","dlg.unsaved.body":"지금 패턴에 저장하지 않은 변경 사항이 있습니다. 버리고 계속할까요?","dlg.unsaved.discard":"버리고 계속","dlg.help.title":"도움말","dlg.bpm.change":"BPM 바꾸기","dlg.stop.change":"STOP 바꾸기","dlg.stop.label":"STOP 길이","dlg.stop.hint":"48 = 한 박, 192 = 4/4 한 마디","dlg.bmpNo.title":"BGA 이미지 번호 바꾸기","dlg.bmpNo.label":"#BMP 번호","dlg.mine.title":"지뢰 값 바꾸기","dlg.mine.label":"지뢰 값(피해량)","dlg.wavNo.title":"키음 번호 바꾸기","dlg.wavNo.label":"WAV 번호","dlg.applyToSel":"선택한 노트 {n}개에 모두 적용됩니다","dlg.stop.insert":"STOP 넣기","dlg.bpm.new":"새 BPM","dlg.pickSave.title":"저장할 폴더 고르기","dlg.pickSave.body":"빠른 방식으로 연 폴더라서 바로 저장하려면 폴더 접근 권한이 한 번 필요합니다. 다음 창에서 <b>{name}</b> 폴더를 골라 주세요.","dlg.pickSave.thisSong":"이 곡","dlg.pickSave.note":"한 번 고르면 이 폴더를 닫을 때까지 다시 묻지 않습니다. 취소하면 이번 저장은 다운로드로 합니다.","dlg.pickSave.download":"다운로드로 저장","dlg.pickFolder":"폴더 고르기","dlg.otherFolder.title":"다른 폴더인 것 같습니다","dlg.otherFolder.body":"고른 폴더 <b>{picked}</b>가 지금 연 폴더 <b>{opened}</b>와 다르거나, 그 안에 <b>{file}</b> 파일이 없습니다.","dlg.otherFolder.ask":"그래도 이 폴더에 저장할까요?","dlg.otherFolder.save":"이 폴더에 저장","dlg.openFiles.title":"폴더 열기","dlg.openFiles.body":"이 화면에서는 폴더를 직접 열 수 없어 파일 선택 창으로 불러옵니다. 이 방식으로 연 파일은 <b>저장할 때 다운로드</b>됩니다.","dlg.openFiles.note":"폴더에 바로 저장하려면 HTML 파일을 내려받아 크롬·엣지에서 직접 열거나, 폴더를 이 창에 끌어다 놓으세요.","dlg.openFiles.android":" 안드로이드에서는 패턴 파일과 키음 파일을 한꺼번에 여러 개 고르면 됩니다.","dlg.openFiles.pickFiles":"파일 여러 개 고르기","dlg.saveFail.title":"저장할 수 없습니다","dlg.overwrite.title":"덮어쓰기","dlg.overwrite.body":"폴더에 <b>{name}</b> 파일이 이미 있습니다. 덮어쓸까요?","dlg.overwrite.ok":"덮어쓰기","save.verify.ok":"다시 읽어서 확인: 편집한 내용과 정확히 일치합니다","save.verify.bad":"다시 읽어서 확인: 문제 {n}건","save.reencode":"인코딩을 {enc}(으)로 바꿔 모든 줄을 다시 씁니다","save.kept":"편집하지 않은 줄 {n}개는 원본 바이트 그대로입니다","save.badChars":"{enc}로 쓸 수 없는 글자: {chars} — '?'로 바뀝니다. 인코딩을 UTF-8로 바꾸거나 글자를 고쳐 주세요.","save.newDefs":"새 #BPM/#STOP 정의 {n}개를 추가합니다","save.diffMore":"… {n}줄 더","save.fileName":"파일 이름","save.file":"파일:","save.encOriginal":" (원본)","save.diffHead":"바뀐 줄 — 지움 {minus} · 새로 씀 {plus}","save.noDiff":"바뀐 줄이 없습니다","save.quiet":"다음부터 이 창 없이 바로 저장 (문제가 있을 때만 표시)","save.titleAs":"다른 이름으로 저장","save.title":"저장 확인","save.ok":"저장","save.anyway":"그래도 저장","open.note.dp":"DP 패턴으로 열었습니다","open.note.pms":"PMS(9버튼) 패턴으로 열었습니다","open.note.lntype2":"LNTYPE 2 롱노트는 편집하지 않고 보존합니다","open.note.encGuess":"인코딩을 Shift-JIS로 추정했습니다. 글자가 깨져 보이면 아래쪽 인코딩을 바꿔 보세요","toast.noAudio":"이 브라우저는 오디오 재생을 지원하지 않습니다","toast.noKeysoundFolder":"키음 폴더 없이 연 파일이라 소리가 나지 않습니다","toast.paste.badFormat":"붙여넣을 수 있는 노트 데이터(iBMSC 형식)가 아닙니다","toast.paste.empty":"붙여넣을 노트가 없습니다","toast.paste.done":"노트 {n}개를 마디 {m}에 붙여넣었습니다","toast.paste.moved":" · 겹친 {n}개는 빈 BGM 레인으로","toast.paste.skipped":" · 건너뜀 {n}개(숨김/지뢰/2P 등)","toast.cut":"노트 {n}개 잘라냄","toast.copy":"노트 {n}개 복사","toast.kindChanged":"노트 {n}개를 {kind}(으)로 바꿨습니다","toast.drop.fileOnly":"파일만 열었습니다. 키음까지 쓰려면 곡 폴더를 놓아 주세요","toast.saveWillDownload":"이 브라우저에서는 폴더에 바로 저장할 수 없어 저장 시 다운로드됩니다","toast.drop.what":"BMS 곡 폴더나 패턴 파일을 놓아 주세요","toast.openFailed":"열 수 없습니다: {err}","toast.overlapMoved":"겹친 노트 {n}개를 빈 BGM 레인으로 옮겼습니다","toast.needPositive":"0보다 큰 숫자를 넣어 주세요","toast.badNumber":"올바른 번호가 아닙니다","toast.noChartInFolder":"폴더에 BMS 파일(.bms .bme .bml .pms)이 없어 새 파일을 만들었습니다","toast.cantRead":"파일을 읽을 수 없습니다: {name}","toast.readFailed":"읽기 실패: {err}","toast.undo":"실행 취소","toast.redo":"다시 실행","toast.noTimeSelect":"시간 선택 모드는 아직 없습니다","toast.writeKind":"쓰기 노트 종류: {kind}","toast.lockH.on":"노트 이동: 옆으로만","toast.lockH.off":"노트 이동: 위아래·옆 모두","toast.snap.on":"스냅 켬","toast.snap.off":"스냅 끔 (1/192 단위)","toast.reread":"{enc}(으)로 다시 읽었습니다","toast.pickAgainOnSave":"처음 저장할 때 같은 폴더를 한 번 더 고르면 그 폴더에 바로 저장합니다","toast.pickChartToo":"BMS 파일(.bms .bme .bml .pms)도 같이 골라 주세요","toast.filesWillDownload":"파일 선택으로 열어서 저장 시 다운로드됩니다","toast.mineRange":"지뢰 값은 01~{max}로 넣어 주세요","toast.beatRange":"박자는 1~999 / 1~64 사이로 넣어 주세요","toast.noChange":"바뀐 내용이 없습니다","toast.blk.applied":"블록 {n}에 적용했습니다","toast.blk.cleared":"블록 {n}을 비웠습니다 (저장하면 파일에서 사라집니다)","toast.error":"오류: {err}","toast.beat.pickFirst":"박자를 바꿀 마디를 목록에서 먼저 고르세요","toast.beat.applied":"마디 {n}개를 {beat}(으)로 바꿨습니다","toast.mode.hidden":" — 이 화면에 없는 레인의 노트 {n}개는 보이지 않지만 그대로 저장됩니다","toast.mode.dp":"DP 화면 (1P + 2P)","toast.mode.dpPlayer":" — 헤더의 플레이를 3 · DP로 바꾸는 것도 잊지 마세요","toast.mode.pms":"PMS 화면 (팝픈 9버튼)","toast.mode.sp":"SP 화면","toast.needFileName":"파일 이름을 넣어 주세요","toast.saved.backup":" (원본은 {name}.bak)","toast.writeFailedDownload":"폴더에 쓰지 못해 다운로드로 저장합니다: {err}","toast.saved":"저장했습니다: {name}","toast.downloaded":"다운로드했습니다: {name}","err.readOnlyFolder":"이 방식으로 연 폴더에는 쓸 수 없습니다","err.singleFileRename":"파일 하나만 연 상태라 다른 이름으로는 쓸 수 없습니다","err.noWritePermission":"쓰기 권한을 받지 못했습니다","core.lineTooLong":"{line}: 줄이 너무 길어 저장할 수 없습니다","core.zeroDenominator":"분모가 0입니다","core.overflow":"위치 계산 범위를 넘었습니다","core.divByZero":"0으로 나눌 수 없습니다","core.save.noFreeDefId":"#BPM/#STOP 정의 번호가 부족합니다","core.save.lost":"저장할 수 없는 노트 {n}개 (마디 999 밖이거나 값이 잘못됨)","core.save.conflicts":"같은 자리에 겹친 노트가 있어 {n}개가 저장되지 않습니다 ({list})","core.verify.bom":"BOM 위치가 달라졌습니다","core.verify.reread":"저장 결과를 다시 읽지 못했습니다: {err}","core.save.encMisdetect":"이 파일을 나중에 열면 {detected}(으)로 잘못 알아볼 수 있습니다. 열 때 아래쪽 인코딩을 {enc}(으)로 맞춰 주세요.","core.verify.notes":"노트 불일치: 저장본에서 빠짐 {miss}종, 예상과 다름 {extra}종","core.verify.notesEx":"노트 불일치: 저장본에서 빠짐 {miss}종, 예상과 다름 {extra}종 (예: {ex})","core.verify.measLen":"마디 {m} 길이 불일치","core.verify.header":"헤더 #{k} 불일치","core.verify.wav":"#WAV 정의 {n}개 불일치","core.verify.bmp":"#BMP 정의 {n}개 불일치","core.verify.blocks":"확장 블록 내용 불일치"}}, lang: 'ko' };
+function tr(key, p) {
+  const d = I18N.dicts[I18N.lang], s = (d && d[key]) ?? I18N.dicts.ko[key] ?? key;
+  return p ? s.replace(/\{(\w+)\}/g, (m, k) => (k in p ? msgText(p[k]) : m)) : s;
+}
+function msgText(x) { // 코어 메시지 · 오류 · 그 밖의 값 → 화면 문구
+  if (x && typeof x === 'object') {
+    if (x.code && I18N.dicts.ko[x.code] !== undefined) return tr(x.code, x.params);
+    if (x.message !== undefined) return String(x.message);
+  }
+  return String(x);
+}
+function appError(code, params) { const e = new Error(tr(code, params)); e.code = code; e.params = params; return e; }
+function applyI18n(root) {
+  const r = root || document;
+  for (const el of r.querySelectorAll('[data-i18n]')) el.textContent = tr(el.dataset.i18n);
+  for (const el of r.querySelectorAll('[data-i18n-html]')) el.innerHTML = tr(el.dataset.i18nHtml);
+  for (const el of r.querySelectorAll('[data-i18n-title]')) el.title = tr(el.dataset.i18nTitle);
+  for (const el of r.querySelectorAll('[data-i18n-placeholder]')) el.placeholder = tr(el.dataset.i18nPlaceholder);
+  if (r === document) document.documentElement.lang = I18N.lang;
+}
+
 /* ── app/state.js ── */
 const C = window.BMSCore;
 const { R, R1, R4, radd, rsub, rmul, rdiv, rcmp, rf } = C;
@@ -1313,7 +1349,7 @@ const scrolls = (l) => l.type === 'bgm' || l.type === 'bga'; // 가로 스크롤
 const laneX = (l) => (scrolls(l) ? l.x - A.view.left : l.x);
 // 같은 그룹 안에서만 옆으로 옮길 수 있음: 키음(키+BGM), BGA
 const grpOf = (lane) => (lane[0] === 'K' || lane[0] === 'B' ? 'snd' : lane[0] === 'G' ? 'bga' : null);
-const KIND_NAME = { n: '일반', h: '숨김', m: '지뢰' };
+const KIND_NAME = { n: 'kind.n', h: 'kind.h', m: 'kind.m' }; // 노트 종류 이름의 문구 키 (짧은 이름)
 const isSound = (lane) => lane[0] === 'K' || lane[0] === 'B';
 const isKey = (lane) => lane[0] === 'K';
 const lenOf = (m) => { const g = A.st && A.st.meas.get(m); return g ? g.r : R1; };
@@ -1452,7 +1488,7 @@ function checkMuri() {
 function muriLabel(m) {
   const mm = measureAt(m.b + 1e-9), off = m.b - A.ms.Sf[mm], len = rf(lenOf(mm)) * 4;
   const g = [4, 8, 12, 16, 24, 32, 48, 64, 96, 192].find((d) => Math.abs(off / len * d - Math.round(off / len * d)) < 1e-6) || 192;
-  return `마디 ${C.pad3(mm)} · ${Math.round(off / len * g)}/${g} · ${m.btns.join('-')}` + (m.held ? ' (롱노트 포함)' : '');
+  return tr('info.muri.item', { m: C.pad3(mm), pos: `${Math.round(off / len * g)}/${g}`, btns: m.btns.join('-') }) + (m.held ? tr('info.muri.held') : '');
 }
 function refresh() {
   if (!A.st) return;
@@ -1663,7 +1699,7 @@ function paint() {
     clipB(l); ctx.fillText(l.label, laneX(l) + l.w / 2, HEAD_H / 2); ctx.restore();
   }
   ctx.fillStyle = '#1a1b1f'; ctx.fillRect(0, 0, MEAS_W, HEAD_H - 1);
-  ctx.fillStyle = '#9a9a9a'; ctx.fillText('마디', MEAS_W / 2, HEAD_H / 2);
+  ctx.fillStyle = '#9a9a9a'; ctx.fillText(tr('view.measure'), MEAS_W / 2, HEAD_H / 2);
   ctx.fillStyle = SEP_COL;
   for (const sx of A.sepX || []) ctx.fillRect(sx - 1, 0, 2, HEAD_H); // 머리줄 위에도
 }
@@ -1707,20 +1743,20 @@ function undo() {
   const a = A.undo.pop(); if (!a) return;
   applyAct(a, true); A.redo.push(a); setDirty(true);
   const n = pickNotes(a, 'del'); if (n.length) A.sel = new Set(n);
-  afterChange(a); toast('실행 취소');
+  afterChange(a); toast(tr('toast.undo'));
 }
 function redo() {
   const a = A.redo.pop(); if (!a) return;
   applyAct(a, false); A.undo.push(a); setDirty(true);
   const n = pickNotes(a, 'add'); if (n.length) A.sel = new Set(n);
-  afterChange(a); toast('다시 실행');
+  afterChange(a); toast(tr('toast.redo'));
 }
 function setDirty(v) {
   A.dirty = v;
   const el = $('#sFile');
-  el.textContent = !A.st ? '' : (v ? '● 저장 안 됨' : '저장됨');
+  el.textContent = !A.st ? '' : (v ? tr('stb.unsaved') : tr('stb.saved'));
   el.classList.toggle('dirty', !!v);
-  document.title = (v ? '● ' : '') + (A.fileName || (A.st ? '새 파일' : 'BMS 웹 에디터')) + (A.st ? ' — BMS 웹 에디터' : '');
+  document.title = (v ? '● ' : '') + (A.fileName || (A.st ? tr('file.new') : tr('app.name'))) + (A.st ? ' — ' + tr('app.name') : '');
 }
 
 /* 같은 자리 충돌 처리: 이동·붙여넣기는 밀려난 노트를 빈 BGM 레인으로, 쓰기는 덮어쓰기 */
@@ -1924,7 +1960,7 @@ function onUp() {
     const act = { del: d.copy ? [] : [...A.sel], add: d.preview };
     const nd = resolveConflicts(act, 'displace');
     commit(act); A.sel = new Set(d.preview); draw();
-    if (nd) toast(`겹친 노트 ${nd}개를 빈 BGM 레인으로 옮겼습니다`);
+    if (nd) toast(tr('toast.overlapMoved', { n: nd }));
     return;
   }
   if (d.kind === 'place') {
@@ -2002,26 +2038,26 @@ function nudge(dk, dSi, fine) {
   const act = { del: sel, add };
   const nd = resolveConflicts(act, 'displace');
   commit(act); A.sel = new Set(add); draw();
-  if (nd) toast(`겹친 노트 ${nd}개를 빈 BGM 레인으로 옮겼습니다`);
+  if (nd) toast(tr('toast.overlapMoved', { n: nd }));
   return true;
 }
 async function editValue(notes) {
   const n0 = notes[0]; if (!n0) return;
   if (!isSound(n0.lane)) {
     const isB = n0.lane === 'BPM';
-    const v = await promptText(isB ? 'BPM 바꾸기' : 'STOP 바꾸기', isB ? 'BPM' : 'STOP 길이', isFinite(n0.v) ? String(n0.v) : '', isB ? '' : '48 = 한 박, 192 = 4/4 한 마디');
+    const v = await promptText(isB ? tr('dlg.bpm.change') : tr('dlg.stop.change'), isB ? 'BPM' : tr('dlg.stop.label'), isFinite(n0.v) ? String(n0.v) : '', isB ? '' : tr('dlg.stop.hint'));
     if (v === null) return;
-    const x = parseFloat(v); if (!(x > 0)) { toast('0보다 큰 숫자를 넣어 주세요'); return; }
+    const x = parseFloat(v); if (!(x > 0)) { toast(tr('toast.needPositive')); return; }
     const targets = notes.filter((n) => n.lane === n0.lane);
     const add = targets.map((n) => cloneNote(n, { v: x, bch: undefined, bid: undefined, sid: undefined }));
     commit({ del: targets, add }); A.sel = new Set(add); draw(); return;
   }
   const maxS = idS(C.idMax(A.doc.base));
-  const what = n0.lane[0] === 'G' ? ['BGA 이미지 번호 바꾸기', '#BMP 번호'] : n0.kind === 'm' ? ['지뢰 값 바꾸기', '지뢰 값(피해량)'] : ['키음 번호 바꾸기', 'WAV 번호'];
-  const v = await promptText(what[0], `${what[1]} (01~${maxS})`, idS(n0.v), notes.length > 1 ? `선택한 노트 ${notes.length}개에 모두 적용됩니다` : '');
+  const what = n0.lane[0] === 'G' ? [tr('dlg.bmpNo.title'), tr('dlg.bmpNo.label')] : n0.kind === 'm' ? [tr('dlg.mine.title'), tr('dlg.mine.label')] : [tr('dlg.wavNo.title'), tr('dlg.wavNo.label')];
+  const v = await promptText(what[0], `${what[1]} (01~${maxS})`, idS(n0.v), notes.length > 1 ? tr('dlg.applyToSel', { n: notes.length }) : '');
   if (v === null) return;
   const id = C.idParse(v.trim(), A.doc.base);
-  if (!(id > 0)) { toast('올바른 번호가 아닙니다'); return; }
+  if (!(id > 0)) { toast(tr('toast.badNumber')); return; }
   const same = (n) => (n.lane[0] === 'G') === (n0.lane[0] === 'G') && (n.kind === 'm') === (n0.kind === 'm');
   const targets = notes.filter((n) => (isSound(n.lane) || n.lane[0] === 'G') && same(n));
   const add = targets.map((n) => cloneNote(n, { v: id, ev: n.len && !n.lnobj && n.ev === n.v ? id : n.ev }));
@@ -2030,9 +2066,9 @@ async function editValue(notes) {
 async function addValueNote(lane, pos) {
   const isB = lane === 'BPM';
   const def = isB ? fmtV(A.timing.bpmAt(rf(pos))) : '48';
-  const v = await promptText(isB ? 'BPM 바꾸기' : 'STOP 넣기', isB ? '새 BPM' : 'STOP 길이', def, isB ? '' : '48 = 한 박, 192 = 4/4 한 마디');
+  const v = await promptText(isB ? tr('dlg.bpm.change') : tr('dlg.stop.insert'), isB ? tr('dlg.bpm.new') : tr('dlg.stop.label'), def, isB ? '' : tr('dlg.stop.hint'));
   if (v === null) return;
-  const x = parseFloat(v); if (!(x > 0)) { toast('0보다 큰 숫자를 넣어 주세요'); return; }
+  const x = parseFloat(v); if (!(x > 0)) { toast(tr('toast.needPositive')); return; }
   const n = mkNote({ lane, pos, v: x });
   const act = { del: [], add: [n] };
   resolveConflicts(act, 'replace');
@@ -2081,7 +2117,7 @@ function pasteText(text) {
   } else {
     const lines = String(text).split(/\r?\n/);
     const head = (lines[0] || '').trim();
-    if (!/^iBMSC Clipboard Data/.test(head)) { toast('붙여넣을 수 있는 노트 데이터(iBMSC 형식)가 아닙니다'); return; }
+    if (!/^iBMSC Clipboard Data/.test(head)) { toast(tr('toast.paste.badFormat')); return; }
     const nt = /xNT/.test(head);
     let raw = [];
     for (const ln of lines.slice(1)) {
@@ -2121,11 +2157,11 @@ function pasteText(text) {
   const before = notes.length;
   notes = notes.filter((n) => n.b >= 0 && n.b + n.lb < A.ms.Sf[1000]);
   skipped += before - notes.length;
-  if (!notes.length) { toast('붙여넣을 노트가 없습니다'); return; }
+  if (!notes.length) { toast(tr('toast.paste.empty')); return; }
   const act = { del: [], add: notes };
   const nd = resolveConflicts(act, 'displace');
   commit(act); A.sel = new Set(notes); draw();
-  toast(`노트 ${notes.length}개를 마디 ${C.pad3(measureAt(rf(base)))}에 붙여넣었습니다` + (nd ? ` · 겹친 ${nd}개는 빈 BGM 레인으로` : '') + (skipped ? ` · 건너뜀 ${skipped}개(숨김/지뢰/2P 등)` : ''), 4000);
+  toast(tr('toast.paste.done', { n: notes.length, m: C.pad3(measureAt(rf(base))) }) + (nd ? tr('toast.paste.moved', { n: nd }) : '') + (skipped ? tr('toast.paste.skipped', { n: skipped }) : ''), 4000);
 }
 
 /* ── app/keyboard.js ── */
@@ -2147,7 +2183,7 @@ function onKey(e) {
     e.preventDefault();
     if (k === 'F1') setMode('select');
     else if (k === 'F3') setMode('write');
-    else if (k === 'F2') toast('시간 선택 모드는 아직 없습니다');
+    else if (k === 'F2') toast(tr('toast.noTimeSelect'));
     else if (k === 'F5') play(0);
     else if (k === 'F6') play(A.st ? hereBeat() : 0);
     else if (k === 'F7') stopPlay();
@@ -2185,9 +2221,9 @@ function onKey(e) {
     default: break;
   }
   if (k === '\\') { A.toggleSide(); return; }
-  if (lk === 'n') { const order = ['n', 'h', 'm'], nk = order[(order.indexOf(A.noteKind) + 1) % 3]; A.setKind(nk); toast(`쓰기 노트 종류: ${KIND_NAME[nk]}`); return; }
-  if (lk === 'h') { cfg.lockH = !cfg.lockH; saveCfg(); $('#lockChk').checked = cfg.lockH; toast(cfg.lockH ? '노트 이동: 옆으로만' : '노트 이동: 위아래·옆 모두'); return; }
-  if (lk === 'g') { cfg.snap = !cfg.snap; saveCfg(); $('#snapChk').checked = cfg.snap; toast(cfg.snap ? '스냅 켬' : '스냅 끔 (1/192 단위)'); }
+  if (lk === 'n') { const order = ['n', 'h', 'm'], nk = order[(order.indexOf(A.noteKind) + 1) % 3]; A.setKind(nk); toast(tr('toast.writeKind', { kind: tr(KIND_NAME[nk]) })); return; }
+  if (lk === 'h') { cfg.lockH = !cfg.lockH; saveCfg(); $('#lockChk').checked = cfg.lockH; toast(cfg.lockH ? tr('toast.lockH.on') : tr('toast.lockH.off')); return; }
+  if (lk === 'g') { cfg.snap = !cfg.snap; saveCfg(); $('#snapChk').checked = cfg.snap; toast(cfg.snap ? tr('toast.snap.on') : tr('toast.snap.off')); }
 }
 function setMode(m) {
   A.mode = m;
@@ -2205,41 +2241,41 @@ function statusPos(h) {
   if (!h || !A.ms) { el.textContent = ''; return; }
   const b = Math.max(0, h.beat), m = measureAt(b), pos = snap(b, 'floor', false);
   const f = rdiv(rsub(pos, A.ms.S[m]), rmul(lenOf(m), R4));
-  el.textContent = `마디 ${C.pad3(m)} · ${f.n}/${f.d} · ${fmtTime(A.timing.beatToTime(rf(pos)))}` + (h.lane && h.lane.type !== 'meas' ? ` · ${h.lane.label}` : '');
+  el.textContent = tr('stb.pos', { m: C.pad3(m), pos: `${f.n}/${f.d}`, time: fmtTime(A.timing.beatToTime(rf(pos))) }) + (h.lane && h.lane.type !== 'meas' ? ` · ${h.lane.label}` : '');
 }
 function noteDesc(n) {
   if (n.lane === 'BPM') return `BPM ${fmtV(n.v)}` + (n.bch === '08' ? ` (#BPM${idS(n.bid)})` : '');
   if (n.lane === 'STOP') return `STOP ${fmtV(n.v)}` + (n.sid ? ` (#STOP${idS(n.sid)})` : '');
-  const lane = A.laneMap.get(n.lane), ln = lane ? (lane.p === 2 ? '2P ' : lane.p === 1 && A.dp ? '1P ' : '') + (A.pms && lane.type === 'key' ? '버튼 ' : '') + lane.label : n.lane;
-  if (n.lane[0] === 'G') return `${ln} · #BMP${idS(n.v)} ${A.st.bmps.get(n.v) || '(정의 없음)'}`;
-  if (n.kind === 'm') return `${ln} · 지뢰 · 값 ${idS(n.v)}`;
-  const nm = A.st.wavs.get(n.v) || '(정의 없음)';
-  return `${ln}${n.kind === 'h' ? ' · 숨김' : ''} · #WAV${idS(n.v)} ${nm}` + (n.lb > 0 ? ` · 롱노트 ${fmtV(n.lb)}박${n.lnobj ? ' (LNOBJ)' : ''}` : '') + (n.dangling ? ' · 끝이 없는 롱노트' : '');
+  const lane = A.laneMap.get(n.lane), ln = lane ? (lane.p === 2 ? '2P ' : lane.p === 1 && A.dp ? '1P ' : '') + (A.pms && lane.type === 'key' ? tr('note.button') : '') + lane.label : n.lane;
+  if (n.lane[0] === 'G') return `${ln} · #BMP${idS(n.v)} ${A.st.bmps.get(n.v) || tr('note.undefined')}`;
+  if (n.kind === 'm') return tr('note.mine', { lane: ln, v: idS(n.v) });
+  const nm = A.st.wavs.get(n.v) || tr('note.undefined');
+  return `${ln}${n.kind === 'h' ? tr('note.hidden') : ''} · #WAV${idS(n.v)} ${nm}` + (n.lb > 0 ? tr('note.ln', { beats: fmtV(n.lb) }) + (n.lnobj ? ' (LNOBJ)' : '') : '') + (n.dangling ? tr('note.lnDangling') : '');
 }
 function statusNote() {
   const n = A.hover && A.hover.note;
-  $('#sNote').textContent = n ? noteDesc(n) : (A.sel.size ? `선택 ${A.sel.size}개` : '');
+  $('#sNote').textContent = n ? noteDesc(n) : (A.sel.size ? tr('stb.selected', { n: A.sel.size }) : '');
 }
 
 /* ── app/panels.js ── */
 /* ───────── 오른쪽 패널 ───────── */
 const HDR_FIELDS = [
-  ['TITLE', '제목'], ['SUBTITLE', '부제'], ['ARTIST', '아티스트'], ['SUBARTIST', '서브 아티스트'], ['GENRE', '장르'],
-  ['BPM', '시작 BPM'], ['PLAYLEVEL', '레벨'],
-  ['PLAYER', '플레이', [['', '(없음)'], ['1', '1 · SP'], ['2', '2 · Couple'], ['3', '3 · DP'], ['4', '4 · Battle']]],
-  ['RANK', '판정 RANK', [['', '(없음)'], ['0', '0 · VERY HARD'], ['1', '1 · HARD'], ['2', '2 · NORMAL'], ['3', '3 · EASY'], ['4', '4 · VERY EASY']]],
-  ['DIFFICULTY', '난이도', [['', '(없음)'], ['1', '1 · BEGINNER'], ['2', '2 · NORMAL'], ['3', '3 · HYPER'], ['4', '4 · ANOTHER'], ['5', '5 · INSANE']]],
-  ['TOTAL', 'TOTAL'], ['STAGEFILE', 'STAGEFILE'], ['BANNER', 'BANNER'], ['BACKBMP', 'BACKBMP'], ['PREVIEW', 'PREVIEW'], ['COMMENT', 'COMMENT'],
+  ['TITLE', 'hdr.TITLE'], ['SUBTITLE', 'hdr.SUBTITLE'], ['ARTIST', 'hdr.ARTIST'], ['SUBARTIST', 'hdr.SUBARTIST'], ['GENRE', 'hdr.GENRE'],
+  ['BPM', 'hdr.BPM'], ['PLAYLEVEL', 'hdr.PLAYLEVEL'],
+  ['PLAYER', 'hdr.PLAYER', [['1', '1 · SP'], ['2', '2 · Couple'], ['3', '3 · DP'], ['4', '4 · Battle']]],
+  ['RANK', 'hdr.RANK', [['0', '0 · VERY HARD'], ['1', '1 · HARD'], ['2', '2 · NORMAL'], ['3', '3 · EASY'], ['4', '4 · VERY EASY']]],
+  ['DIFFICULTY', 'hdr.DIFFICULTY', [['1', '1 · BEGINNER'], ['2', '2 · NORMAL'], ['3', '3 · HYPER'], ['4', '4 · ANOTHER'], ['5', '5 · INSANE']]],
+  ['TOTAL', null], ['STAGEFILE', null], ['BANNER', null], ['BACKBMP', null], ['PREVIEW', null], ['COMMENT', null], // 이름표 null: 헤더 이름 그대로
 ];
 function renderHeader() {
   const bd = $('#hdrBd');
-  if (!A.st) { bd.innerHTML = '<div class="dim">파일을 열면 표시됩니다</div>'; return; }
+  if (!A.st) { bd.innerHTML = `<div class="dim">${tr('pn.openToShow')}</div>`; return; }
   let h = '<div class="form">';
   for (const [k, label, opts] of HDR_FIELDS) {
     const v = A.st.headers.get(k) || '';
-    h += `<label for="h_${k}">${esc(label)}</label>`;
+    h += `<label for="h_${k}">${esc(label ? tr(label) : k)}</label>`;
     if (opts) {
-      const o = opts.slice();
+      const o = [['', tr('hdr.none')], ...opts]; // 맨 앞: 헤더 없음
       if (v !== '' && !o.some((x) => x[0] === v)) o.push([v, v]);
       h += `<select id="h_${k}" data-k="${k}">${o.map(([ov, ol]) => `<option value="${esc(ov)}"${ov === v ? ' selected' : ''}>${esc(ol)}</option>`).join('')}</select>`;
     } else h += `<input id="h_${k}" type="text" data-k="${k}" value="${esc(v)}" spellcheck="false">`;
@@ -2247,7 +2283,7 @@ function renderHeader() {
   h += '</div>';
   const ro = [];
   for (const k of ['LNTYPE', 'LNOBJ', 'BASE']) if (A.st.headers.get(k)) ro.push(`#${k} ${A.st.headers.get(k)}`);
-  bd.innerHTML = h + (ro.length ? `<div class="hint">${esc(ro.join(' · '))} — 읽기 전용</div>` : '');
+  bd.innerHTML = h + (ro.length ? `<div class="hint">${esc(ro.join(' · '))}${tr('hdr.readOnly')}</div>` : '');
 }
 function onHeaderChange(e) {
   const k = e.target.dataset.k;
@@ -2271,13 +2307,13 @@ function renderWavList() {
     const use = A.usage.get(id) || 0;
     const stt = name ? Au.state.get(wavKey(name)) : '';
     const cls = (id === A.curWav ? ' cur' : '') + (!name ? ' empty' : '') + (stt === 'missing' || stt === 'fail' ? ' miss' : '');
-    const tip = stt === 'missing' ? ' (파일 없음)' : stt === 'fail' ? ' (읽기 실패)' : '';
+    const tip = stt === 'missing' ? tr('list.missing') : stt === 'fail' ? tr('list.failed') : '';
     parts.push(`<div class="wr${cls}" data-id="${id}"><b>${s}</b><span title="${esc(name + tip)}">${esc(name) || '—'}</span><i>${use || ''}</i></div>`);
   }
   const top = el.scrollTop;
   el.innerHTML = parts.join('');
   el.scrollTop = top;
-  $('#wavCnt').textContent = `${A.st.wavs.size}개 정의`;
+  $('#wavCnt').textContent = tr('list.defined', { n: A.st.wavs.size });
 }
 function markCurWav(scroll) {
   const el = $('#wavList');
@@ -2325,7 +2361,7 @@ function onBeatClick(e) {
 }
 function setMeasureLen(r) {
   const ms = [...A.beatSel];
-  if (!ms.length) { toast('박자를 바꿀 마디를 목록에서 먼저 고르세요'); return; }
+  if (!ms.length) { toast(tr('toast.beat.pickFirst')); return; }
   const str = C.lenStr(r), rr = C.parseMeasureLen(str);
   const before = new Map(), after = new Map();
   for (const m of ms) { before.set(m, A.st.meas.get(m) || null); after.set(m, C.req(rr, R1) ? null : { str, r: rr }); }
@@ -2335,27 +2371,27 @@ function setMeasureLen(r) {
   const list = [{ type: 'meas', before, after }];
   A.st.blocks.forEach((t, i) => { const nt = C.retimeBlockText(t, A.st.meas, newMeas); if (nt !== t) list.push({ type: 'blk', i, before: t, after: nt }); });
   commit(list.length > 1 ? { list } : list[0]);
-  toast(`마디 ${ms.length}개를 ${beatLabel(rr)}(으)로 바꿨습니다`);
+  toast(tr('toast.beat.applied', { n: ms.length, beat: beatLabel(rr) }));
 }
 
 function renderBlocks() {
   const tabs = $('#blkTabs'), tx = $('#blkTx');
   const n = A.st ? A.st.blocks.length : 0;
   if (A.blkIdx >= n) A.blkIdx = Math.max(0, n - 1);
-  tabs.innerHTML = n ? A.st.blocks.map((t, i) => `<button data-i="${i}" class="${i === A.blkIdx ? 'on' : ''}">블록 ${i + 1}${t && t.trim() ? '' : ' (빔)'}</button>`).join('') : '<span class="dim">확장 블록이 없습니다</span>';
+  tabs.innerHTML = n ? A.st.blocks.map((tx, i) => `<button data-i="${i}" class="${i === A.blkIdx ? 'on' : ''}">${tr('blk.tab', { n: i + 1 })}${tx && tx.trim() ? '' : tr('blk.emptyMark')}</button>`).join('') : `<span class="dim">${tr('blk.none')}</span>`;
   tx.value = n ? (A.st.blocks[A.blkIdx] || '') : '';
   tx.disabled = !n;
   $('#blkApply').disabled = $('#blkDel').disabled = !n;
   $('#blkNew').disabled = !A.st;
   const live = A.st ? A.st.blocks.filter((t) => t && t.trim()).length : 0;
-  $('#expCnt').textContent = live ? `${live}개` : '';
+  $('#expCnt').textContent = live ? tr('blk.count', { n: live }) : '';
 }
 
 let infoT = 0;
 function scheduleInfo() { clearTimeout(infoT); infoT = setTimeout(() => { renderInfo(); renderWavList(); renderBmpList(); }, 120); }
 function renderInfo() {
   const bd = $('#infoBd');
-  if (!A.st) { bd.innerHTML = '<div class="dim">파일을 열면 표시됩니다</div>'; return; }
+  if (!A.st) { bd.innerHTML = `<div class="dim">${tr('pn.openToShow')}</div>`; return; }
   let notes = 0, ln = 0, sc = 0, bgm = 0, hid = 0, mine = 0, p2 = 0, bga = 0, k1 = 0, s1 = 0, k2 = 0, s2 = 0, bpmMin = Infinity, bpmMax = -Infinity;
   const usage = new Map(), usageB = new Map();
   for (const n of A.st.notes) {
@@ -2371,27 +2407,27 @@ function renderInfo() {
   A.usage = usage;
   const ld = loadCounts();
   const rows = [
-    ['파일', esc(A.fileName || '(새 파일 — 아직 저장 안 됨)')],
-    ['인코딩', `${C.ENC_LABEL[A.doc.enc]} · ${A.doc.eol === '\r\n' ? 'CRLF' : 'LF'}`],
-    ['노트', A.pms ? `${notes}개 (롱노트 ${ln})` : A.dp || p2 ? `${notes}개 (롱노트 ${ln}, 1P ${k1}+${s1}, 2P ${k2}+${s2})` : `${notes}개 (롱노트 ${ln}, 스크래치 ${sc})`],
-    ['숨김 · 지뢰', `${hid}개 · ${mine}개`],
-    ['BGM · BGA', `${bgm}개 · ${bga}개`],
-    ['길이', fmtTime(A.timing.beatToTime(A.lastBeat || 0))],
+    [tr('info.file'), esc(A.fileName || tr('info.file.new'))],
+    [tr('info.enc'), `${C.ENC_LABEL[A.doc.enc]} · ${A.doc.eol === '\r\n' ? 'CRLF' : 'LF'}`],
+    [tr('info.notes'), A.pms ? tr('info.notes.pms', { n: notes, ln }) : A.dp || p2 ? tr('info.notes.dp', { n: notes, ln, k1, s1, k2, s2 }) : tr('info.notes.sp', { n: notes, ln, sc })],
+    [tr('info.hidMine'), tr('info.hidMine.v', { hid, mine })],
+    ['BGM · BGA', tr('info.bgmBga.v', { bgm, bga })],
+    [tr('info.length'), fmtTime(A.timing.beatToTime(A.lastBeat || 0))],
     ['BPM', bpmMin === bpmMax ? fmtV(bpmMin) : `${fmtV(bpmMin)} ~ ${fmtV(bpmMax)}`],
-    ['키음', `${A.st.wavs.size}개 정의` + (ld.total ? ` · ${ld.ok}/${ld.total} 불러옴` : '') + (ld.missing ? ` · <span style="color:var(--bad)">없음 ${ld.missing}</span>` : '') + (ld.fail ? ` · <span style="color:var(--bad)">읽기 실패 ${ld.fail}</span>` : '')],
-    ['원본 보존', `편집하지 않는 데이터 줄 ${A.doc.unmanagedData}개 · 확장 블록 ${A.st.blocks.filter((t) => t && t.trim()).length}개`],
+    [tr('info.keys'), tr('list.defined', { n: A.st.wavs.size }) + (ld.total ? tr('info.keys.loaded', { ok: ld.ok, total: ld.total }) : '') + (ld.missing ? ` · <span style="color:var(--bad)">${tr('info.keys.missing', { n: ld.missing })}</span>` : '') + (ld.fail ? ` · <span style="color:var(--bad)">${tr('info.keys.failed', { n: ld.fail })}</span>` : '')],
+    [tr('info.preserved'), tr('info.preserved.v', { lines: A.doc.unmanagedData, blocks: A.st.blocks.filter((x) => x && x.trim()).length })],
   ];
   const warn = [];
-  if (A.conflicts) warn.push(`겹친 노트 ${A.conflicts}개 (빨간 테두리) — 저장 전에 정리해 주세요`);
-  if (A.pms && A.muri.length) warn.push(`무리배치 ${A.muri.length}곳 (주황 테두리) — 한 손이 연속된 버튼 3개까지만 누를 수 있다고 보고, 완전히 같은 타이밍의 동시치기(누르고 있는 롱노트 포함)만 검사합니다`);
+  if (A.conflicts) warn.push(tr('warn.conflicts', { n: A.conflicts }));
+  if (A.pms && A.muri.length) warn.push(tr('warn.muri', { n: A.muri.length }));
   if (A.pms) {
     const off = A.st.notes.filter((n) => n.lane[0] === 'K' && !PMS_KEYS.has(n.lane)).length;
-    if (off) warn.push(`PMS에서 쓰지 않는 레인(스크래치·6·7키·2P 1키 등)에 노트 ${off}개가 있습니다. 화면에는 보이지 않지만 그대로 저장됩니다.`);
-  } else if (!A.dp && A.st.notes.some((n) => n.lane[0] === 'K' && n.lane[1] === '2')) warn.push('2P 노트가 있지만 SP 화면입니다. 툴바의 DP 버튼으로 2P 레인을 볼 수 있습니다(노트는 그대로 저장됩니다).');
-  if (A.doc.lntype === 2) warn.push('#LNTYPE 2 파일입니다. 롱노트 채널은 편집하지 않고 원본 그대로 둡니다.');
-  if (!A.fs.provider) warn.push('폴더 없이 연 상태라 키음을 재생할 수 없습니다.');
+    if (off) warn.push(tr('warn.pmsOffLanes', { n: off }));
+  } else if (!A.dp && A.st.notes.some((n) => n.lane[0] === 'K' && n.lane[1] === '2')) warn.push(tr('warn.p2InSp'));
+  if (A.doc.lntype === 2) warn.push(tr('warn.lntype2'));
+  if (!A.fs.provider) warn.push(tr('warn.noFolder'));
   bd.innerHTML = `<table>${rows.map(([a, b]) => `<tr><td>${a}</td><td>${b}</td></tr>`).join('')}</table>` + warn.map((w) => `<div class="w">! ${esc(w)}</div>`).join('')
-    + (A.pms && A.muri.length ? `<div class="muri">${A.muri.slice(0, 50).map((m, i) => `<button data-mi="${i}">${esc(muriLabel(m))}</button>`).join('')}${A.muri.length > 50 ? `<span class="dim">외 ${A.muri.length - 50}곳</span>` : ''}</div>` : '');
+    + (A.pms && A.muri.length ? `<div class="muri">${A.muri.slice(0, 50).map((m, i) => `<button data-mi="${i}">${esc(muriLabel(m))}</button>`).join('')}${A.muri.length > 50 ? `<span class="dim">${tr('info.muri.more', { n: A.muri.length - 50 })}</span>` : ''}</div>` : '');
   for (const el of bd.querySelectorAll('[data-mi]')) el.addEventListener('click', () => { const m = A.muri[+el.dataset.mi]; if (m) { setBottom(m.b - (A.H - HEAD_H) * 0.3 / A.ppb); A.sel = new Set(m.notes); statusNote(); draw(); } });
 }
 function syncOptions() {
@@ -2415,12 +2451,12 @@ function renderBmpList() {
     if (q && !((A.doc.base === 62 ? s.includes(qRaw) : s.toLowerCase().includes(q)) || name.toLowerCase().includes(q))) continue;
     const miss = name && A.bmpMiss && A.bmpMiss.has(normPath(name).toLowerCase());
     const cls = (id === A.curBmp ? ' cur' : '') + (!name ? ' empty' : '') + (miss ? ' miss' : '');
-    parts.push(`<div class="wr${cls}" data-id="${id}"><b>${s}</b><span title="${esc(name + (miss ? ' (파일 없음)' : ''))}">${esc(name) || '—'}</span><i>${use.get(id) || ''}</i></div>`);
+    parts.push(`<div class="wr${cls}" data-id="${id}"><b>${s}</b><span title="${esc(name + (miss ? tr('list.missing') : ''))}">${esc(name) || '—'}</span><i>${use.get(id) || ''}</i></div>`);
   }
   const top = el.scrollTop;
   el.innerHTML = parts.join('');
   el.scrollTop = top;
-  $('#bmpCnt').textContent = `${A.st.bmps.size}개 정의`;
+  $('#bmpCnt').textContent = tr('list.defined', { n: A.st.bmps.size });
 }
 function markCurBmp(scroll) {
   const el = $('#bmpList');
@@ -2468,9 +2504,9 @@ function setPlayMode(m, quiet) {
   if (A.st) {
     refresh();
     const hiddenKeys = A.st.notes.filter((n) => n.lane[0] === 'K' && !A.laneMap.has(n.lane)).length;
-    const tail = hiddenKeys ? ` — 이 화면에 없는 레인의 노트 ${hiddenKeys}개는 보이지 않지만 그대로 저장됩니다` : '';
-    if (!quiet) toast((m === 'dp' ? 'DP 화면 (1P + 2P)' + (A.st.headers.get('PLAYER') !== '3' ? ' — 헤더의 플레이를 3 · DP로 바꾸는 것도 잊지 마세요' : '')
-      : m === 'pms' ? 'PMS 화면 (팝픈 9버튼)' : 'SP 화면') + tail, 4000);
+    const tail = hiddenKeys ? tr('toast.mode.hidden', { n: hiddenKeys }) : '';
+    if (!quiet) toast((m === 'dp' ? tr('toast.mode.dp') + (A.st.headers.get('PLAYER') !== '3' ? tr('toast.mode.dpPlayer') : '')
+      : m === 'pms' ? tr('toast.mode.pms') : tr('toast.mode.sp')) + tail, 4000);
   }
 }
 function setDP(on, quiet) { setPlayMode(on ? 'dp' : 'sp', quiet); }
@@ -2512,16 +2548,16 @@ function modal(title, body, buttons) {
 function promptText(title, label, value, hint) {
   const w = document.createElement('div');
   w.innerHTML = `<label class="fl">${esc(label)} <input type="text" id="ptIn" value="${esc(value || '')}" spellcheck="false" autocomplete="off"></label>${hint ? `<div class="hint">${esc(hint)}</div>` : ''}`;
-  return modal(title, w, [{ label: '취소', value: null }, { label: '확인', primary: true, value: () => w.querySelector('#ptIn').value }]);
+  return modal(title, w, [{ label: tr('btn.cancel'), value: null }, { label: tr('btn.ok'), primary: true, value: () => w.querySelector('#ptIn').value }]);
 }
 async function confirmDiscard() {
   if (!A.dirty) return true;
-  const r = await modal('저장하지 않은 변경 사항', '<p>지금 패턴에 저장하지 않은 변경 사항이 있습니다. 버리고 계속할까요?</p>', [
-    { label: '취소', value: false, primary: true }, { label: '버리고 계속', value: true }]);
+  const r = await modal(tr('dlg.unsaved.title'), `<p>${tr('dlg.unsaved.body')}</p>`, [
+    { label: tr('btn.cancel'), value: false, primary: true }, { label: tr('dlg.unsaved.discard'), value: true }]);
   return !!r;
 }
 function showHelp() {
-  modal('도움말', `<div class="help">
+  modal(tr('dlg.help.title'), `<div class="help">
 <h4>모드</h4><ul>
 <li><b>선택 (F1)</b> — 클릭: 선택 · 빈 곳 드래그: 범위 선택 · 노트 드래그: 이동 (좌우로 끌면 레인 이동, BGM ↔ 키 레인 포함) · Ctrl+드래그: 복사 · 롱노트 윗끝 드래그: 길이 조절</li>
 <li><b>쓰기 (F3)</b> — 클릭: WAV 목록에서 고른 키음으로 노트 찍기 · 키 레인에서 위로 끌기: 롱노트 · 기존 노트 클릭: 그 키음을 집어오기 (위로 끌면 롱노트로) · BPM/STOP 레인 클릭: 값 입력</li>
@@ -2545,7 +2581,7 @@ function showHelp() {
 <h4>저장</h4><p>편집한 채널(BGM · BPM · STOP · 1P 키 · 롱노트 · 마디 길이)과 고친 헤더 · WAV 줄만 다시 쓰고, 나머지 줄(BGA, 2P, 숨김 노트, 지뢰, 주석, 모르는 명령, #RANDOM 블록)은 원본 바이트 그대로 둡니다. 저장 직전에 결과를 다시 읽어 편집 내용과 일치하는지 확인하고, 바뀐 줄을 보여 줍니다. 기본 인코딩은 Shift-JIS입니다.</p>
 <h4>복사 · 붙여넣기</h4><p>iBMSC 클립보드 형식("iBMSC Clipboard Data")을 씁니다. iBMSC에서 복사한 노트나 ibmsc_clip.py가 만든 텍스트를 붙여넣을 수 있고, 여기서 복사한 노트를 iBMSC에 붙여넣을 수도 있습니다. 위치는 마우스가 있는 마디의 시작점 기준입니다.</p>
 <h4>로컬 전용</h4><p>이 페이지는 파일 하나로 동작하며 서버가 없습니다. 패턴과 키음은 브라우저 안에서만 읽고 쓰고, 외부로 나가는 통신은 페이지의 보안 정책(CSP)으로 막혀 있습니다. 폴더에 바로 저장하려면 크롬이나 엣지를 쓰세요. 다른 브라우저에서는 저장할 때 파일이 다운로드됩니다.</p>
-</div>`, [{ label: '닫기', value: null, primary: true }]);
+</div>`, [{ label: tr('btn.close'), value: null, primary: true }]);
 }
 
 /* ── app/files.js ── */
@@ -2607,7 +2643,7 @@ function makeListProvider(entries, name) {
     async find(rel) { const e = map.get(normPath(rel).toLowerCase()); return e ? { name: e.file.name, getFile: async () => e.file } : null; },
     async read(rel) { const h = await this.find(rel); return h ? new Uint8Array(await (await h.getFile()).arrayBuffer()) : null; },
     async ensureWrite() { return false; },
-    async write() { throw new Error('이 방식으로 연 폴더에는 쓸 수 없습니다'); },
+    async write() { throw appError('err.readOnlyFolder'); },
   };
 }
 function makeSingleProvider(file, handle) {
@@ -2623,7 +2659,7 @@ function makeSingleProvider(file, handle) {
       } catch (e) { return false; }
     },
     async write(name, bytes) {
-      if (name !== file.name) throw new Error('파일 하나만 연 상태라 다른 이름으로는 쓸 수 없습니다');
+      if (name !== file.name) throw appError('err.singleFileRename');
       const w = await handle.createWritable(); await w.write(bytes); await w.close();
     },
   };
@@ -2670,16 +2706,16 @@ async function openFolder() {
 }
 // 파일 목록 방식으로 연 폴더에 저장할 수 있게, 같은 폴더를 직접 접근으로 한 번 골라 받는다
 async function attachWriteDir(P) {
-  const pick = await modal('저장할 폴더 고르기', `<p>빠른 방식으로 연 폴더라서 바로 저장하려면 폴더 접근 권한이 한 번 필요합니다. 다음 창에서 <b>${esc(P.name || '이 곡')}</b> 폴더를 골라 주세요.</p><p class="dim">한 번 고르면 이 폴더를 닫을 때까지 다시 묻지 않습니다. 취소하면 이번 저장은 다운로드로 합니다.</p>`, [
-    { label: '다운로드로 저장', value: null },
-    { label: '폴더 고르기', primary: true, value: () => window.showDirectoryPicker({ id: 'bms-folder', mode: 'readwrite' }).catch(() => null) },
+  const pick = await modal(tr('dlg.pickSave.title'), `<p>${tr('dlg.pickSave.body', { name: esc(P.name || tr('dlg.pickSave.thisSong')) })}</p><p class="dim">${tr('dlg.pickSave.note')}</p>`, [
+    { label: tr('dlg.pickSave.download'), value: null },
+    { label: tr('dlg.pickFolder'), primary: true, value: () => window.showDirectoryPicker({ id: 'bms-folder', mode: 'readwrite' }).catch(() => null) },
   ]);
   if (!pick) return false;
   const D = makeDirProvider(pick);
   const same = pick.name === P.name && (!A.fileName || !!(await D.find(A.fileName)));
   if (!same) {
-    const go = await modal('다른 폴더인 것 같습니다', `<p>고른 폴더 <b>${esc(pick.name)}</b>가 지금 연 폴더 <b>${esc(P.name || '')}</b>와 다르거나, 그 안에 <b>${esc(A.fileName || '')}</b> 파일이 없습니다.</p><p>그래도 이 폴더에 저장할까요?</p>`, [
-      { label: '취소', value: false, primary: true }, { label: '이 폴더에 저장', value: true }]);
+    const go = await modal(tr('dlg.otherFolder.title'), `<p>${tr('dlg.otherFolder.body', { picked: esc(pick.name), opened: esc(P.name || ''), file: esc(A.fileName || '') })}</p><p>${tr('dlg.otherFolder.ask')}</p>`, [
+      { label: tr('btn.cancel'), value: false, primary: true }, { label: tr('dlg.otherFolder.save'), value: true }]);
     if (!go) return false;
   }
   P.writer = D; P.canWrite = true;
@@ -2690,12 +2726,12 @@ async function attachWriteDir(P) {
 // 폴더 선택 창을 쓸 수 없는 환경(다른 페이지 안에 띄워진 경우, 모바일 등): 일반 파일 선택으로 대신
 function fallbackPick(why) {
   const mobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
-  modal('폴더 열기', `<p>이 화면에서는 폴더를 직접 열 수 없어 파일 선택 창으로 불러옵니다. 이 방식으로 연 파일은 <b>저장할 때 다운로드</b>됩니다.</p>`
-    + `<p class="dim">폴더에 바로 저장하려면 HTML 파일을 내려받아 크롬·엣지에서 직접 열거나, 폴더를 이 창에 끌어다 놓으세요.${mobile ? ' 안드로이드에서는 패턴 파일과 키음 파일을 한꺼번에 여러 개 고르면 됩니다.' : ''}</p>`
+  modal(tr('dlg.openFiles.title'), `<p>${tr('dlg.openFiles.body')}</p>`
+    + `<p class="dim">${tr('dlg.openFiles.note')}${mobile ? tr('dlg.openFiles.android') : ''}</p>`
     + (why ? `<p class="dim" style="font-size:11px">${esc(why)}</p>` : ''), [
-    { label: '취소', value: null },
-    { label: '파일 여러 개 고르기', value: () => { $('#filesIn').click(); return null; }, primary: mobile },
-    { label: '폴더 고르기', value: () => { $('#dirIn').click(); return null; }, primary: !mobile },
+    { label: tr('btn.cancel'), value: null },
+    { label: tr('dlg.openFiles.pickFiles'), value: () => { $('#filesIn').click(); return null; }, primary: mobile },
+    { label: tr('dlg.pickFolder'), value: () => { $('#dirIn').click(); return null; }, primary: !mobile },
   ]);
 }
 async function useProvider(P, prefer) {
@@ -2704,19 +2740,19 @@ async function useProvider(P, prefer) {
   Au.reset();
   await refreshFileList();
   const files = A.fs.files;
-  if (!files.length) { toast('폴더에 BMS 파일(.bms .bme .bml .pms)이 없어 새 파일을 만들었습니다', 4500); newChart(true); return; }
+  if (!files.length) { toast(tr('toast.noChartInFolder'), 4500); newChart(true); return; }
   await openChart(prefer && files.includes(prefer) ? prefer : files[0]);
 }
 async function refreshFileList(select) {
   const P = A.fs.provider, sel = $('#fileSel');
-  if (!P) { sel.innerHTML = '<option>(폴더 없음)</option>'; sel.disabled = true; return; }
+  if (!P) { sel.innerHTML = `<option>${esc(tr('file.noFolder'))}</option>`; sel.disabled = true; return; }
   const all = await P.list();
   const names = all.filter((n) => CHART_EXT.test(n)).sort((a, b) => a.localeCompare(b));
   A.fs.files = names;
   const opts = names.slice();
   if (select && !opts.includes(select)) opts.push(select);
-  sel.innerHTML = opts.length ? opts.map((n) => `<option value="${esc(n)}">${esc(n)}</option>`).join('') : '<option>(패턴 파일 없음)</option>';
-  if (!A.fileName && A.st) sel.insertAdjacentHTML('afterbegin', '<option value="">(새 파일)</option>');
+  sel.innerHTML = opts.length ? opts.map((n) => `<option value="${esc(n)}">${esc(n)}</option>`).join('') : `<option>${esc(tr('file.noCharts'))}</option>`;
+  if (!A.fileName && A.st) sel.insertAdjacentHTML('afterbegin', `<option value="">${esc(tr('file.newOption'))}</option>`);
   sel.disabled = !opts.length;
   sel.value = select !== undefined ? select : (A.fileName || '');
   $('#audioList').innerHTML = all.filter((n) => AUDIO_EXT.test(n)).sort().map((n) => `<option value="${esc(n)}">`).join('');
@@ -2725,9 +2761,9 @@ async function refreshFileList(select) {
 async function openChart(name, enc) {
   const P = A.fs.provider;
   const bytes = P && await P.read(name);
-  if (!bytes) { toast('파일을 읽을 수 없습니다: ' + name, 4000); return; }
+  if (!bytes) { toast(tr('toast.cantRead', { name }), 4000); return; }
   let doc;
-  try { doc = C.parse(bytes, enc); } catch (e) { toast('읽기 실패: ' + e.message, 5000); return; }
+  try { doc = C.parse(bytes, enc); } catch (e) { toast(tr('toast.readFailed', { err: e }), 5000); return; }
   loadDoc(doc, name);
 }
 function loadDoc(doc, name) {
@@ -2747,10 +2783,10 @@ function loadDoc(doc, name) {
   $('#encSel').value = doc.enc;
   startPreload(); checkBmps();
   const notes = [];
-  if (A.dp) notes.push('DP 패턴으로 열었습니다');
-  if (A.pms) notes.push('PMS(9버튼) 패턴으로 열었습니다');
-  if (doc.lntype === 2) notes.push('LNTYPE 2 롱노트는 편집하지 않고 보존합니다');
-  if (doc.encAmbiguous) notes.push('인코딩을 Shift-JIS로 추정했습니다. 글자가 깨져 보이면 아래쪽 인코딩을 바꿔 보세요');
+  if (A.dp) notes.push(tr('open.note.dp'));
+  if (A.pms) notes.push(tr('open.note.pms'));
+  if (doc.lntype === 2) notes.push(tr('open.note.lntype2'));
+  if (doc.encAmbiguous) notes.push(tr('open.note.encGuess'));
   if (notes.length) toast(notes.join(' · '), 5000);
 }
 function newChart(skipConfirm) {
@@ -2774,7 +2810,7 @@ async function save(asNew) {
   if (!A.fileName) asNew = true;
   let res;
   try { res = C.serialize(A.doc, A.st, { encoding: A.doc.enc }); }
-  catch (e) { await modal('저장할 수 없습니다', `<p>${esc(e.message)}</p>`, [{ label: '닫기', value: null, primary: true }]); return; }
+  catch (e) { await modal(tr('dlg.saveFail.title'), `<p>${esc(msgText(e))}</p>`, [{ label: tr('btn.close'), value: null, primary: true }]); return; }
   let name = asNew ? suggestName() : A.fileName, enc = A.doc.enc;
   const problem = !res.verify.ok || res.badChars.length || res.warnings.length;
   if (asNew || cfg.confirmSave || problem) {
@@ -2791,37 +2827,37 @@ function saveDialog(res0, name, asNew) {
   w.className = 'savedlg';
   const render = (keepName) => {
     const v = res.verify, items = [];
-    items.push(v.ok ? '<li class="ok">다시 읽어서 확인: 편집한 내용과 정확히 일치합니다</li>'
-      : `<li class="bad">다시 읽어서 확인: 문제 ${v.problems.length}건<ul>${v.problems.map((p) => `<li>${esc(p)}</li>`).join('')}</ul></li>`);
-    items.push(res.reencode ? `<li class="warn">인코딩을 ${C.ENC_LABEL[res.enc]}(으)로 바꿔 모든 줄을 다시 씁니다</li>`
-      : `<li class="ok">편집하지 않은 줄 ${res.kept}개는 원본 바이트 그대로입니다</li>`);
-    if (res.badChars.length) items.push(`<li class="bad">${C.ENC_LABEL[res.enc]}로 쓸 수 없는 글자: ${esc(res.badChars.slice(0, 24).join(' '))} — '?'로 바뀝니다. 인코딩을 UTF-8로 바꾸거나 글자를 고쳐 주세요.</li>`);
-    for (const x of res.warnings) items.push(`<li class="warn">${esc(x)}</li>`);
-    if (res.newDefs) items.push(`<li class="ok">새 #BPM/#STOP 정의 ${res.newDefs}개를 추가합니다</li>`);
+    items.push(v.ok ? `<li class="ok">${tr('save.verify.ok')}</li>`
+      : `<li class="bad">${tr('save.verify.bad', { n: v.problems.length })}<ul>${v.problems.map((p) => `<li>${esc(msgText(p))}</li>`).join('')}</ul></li>`);
+    items.push(res.reencode ? `<li class="warn">${tr('save.reencode', { enc: C.ENC_LABEL[res.enc] })}</li>`
+      : `<li class="ok">${tr('save.kept', { n: res.kept })}</li>`);
+    if (res.badChars.length) items.push(`<li class="bad">${tr('save.badChars', { enc: C.ENC_LABEL[res.enc], chars: esc(res.badChars.slice(0, 24).join(' ')) })}</li>`);
+    for (const x of res.warnings) items.push(`<li class="warn">${esc(msgText(x))}</li>`);
+    if (res.newDefs) items.push(`<li class="ok">${tr('save.newDefs', { n: res.newDefs })}</li>`);
     const minus = res.diff.filter((d) => d.op === '-').length, plus = res.diff.length - minus;
     const LIM = 500;
     const diffHtml = res.diff.slice(0, LIM).map((d) => `<div class="${d.op === '-' ? 'dm' : 'dp'}">${d.op === '-' ? '−' : '+'} <span class="ln">${d.n || ''}</span>${esc(trunc(d.t, 200))}</div>`).join('')
-      + (res.diff.length > LIM ? `<div class="dim">… ${res.diff.length - LIM}줄 더</div>` : '');
-    w.innerHTML = (asNew ? `<label class="fl">파일 이름 <input id="sdName" type="text" value="${esc(keepName || name)}" spellcheck="false"></label>` : `<div class="fl">파일: <b>${esc(name)}</b></div>`)
-      + `<label class="fl">인코딩 <select id="sdEnc">${ENC_LIST.map((e) => `<option value="${e}"${e === enc ? ' selected' : ''}>${C.ENC_LABEL[e]}${e === A.doc.enc ? ' (원본)' : ''}</option>`).join('')}</select></label>`
+      + (res.diff.length > LIM ? `<div class="dim">${tr('save.diffMore', { n: res.diff.length - LIM })}</div>` : '');
+    w.innerHTML = (asNew ? `<label class="fl">${tr('save.fileName')} <input id="sdName" type="text" value="${esc(keepName || name)}" spellcheck="false"></label>` : `<div class="fl">${tr('save.file')} <b>${esc(name)}</b></div>`)
+      + `<label class="fl">${tr('stb.enc')} <select id="sdEnc">${ENC_LIST.map((e) => `<option value="${e}"${e === enc ? ' selected' : ''}>${C.ENC_LABEL[e]}${e === A.doc.enc ? tr('save.encOriginal') : ''}</option>`).join('')}</select></label>`
       + `<ul class="chk">${items.join('')}</ul>`
-      + `<div class="dh">바뀐 줄 — 지움 ${minus} · 새로 씀 ${plus}</div>`
-      + `<div class="diff">${diffHtml || '<div class="dim">바뀐 줄이 없습니다</div>'}</div>`
-      + `<label class="chkl"><input type="checkbox" id="sdBak"${cfg.backup ? ' checked' : ''}> 처음 덮어쓸 때 원본을 .bak으로 백업</label>`
-      + `<label class="chkl"><input type="checkbox" id="sdQuiet"${cfg.confirmSave ? '' : ' checked'}> 다음부터 이 창 없이 바로 저장 (문제가 있을 때만 표시)</label>`;
+      + `<div class="dh">${tr('save.diffHead', { minus, plus })}</div>`
+      + `<div class="diff">${diffHtml || `<div class="dim">${tr('save.noDiff')}</div>`}</div>`
+      + `<label class="chkl"><input type="checkbox" id="sdBak"${cfg.backup ? ' checked' : ''}> ${tr('pn.view.backup')}</label>`
+      + `<label class="chkl"><input type="checkbox" id="sdQuiet"${cfg.confirmSave ? '' : ' checked'}> ${tr('save.quiet')}</label>`;
     w.querySelector('#sdEnc').onchange = (e) => {
       const nm = asNew ? w.querySelector('#sdName').value : '';
       try { res = C.serialize(A.doc, A.st, { encoding: e.target.value }); enc = e.target.value; render(nm); }
-      catch (err) { toast(err.message, 5000); }
+      catch (err) { toast(msgText(err), 5000); }
     };
   };
   render();
-  return modal(asNew ? '다른 이름으로 저장' : '저장 확인', w, [
-    { label: '취소', value: null },
-    { label: res0.verify.ok && !res0.badChars.length ? '저장' : '그래도 저장', primary: true, value: () => {
+  return modal(asNew ? tr('save.titleAs') : tr('save.title'), w, [
+    { label: tr('btn.cancel'), value: null },
+    { label: res0.verify.ok && !res0.badChars.length ? tr('save.ok') : tr('save.anyway'), primary: true, value: () => {
       cfg.backup = w.querySelector('#sdBak').checked; cfg.confirmSave = !w.querySelector('#sdQuiet').checked; saveCfg(); syncOptions();
       const nm = asNew ? w.querySelector('#sdName').value.trim().replace(/[\\/:*?"<>|]/g, '') : name;
-      if (!nm) { toast('파일 이름을 넣어 주세요'); return undefined; }
+      if (!nm) { toast(tr('toast.needFileName')); return undefined; }
       return { name: nm, enc, res };
     } },
   ]);
@@ -2839,17 +2875,17 @@ async function writeOut(name, res, enc) {
   const isDir = P && (P.kind === 'dir' || !!P.writer);
   if (P && P.canWrite) {
     try {
-      if (!(await P.ensureWrite())) throw new Error('쓰기 권한을 받지 못했습니다');
+      if (!(await P.ensureWrite())) throw appError('err.noWritePermission');
       const lower = name.toLowerCase();
       if (cfg.backup && isDir && A.fileName && lower === A.fileName.toLowerCase() && A.doc.bytes.length && !A.backedUp.has(lower)) {
-        await P.write(name + '.bak', A.doc.bytes); A.backedUp.add(lower); backup = ` (원본은 ${name}.bak)`;
+        await P.write(name + '.bak', A.doc.bytes); A.backedUp.add(lower); backup = tr('toast.saved.backup', { name });
       }
       if (isDir && lower !== (A.fileName || '').toLowerCase() && A.fs.files.some((f) => f.toLowerCase() === lower)) {
-        const ok = await modal('덮어쓰기', `<p>폴더에 <b>${esc(name)}</b> 파일이 이미 있습니다. 덮어쓸까요?</p>`, [{ label: '취소', value: false }, { label: '덮어쓰기', value: true, primary: true }]);
+        const ok = await modal(tr('dlg.overwrite.title'), `<p>${tr('dlg.overwrite.body', { name: esc(name) })}</p>`, [{ label: tr('btn.cancel'), value: false }, { label: tr('dlg.overwrite.ok'), value: true, primary: true }]);
         if (!ok) return;
       }
       await P.write(name, res.bytes); wrote = true;
-    } catch (e) { toast('폴더에 쓰지 못해 다운로드로 저장합니다: ' + e.message, 6000); }
+    } catch (e) { toast(tr('toast.writeFailedDownload', { err: e }), 6000); }
   }
   if (!wrote) download(name, res.bytes);
   // 저장한 내용을 새 기준으로 (실행 취소 기록은 유지)
@@ -2862,7 +2898,7 @@ async function writeOut(name, res, enc) {
   await refreshFileList(name);
   renderBlocks(); renderInfo();
   $('#encSel').value = enc;
-  toast(wrote ? `저장했습니다: ${name}${backup}` : `다운로드했습니다: ${name}`, 4000);
+  toast(wrote ? tr('toast.saved', { name }) + backup : tr('toast.downloaded', { name }), 4000);
 }
 
 /* ── app/audio.js ── */
@@ -2961,7 +2997,7 @@ function scheduleLoadStatus() {
   loadT = setTimeout(() => {
     loadT = 0;
     const c = loadCounts();
-    $('#sLoad').textContent = !c.total ? '' : c.loading ? `키음 불러오는 중 ${c.ok + c.missing + c.fail}/${c.total}` : `키음 ${c.ok}/${c.total}` + (c.missing + c.fail ? ` · 문제 ${c.missing + c.fail}` : '');
+    $('#sLoad').textContent = !c.total ? '' : c.loading ? tr('stb.keysLoading', { n: c.ok + c.missing + c.fail, total: c.total }) : tr('stb.keysLoaded', { ok: c.ok, total: c.total }) + (c.missing + c.fail ? tr('stb.keysProblem', { n: c.missing + c.fail }) : '');
     if (!c.loading) { renderWavList(); renderInfo(); }
     renderDiag();
   }, 250);
@@ -2980,8 +3016,8 @@ async function play(fromBeat) {
   if (!A.st) return;
   stopPlay();
   const ctx = ensureCtx(true);
-  if (!ctx) { toast('이 브라우저는 오디오 재생을 지원하지 않습니다'); return; }
-  if (!A.fs.provider) toast('키음 폴더 없이 연 파일이라 소리가 나지 않습니다', 3500);
+  if (!ctx) { toast(tr('toast.noAudio')); return; }
+  if (!A.fs.provider) toast(tr('toast.noKeysoundFolder'), 3500);
   const T = A.timing, t0 = T.beatToTime(fromBeat);
   let evs = [];
   for (const n of A.st.notes) {
@@ -3001,7 +3037,7 @@ async function play(fromBeat) {
     const s = Au.state.get(wavKey(nm));
     if (s !== 'ok' && s !== 'missing' && s !== 'fail') pending.push(loadWav(nm));
   }
-  if (pending.length) { $('#sLoad').textContent = `재생 준비: 키음 ${pending.length}개 불러오는 중…`; await Promise.all(pending); scheduleLoadStatus(); }
+  if (pending.length) { $('#sLoad').textContent = tr('stb.playPrep', { n: pending.length }); await Promise.all(pending); scheduleLoadStatus(); }
   if (A.playToken !== token) return;
   const P = { evs, i: 0, start: ctx.currentTime + 0.12, t0, fromBeat, last: new Map(), srcs: new Set(), endT: evs.length ? Math.max(0, evs[evs.length - 1].t) : 0 };
   Au.play = P;
@@ -3065,12 +3101,12 @@ function bindDrop() {
       if (hp) {
         const h = await hp;
         if (h && h.kind === 'directory') { await useProvider(makeDirProvider(h)); return; }
-        if (h && h.kind === 'file' && CHART_EXT.test(h.name)) { await useProvider(makeSingleProvider(await h.getFile(), h)); toast('파일만 열었습니다. 키음까지 쓰려면 곡 폴더를 놓아 주세요', 4500); return; }
+        if (h && h.kind === 'file' && CHART_EXT.test(h.name)) { await useProvider(makeSingleProvider(await h.getFile(), h)); toast(tr('toast.drop.fileOnly'), 4500); return; }
       }
-      if (entry && entry.isDirectory) { await useProvider(await makeEntryProvider(entry)); toast('이 브라우저에서는 폴더에 바로 저장할 수 없어 저장 시 다운로드됩니다', 4500); return; }
+      if (entry && entry.isDirectory) { await useProvider(await makeEntryProvider(entry)); toast(tr('toast.saveWillDownload'), 4500); return; }
       if (file && CHART_EXT.test(file.name)) { await useProvider(makeSingleProvider(file, null)); return; }
-      toast('BMS 곡 폴더나 패턴 파일을 놓아 주세요');
-    } catch (err) { toast('열 수 없습니다: ' + err.message, 5000); }
+      toast(tr('toast.drop.what'));
+    } catch (err) { toast(tr('toast.openFailed', { err }), 5000); }
   });
 }
 
@@ -3245,7 +3281,7 @@ function longPress() {
     const cur = [...T.pts.values()][0] || { x: s.x, y: s.y };
     s.lx = cur.x; s.ly = cur.y;
     if (navigator.vibrate) try { navigator.vibrate(15); } catch (err) { /* 무시 */ }
-    showTip(A.mode === 'select' ? '떼면 메뉴 · 끌면 범위 선택' : '떼면 메뉴', s.x, s.y);
+    showTip(A.mode === 'select' ? tr('tip.hold.select') : tr('tip.hold.write'), s.x, s.y);
   }
 }
 // 길게 누르는 동안 손가락 위에 띄우는 짧은 안내
@@ -3346,27 +3382,27 @@ function openMenu(items, x, y, touch) {
 // 노트를 우클릭: 선택 안 된 노트면 그것만 선택하고, 선택된 노트면 선택 전체에 적용
 function showCtx(n, x, y, touch) {
   if (!A.sel.has(n)) A.sel = new Set([n]);
-  const sel = [...A.sel], cnt = sel.length > 1 ? ` (${sel.length}개)` : '';
+  const sel = [...A.sel], cnt = sel.length > 1 ? tr('ctx.count', { n: sel.length }) : '';
   const items = [];
-  items.push({ label: '값 바꾸기…', fn: () => { const kind = (x2) => (isSound(x2.lane) ? 's' : x2.lane); editValue([n, ...sel.filter((x2) => x2 !== n && kind(x2) === kind(n))]); } });
+  items.push({ label: tr('ctx.editValue'), fn: () => { const kind = (x2) => (isSound(x2.lane) ? 's' : x2.lane); editValue([n, ...sel.filter((x2) => x2 !== n && kind(x2) === kind(n))]); } });
   items.push('-');
-  items.push({ label: '잘라내기' + cnt, key: 'Ctrl+X', fn: () => { menuCopy(); const c = A.sel.size; deleteSel(); toast(`노트 ${c}개 잘라냄`); } });
-  items.push({ label: '복사' + cnt, key: 'Ctrl+C', fn: () => { menuCopy(); toast(`노트 ${A.sel.size}개 복사`); } });
-  items.push({ label: '삭제' + cnt, key: 'Del', fn: deleteSel });
+  items.push({ label: tr('ctx.cut') + cnt, key: 'Ctrl+X', fn: () => { menuCopy(); const c = A.sel.size; deleteSel(); toast(tr('toast.cut', { n: c })); } });
+  items.push({ label: tr('ctx.copy') + cnt, key: 'Ctrl+C', fn: () => { menuCopy(); toast(tr('toast.copy', { n: A.sel.size })); } });
+  items.push({ label: tr('ctx.delete') + cnt, key: 'Del', fn: deleteSel });
   items.push('-');
-  if (n.lane[0] === 'G') items.push({ label: 'BMP 목록에서 보기', fn: () => showInList('bmp', n.v) });
-  else if (isSound(n.lane) && n.kind !== 'm') items.push({ label: 'WAV 목록에서 보기', fn: () => showInList('wav', n.v) });
+  if (n.lane[0] === 'G') items.push({ label: tr('ctx.showBmp'), fn: () => showInList('bmp', n.v) });
+  else if (isSound(n.lane) && n.kind !== 'm') items.push({ label: tr('ctx.showWav'), fn: () => showInList('wav', n.v) });
   // 노트 종류: 키 레인의 롱노트가 아닌 노트만 (숨김·지뢰 롱노트 채널은 없음)
   const kindable = sel.filter((x2) => isKey(x2.lane) && !(x2.lb > 0));
   if (kindable.length) {
     items.push('-');
     const cur = new Set(kindable.map((x2) => x2.kind || 'n'));
-    for (const [k, label] of [['n', '일반 노트'], ['h', '숨김 노트'], ['m', '지뢰']]) {
+    for (const [k, label] of [['n', tr('kind.long.n')], ['h', tr('kind.long.h')], ['m', tr('kind.long.m')]]) {
       items.push({ label, on: cur.size === 1 && cur.has(k), fn: () => setKindOf(kindable, k) });
     }
   }
   const lns = sel.filter((x2) => x2.lb > 0);
-  if (lns.length) { items.push('-'); items.push({ label: '롱노트 풀기' + (lns.length > 1 ? ` (${lns.length}개)` : ''), fn: () => unLN(lns) }); }
+  if (lns.length) { items.push('-'); items.push({ label: tr('ctx.unLN') + (lns.length > 1 ? tr('ctx.count', { n: lns.length }) : ''), fn: () => unLN(lns) }); }
   openMenu(items, x, y, touch);
   statusNote(); draw();
 }
@@ -3375,8 +3411,8 @@ function showBlankCtx(h, x, y, touch) {
   A.hover = { note: null, ghost: null, h };
   const canPaste = !!A.clip || !!(navigator.clipboard && navigator.clipboard.readText);
   openMenu([
-    { label: '여기에 붙여넣기', key: 'Ctrl+V', disabled: !canPaste, fn: () => pasteHere(h) },
-    { label: '모두 선택', key: 'Ctrl+A', fn: selectAll },
+    { label: tr('ctx.pasteHere'), key: 'Ctrl+V', disabled: !canPaste, fn: () => pasteHere(h) },
+    { label: tr('ctx.selectAll'), key: 'Ctrl+A', fn: selectAll },
   ], x, y, !!touch);
 }
 async function pasteHere(h) {
@@ -3384,7 +3420,7 @@ async function pasteHere(h) {
   let text = null;
   try { if (navigator.clipboard && navigator.clipboard.readText) text = await navigator.clipboard.readText(); } catch (e) { /* 권한 없음: 편집기 안 클립보드 사용 */ }
   if (!text || !/^iBMSC Clipboard Data/.test(text)) text = A.clip ? A.clip.text : text;
-  if (!text) { toast('붙여넣을 노트가 없습니다'); return; }
+  if (!text) { toast(tr('toast.paste.empty')); return; }
   A.hover = { note: null, ghost: null, h };
   pasteText(text);
 }
@@ -3414,7 +3450,7 @@ function setKindOf(notes, k) {
   });
   const keep = [...A.sel].filter((x) => !targets.includes(x));
   commit({ del: targets, add }); A.sel = new Set(keep.concat(add)); statusNote(); draw();
-  toast(`노트 ${targets.length}개를 ${({ n: '일반 노트', h: '숨김 노트', m: '지뢰' })[k]}(으)로 바꿨습니다`);
+  toast(tr('toast.kindChanged', { n: targets.length, kind: tr('kind.long.' + k) }));
 }
 function unLN(notes) {
   const add = notes.map((x) => cloneNote(x, { len: null }));
@@ -3517,7 +3553,7 @@ function init() {
     if (cfg.panels && id in cfg.panels) el.open = !!cfg.panels[id];
     el.addEventListener('toggle', () => { cfg.panels = cfg.panels || {}; cfg.panels[id] = el.open; saveCfg(); });
   }
-  if (!window.showDirectoryPicker) $('#eNote').textContent = '이 브라우저는 폴더에 바로 저장하는 기능이 없어 저장할 때 파일이 다운로드됩니다. 크롬이나 엣지를 권장합니다.';
+  if (!window.showDirectoryPicker) $('#eNote').textContent = tr('empty.noDirPicker');
 
   const click = (id, fn) => $(id).addEventListener('click', (e) => { fn(e); if (e.currentTarget.tagName === 'BUTTON' && $('#modal').hidden) A.sc.focus({ preventScroll: true }); });
   click('#bOpen', openFolder); click('#eOpen', openFolder);
@@ -3553,7 +3589,7 @@ function init() {
     if (!A.doc || enc === A.doc.enc) return;
     if (!(await confirmDiscard())) { e.target.value = A.doc.enc; return; }
     loadDoc(C.parse(A.doc.bytes, enc), A.fileName);
-    toast(`${C.ENC_LABEL[enc]}(으)로 다시 읽었습니다`);
+    toast(tr('toast.reread', { enc: C.ENC_LABEL[enc] }));
   });
   $('#dirIn').addEventListener('change', async (e) => {
     const files = [...e.target.files]; e.target.value = '';
@@ -3561,15 +3597,15 @@ function init() {
     const root = (files[0].webkitRelativePath || '').split('/')[0];
     const entries = files.map((f) => ({ path: (f.webkitRelativePath || f.name).split('/').slice(1).join('/') || f.name, file: f }));
     await useProvider(makeListProvider(entries, root));
-    toast(canPickDir() ? '처음 저장할 때 같은 폴더를 한 번 더 고르면 그 폴더에 바로 저장합니다' : '이 브라우저에서는 폴더에 바로 저장할 수 없어 저장 시 다운로드됩니다', 4500);
+    toast(canPickDir() ? tr('toast.pickAgainOnSave') : tr('toast.saveWillDownload'), 4500);
   });
 
   $('#filesIn').addEventListener('change', async (e) => {
     const files = [...e.target.files]; e.target.value = '';
     if (!files.length) return;
-    if (!files.some((f) => CHART_EXT.test(f.name))) { toast('BMS 파일(.bms .bme .bml .pms)도 같이 골라 주세요', 4500); return; }
+    if (!files.some((f) => CHART_EXT.test(f.name))) { toast(tr('toast.pickChartToo'), 4500); return; }
     await useProvider(makeListProvider(files.map((f) => ({ path: f.name, file: f })), ''));
-    toast('파일 선택으로 열어서 저장 시 다운로드됩니다', 4500);
+    toast(tr('toast.filesWillDownload'), 4500);
   });
   $('#hdrBd').addEventListener('change', onHeaderChange);
   $('#hdrBd').addEventListener('keydown', (e) => { if (e.key === 'Enter' && e.target.tagName === 'INPUT') e.target.blur(); });
@@ -3599,14 +3635,14 @@ function init() {
   $('#bDP').addEventListener('click', () => { setPlayMode(PLAY_MODES[(PLAY_MODES.indexOf(playMode()) + 1) % 3]); A.sc.focus({ preventScroll: true }); });
   const setKind = (k) => { A.noteKind = k; $('#kindSel').value = k; $('#mineVal').hidden = k !== 'm'; if (A.hover) A.hover.ghost = null; draw(); };
   $('#kindSel').addEventListener('change', (e) => { setKind(e.target.value); A.sc.focus({ preventScroll: true }); });
-  $('#mineVal').addEventListener('change', (e) => { const v = C.idParse(e.target.value.trim(), A.doc ? A.doc.base : 36); if (v > 0) A.mineVal = v; else { e.target.value = idS(A.mineVal || 1); toast(`지뢰 값은 01~${idS(C.idMax(A.doc ? A.doc.base : 36))}로 넣어 주세요`); } });
+  $('#mineVal').addEventListener('change', (e) => { const v = C.idParse(e.target.value.trim(), A.doc ? A.doc.base : 36); if (v > 0) A.mineVal = v; else { e.target.value = idS(A.mineVal || 1); toast(tr('toast.mineRange', { max: idS(C.idMax(A.doc ? A.doc.base : 36)) })); } });
   A.setKind = setKind;
   $('#wavQ').addEventListener('input', () => { clearTimeout(wavRenderT); wavRenderT = setTimeout(renderWavList, 120); });
   $('#wavDef').addEventListener('change', renderWavList);
   $('#beatList').addEventListener('click', onBeatClick);
   $('#bApply').addEventListener('click', () => {
     const n = Math.round(+$('#bN').value), d = Math.round(+$('#bD').value);
-    if (!(n >= 1 && d >= 1 && d <= 64 && n <= 999)) { toast('박자는 1~999 / 1~64 사이로 넣어 주세요'); return; }
+    if (!(n >= 1 && d >= 1 && d <= 64 && n <= 999)) { toast(tr('toast.beatRange')); return; }
     if (A.st) setMeasureLen(R(n, d));
   });
   $('#bReset').addEventListener('click', () => { if (A.st) setMeasureLen(R1); });
@@ -3614,8 +3650,8 @@ function init() {
   const applyBlock = (quiet) => {
     if (!A.st || !A.st.blocks.length) return;
     const i = A.blkIdx, before = A.st.blocks[i], after = $('#blkTx').value.replace(/\r\n?/g, '\n');
-    if (before === after) { if (!quiet) toast('바뀐 내용이 없습니다'); return; }
-    commit({ type: 'blk', i, before, after }); toast(`블록 ${i + 1}에 적용했습니다`);
+    if (before === after) { if (!quiet) toast(tr('toast.noChange')); return; }
+    commit({ type: 'blk', i, before, after }); toast(tr('toast.blk.applied', { n: i + 1 }));
   };
   $('#blkApply').addEventListener('click', () => applyBlock(false));
   $('#blkTx').addEventListener('change', () => applyBlock(true));
@@ -3629,7 +3665,7 @@ function init() {
     if (!A.st) return;
     const i = A.blkIdx, before = A.st.blocks[i];
     if (!before) return;
-    commit({ type: 'blk', i, before, after: '' }); toast(`블록 ${i + 1}을 비웠습니다 (저장하면 파일에서 사라집니다)`);
+    commit({ type: 'blk', i, before, after: '' }); toast(tr('toast.blk.cleared', { n: i + 1 }));
   });
 
   A.sc.addEventListener('scroll', onScroll);
@@ -3643,12 +3679,12 @@ function init() {
   document.addEventListener('copy', (e) => {
     if (isTyping(document.activeElement) || !$('#modal').hidden || !A.st || !A.sel.size) return;
     const t = copySel(); if (!t) return;
-    e.clipboardData.setData('text/plain', t); e.preventDefault(); toast(`노트 ${A.sel.size}개 복사`);
+    e.clipboardData.setData('text/plain', t); e.preventDefault(); toast(tr('toast.copy', { n: A.sel.size }));
   });
   document.addEventListener('cut', (e) => {
     if (isTyping(document.activeElement) || !$('#modal').hidden || !A.st || !A.sel.size) return;
     const t = copySel(); if (!t) return;
-    e.clipboardData.setData('text/plain', t); e.preventDefault(); const n = A.sel.size; deleteSel(); toast(`노트 ${n}개 잘라냄`);
+    e.clipboardData.setData('text/plain', t); e.preventDefault(); const n = A.sel.size; deleteSel(); toast(tr('toast.cut', { n }));
   });
   document.addEventListener('paste', (e) => {
     if (isTyping(document.activeElement) || !$('#modal').hidden || !A.st) return;
@@ -3656,8 +3692,8 @@ function init() {
     e.preventDefault(); pasteText(t);
   });
   window.addEventListener('beforeunload', (e) => { if (A.dirty) { e.preventDefault(); e.returnValue = ''; } });
-  window.addEventListener('error', (e) => toast('오류: ' + (e.message || e), 6000));
-  window.addEventListener('unhandledrejection', (e) => toast('오류: ' + ((e.reason && e.reason.message) || e.reason), 6000));
+  window.addEventListener('error', (e) => toast(tr('toast.error', { err: e.message || e }), 6000));
+  window.addEventListener('unhandledrejection', (e) => toast(tr('toast.error', { err: e.reason }), 6000));
   bindDrop();
   new ResizeObserver(resize).observe($('#ed'));
   resize();
@@ -3666,7 +3702,7 @@ function init() {
 /* ── app/_export.js ── */
 window.BMSApp = {
   A, cfg, Au, loadDoc, useProvider, makeListProvider, makeDirProvider, commit, undo, redo, save, play, stopPlay, setMode, pasteText, copySel, nudge,
-  refresh, setZoom, setBottom, hereBeat, serialize: () => C.serialize(A.doc, A.st, { encoding: A.doc.enc }),
+  refresh, setZoom, setBottom, hereBeat, i18n: { I18N, tr, msgText, applyI18n }, serialize: () => C.serialize(A.doc, A.st, { encoding: A.doc.enc }),
 };
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 

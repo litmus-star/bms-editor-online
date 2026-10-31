@@ -23,7 +23,7 @@ for (let it = 0; it < 3000; it++) {
   if (rnd() < 0.3) st.meas.set(Math.floor(rnd() * 8), { str: '0.5', r: C.R(1, 2) });
   // 같은 레인·종류에서 겹치는 자리/롱노트 없이만 시험 (편집기가 막는 상황)
   const r1 = C.serialize(d, st);
-  if (r1.warnings.some((w) => w.includes('겹친'))) continue;
+  if (r1.warnings.some((w) => w.code === 'core.save.conflicts')) continue;
   if (r1.verify.ok) ok++; else { bad++; if (bad < 4) console.log(r1.verify.problems); }
 }
 console.log('ok', ok, 'bad', bad);

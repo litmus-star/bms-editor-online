@@ -1,21 +1,21 @@
 /* ───────── 오른쪽 패널 ───────── */
 const HDR_FIELDS = [
-  ['TITLE', '제목'], ['SUBTITLE', '부제'], ['ARTIST', '아티스트'], ['SUBARTIST', '서브 아티스트'], ['GENRE', '장르'],
-  ['BPM', '시작 BPM'], ['PLAYLEVEL', '레벨'],
-  ['PLAYER', '플레이', [['', '(없음)'], ['1', '1 · SP'], ['2', '2 · Couple'], ['3', '3 · DP'], ['4', '4 · Battle']]],
-  ['RANK', '판정 RANK', [['', '(없음)'], ['0', '0 · VERY HARD'], ['1', '1 · HARD'], ['2', '2 · NORMAL'], ['3', '3 · EASY'], ['4', '4 · VERY EASY']]],
-  ['DIFFICULTY', '난이도', [['', '(없음)'], ['1', '1 · BEGINNER'], ['2', '2 · NORMAL'], ['3', '3 · HYPER'], ['4', '4 · ANOTHER'], ['5', '5 · INSANE']]],
-  ['TOTAL', 'TOTAL'], ['STAGEFILE', 'STAGEFILE'], ['BANNER', 'BANNER'], ['BACKBMP', 'BACKBMP'], ['PREVIEW', 'PREVIEW'], ['COMMENT', 'COMMENT'],
+  ['TITLE', 'hdr.TITLE'], ['SUBTITLE', 'hdr.SUBTITLE'], ['ARTIST', 'hdr.ARTIST'], ['SUBARTIST', 'hdr.SUBARTIST'], ['GENRE', 'hdr.GENRE'],
+  ['BPM', 'hdr.BPM'], ['PLAYLEVEL', 'hdr.PLAYLEVEL'],
+  ['PLAYER', 'hdr.PLAYER', [['1', '1 · SP'], ['2', '2 · Couple'], ['3', '3 · DP'], ['4', '4 · Battle']]],
+  ['RANK', 'hdr.RANK', [['0', '0 · VERY HARD'], ['1', '1 · HARD'], ['2', '2 · NORMAL'], ['3', '3 · EASY'], ['4', '4 · VERY EASY']]],
+  ['DIFFICULTY', 'hdr.DIFFICULTY', [['1', '1 · BEGINNER'], ['2', '2 · NORMAL'], ['3', '3 · HYPER'], ['4', '4 · ANOTHER'], ['5', '5 · INSANE']]],
+  ['TOTAL', null], ['STAGEFILE', null], ['BANNER', null], ['BACKBMP', null], ['PREVIEW', null], ['COMMENT', null], // 이름표 null: 헤더 이름 그대로
 ];
 function renderHeader() {
   const bd = $('#hdrBd');
-  if (!A.st) { bd.innerHTML = '<div class="dim">파일을 열면 표시됩니다</div>'; return; }
+  if (!A.st) { bd.innerHTML = `<div class="dim">${tr('pn.openToShow')}</div>`; return; }
   let h = '<div class="form">';
   for (const [k, label, opts] of HDR_FIELDS) {
     const v = A.st.headers.get(k) || '';
-    h += `<label for="h_${k}">${esc(label)}</label>`;
+    h += `<label for="h_${k}">${esc(label ? tr(label) : k)}</label>`;
     if (opts) {
-      const o = opts.slice();
+      const o = [['', tr('hdr.none')], ...opts]; // 맨 앞: 헤더 없음
       if (v !== '' && !o.some((x) => x[0] === v)) o.push([v, v]);
       h += `<select id="h_${k}" data-k="${k}">${o.map(([ov, ol]) => `<option value="${esc(ov)}"${ov === v ? ' selected' : ''}>${esc(ol)}</option>`).join('')}</select>`;
     } else h += `<input id="h_${k}" type="text" data-k="${k}" value="${esc(v)}" spellcheck="false">`;
@@ -23,7 +23,7 @@ function renderHeader() {
   h += '</div>';
   const ro = [];
   for (const k of ['LNTYPE', 'LNOBJ', 'BASE']) if (A.st.headers.get(k)) ro.push(`#${k} ${A.st.headers.get(k)}`);
-  bd.innerHTML = h + (ro.length ? `<div class="hint">${esc(ro.join(' · '))} — 읽기 전용</div>` : '');
+  bd.innerHTML = h + (ro.length ? `<div class="hint">${esc(ro.join(' · '))}${tr('hdr.readOnly')}</div>` : '');
 }
 function onHeaderChange(e) {
   const k = e.target.dataset.k;
@@ -47,13 +47,13 @@ function renderWavList() {
     const use = A.usage.get(id) || 0;
     const stt = name ? Au.state.get(wavKey(name)) : '';
     const cls = (id === A.curWav ? ' cur' : '') + (!name ? ' empty' : '') + (stt === 'missing' || stt === 'fail' ? ' miss' : '');
-    const tip = stt === 'missing' ? ' (파일 없음)' : stt === 'fail' ? ' (읽기 실패)' : '';
+    const tip = stt === 'missing' ? tr('list.missing') : stt === 'fail' ? tr('list.failed') : '';
     parts.push(`<div class="wr${cls}" data-id="${id}"><b>${s}</b><span title="${esc(name + tip)}">${esc(name) || '—'}</span><i>${use || ''}</i></div>`);
   }
   const top = el.scrollTop;
   el.innerHTML = parts.join('');
   el.scrollTop = top;
-  $('#wavCnt').textContent = `${A.st.wavs.size}개 정의`;
+  $('#wavCnt').textContent = tr('list.defined', { n: A.st.wavs.size });
 }
 function markCurWav(scroll) {
   const el = $('#wavList');
@@ -101,7 +101,7 @@ function onBeatClick(e) {
 }
 function setMeasureLen(r) {
   const ms = [...A.beatSel];
-  if (!ms.length) { toast('박자를 바꿀 마디를 목록에서 먼저 고르세요'); return; }
+  if (!ms.length) { toast(tr('toast.beat.pickFirst')); return; }
   const str = C.lenStr(r), rr = C.parseMeasureLen(str);
   const before = new Map(), after = new Map();
   for (const m of ms) { before.set(m, A.st.meas.get(m) || null); after.set(m, C.req(rr, R1) ? null : { str, r: rr }); }
@@ -111,27 +111,27 @@ function setMeasureLen(r) {
   const list = [{ type: 'meas', before, after }];
   A.st.blocks.forEach((t, i) => { const nt = C.retimeBlockText(t, A.st.meas, newMeas); if (nt !== t) list.push({ type: 'blk', i, before: t, after: nt }); });
   commit(list.length > 1 ? { list } : list[0]);
-  toast(`마디 ${ms.length}개를 ${beatLabel(rr)}(으)로 바꿨습니다`);
+  toast(tr('toast.beat.applied', { n: ms.length, beat: beatLabel(rr) }));
 }
 
 function renderBlocks() {
   const tabs = $('#blkTabs'), tx = $('#blkTx');
   const n = A.st ? A.st.blocks.length : 0;
   if (A.blkIdx >= n) A.blkIdx = Math.max(0, n - 1);
-  tabs.innerHTML = n ? A.st.blocks.map((t, i) => `<button data-i="${i}" class="${i === A.blkIdx ? 'on' : ''}">블록 ${i + 1}${t && t.trim() ? '' : ' (빔)'}</button>`).join('') : '<span class="dim">확장 블록이 없습니다</span>';
+  tabs.innerHTML = n ? A.st.blocks.map((tx, i) => `<button data-i="${i}" class="${i === A.blkIdx ? 'on' : ''}">${tr('blk.tab', { n: i + 1 })}${tx && tx.trim() ? '' : tr('blk.emptyMark')}</button>`).join('') : `<span class="dim">${tr('blk.none')}</span>`;
   tx.value = n ? (A.st.blocks[A.blkIdx] || '') : '';
   tx.disabled = !n;
   $('#blkApply').disabled = $('#blkDel').disabled = !n;
   $('#blkNew').disabled = !A.st;
   const live = A.st ? A.st.blocks.filter((t) => t && t.trim()).length : 0;
-  $('#expCnt').textContent = live ? `${live}개` : '';
+  $('#expCnt').textContent = live ? tr('blk.count', { n: live }) : '';
 }
 
 let infoT = 0;
 function scheduleInfo() { clearTimeout(infoT); infoT = setTimeout(() => { renderInfo(); renderWavList(); renderBmpList(); }, 120); }
 function renderInfo() {
   const bd = $('#infoBd');
-  if (!A.st) { bd.innerHTML = '<div class="dim">파일을 열면 표시됩니다</div>'; return; }
+  if (!A.st) { bd.innerHTML = `<div class="dim">${tr('pn.openToShow')}</div>`; return; }
   let notes = 0, ln = 0, sc = 0, bgm = 0, hid = 0, mine = 0, p2 = 0, bga = 0, k1 = 0, s1 = 0, k2 = 0, s2 = 0, bpmMin = Infinity, bpmMax = -Infinity;
   const usage = new Map(), usageB = new Map();
   for (const n of A.st.notes) {
@@ -147,27 +147,27 @@ function renderInfo() {
   A.usage = usage;
   const ld = loadCounts();
   const rows = [
-    ['파일', esc(A.fileName || '(새 파일 — 아직 저장 안 됨)')],
-    ['인코딩', `${C.ENC_LABEL[A.doc.enc]} · ${A.doc.eol === '\r\n' ? 'CRLF' : 'LF'}`],
-    ['노트', A.pms ? `${notes}개 (롱노트 ${ln})` : A.dp || p2 ? `${notes}개 (롱노트 ${ln}, 1P ${k1}+${s1}, 2P ${k2}+${s2})` : `${notes}개 (롱노트 ${ln}, 스크래치 ${sc})`],
-    ['숨김 · 지뢰', `${hid}개 · ${mine}개`],
-    ['BGM · BGA', `${bgm}개 · ${bga}개`],
-    ['길이', fmtTime(A.timing.beatToTime(A.lastBeat || 0))],
+    [tr('info.file'), esc(A.fileName || tr('info.file.new'))],
+    [tr('info.enc'), `${C.ENC_LABEL[A.doc.enc]} · ${A.doc.eol === '\r\n' ? 'CRLF' : 'LF'}`],
+    [tr('info.notes'), A.pms ? tr('info.notes.pms', { n: notes, ln }) : A.dp || p2 ? tr('info.notes.dp', { n: notes, ln, k1, s1, k2, s2 }) : tr('info.notes.sp', { n: notes, ln, sc })],
+    [tr('info.hidMine'), tr('info.hidMine.v', { hid, mine })],
+    ['BGM · BGA', tr('info.bgmBga.v', { bgm, bga })],
+    [tr('info.length'), fmtTime(A.timing.beatToTime(A.lastBeat || 0))],
     ['BPM', bpmMin === bpmMax ? fmtV(bpmMin) : `${fmtV(bpmMin)} ~ ${fmtV(bpmMax)}`],
-    ['키음', `${A.st.wavs.size}개 정의` + (ld.total ? ` · ${ld.ok}/${ld.total} 불러옴` : '') + (ld.missing ? ` · <span style="color:var(--bad)">없음 ${ld.missing}</span>` : '') + (ld.fail ? ` · <span style="color:var(--bad)">읽기 실패 ${ld.fail}</span>` : '')],
-    ['원본 보존', `편집하지 않는 데이터 줄 ${A.doc.unmanagedData}개 · 확장 블록 ${A.st.blocks.filter((t) => t && t.trim()).length}개`],
+    [tr('info.keys'), tr('list.defined', { n: A.st.wavs.size }) + (ld.total ? tr('info.keys.loaded', { ok: ld.ok, total: ld.total }) : '') + (ld.missing ? ` · <span style="color:var(--bad)">${tr('info.keys.missing', { n: ld.missing })}</span>` : '') + (ld.fail ? ` · <span style="color:var(--bad)">${tr('info.keys.failed', { n: ld.fail })}</span>` : '')],
+    [tr('info.preserved'), tr('info.preserved.v', { lines: A.doc.unmanagedData, blocks: A.st.blocks.filter((x) => x && x.trim()).length })],
   ];
   const warn = [];
-  if (A.conflicts) warn.push(`겹친 노트 ${A.conflicts}개 (빨간 테두리) — 저장 전에 정리해 주세요`);
-  if (A.pms && A.muri.length) warn.push(`무리배치 ${A.muri.length}곳 (주황 테두리) — 한 손이 연속된 버튼 3개까지만 누를 수 있다고 보고, 완전히 같은 타이밍의 동시치기(누르고 있는 롱노트 포함)만 검사합니다`);
+  if (A.conflicts) warn.push(tr('warn.conflicts', { n: A.conflicts }));
+  if (A.pms && A.muri.length) warn.push(tr('warn.muri', { n: A.muri.length }));
   if (A.pms) {
     const off = A.st.notes.filter((n) => n.lane[0] === 'K' && !PMS_KEYS.has(n.lane)).length;
-    if (off) warn.push(`PMS에서 쓰지 않는 레인(스크래치·6·7키·2P 1키 등)에 노트 ${off}개가 있습니다. 화면에는 보이지 않지만 그대로 저장됩니다.`);
-  } else if (!A.dp && A.st.notes.some((n) => n.lane[0] === 'K' && n.lane[1] === '2')) warn.push('2P 노트가 있지만 SP 화면입니다. 툴바의 DP 버튼으로 2P 레인을 볼 수 있습니다(노트는 그대로 저장됩니다).');
-  if (A.doc.lntype === 2) warn.push('#LNTYPE 2 파일입니다. 롱노트 채널은 편집하지 않고 원본 그대로 둡니다.');
-  if (!A.fs.provider) warn.push('폴더 없이 연 상태라 키음을 재생할 수 없습니다.');
+    if (off) warn.push(tr('warn.pmsOffLanes', { n: off }));
+  } else if (!A.dp && A.st.notes.some((n) => n.lane[0] === 'K' && n.lane[1] === '2')) warn.push(tr('warn.p2InSp'));
+  if (A.doc.lntype === 2) warn.push(tr('warn.lntype2'));
+  if (!A.fs.provider) warn.push(tr('warn.noFolder'));
   bd.innerHTML = `<table>${rows.map(([a, b]) => `<tr><td>${a}</td><td>${b}</td></tr>`).join('')}</table>` + warn.map((w) => `<div class="w">! ${esc(w)}</div>`).join('')
-    + (A.pms && A.muri.length ? `<div class="muri">${A.muri.slice(0, 50).map((m, i) => `<button data-mi="${i}">${esc(muriLabel(m))}</button>`).join('')}${A.muri.length > 50 ? `<span class="dim">외 ${A.muri.length - 50}곳</span>` : ''}</div>` : '');
+    + (A.pms && A.muri.length ? `<div class="muri">${A.muri.slice(0, 50).map((m, i) => `<button data-mi="${i}">${esc(muriLabel(m))}</button>`).join('')}${A.muri.length > 50 ? `<span class="dim">${tr('info.muri.more', { n: A.muri.length - 50 })}</span>` : ''}</div>` : '');
   for (const el of bd.querySelectorAll('[data-mi]')) el.addEventListener('click', () => { const m = A.muri[+el.dataset.mi]; if (m) { setBottom(m.b - (A.H - HEAD_H) * 0.3 / A.ppb); A.sel = new Set(m.notes); statusNote(); draw(); } });
 }
 function syncOptions() {
@@ -191,12 +191,12 @@ function renderBmpList() {
     if (q && !((A.doc.base === 62 ? s.includes(qRaw) : s.toLowerCase().includes(q)) || name.toLowerCase().includes(q))) continue;
     const miss = name && A.bmpMiss && A.bmpMiss.has(normPath(name).toLowerCase());
     const cls = (id === A.curBmp ? ' cur' : '') + (!name ? ' empty' : '') + (miss ? ' miss' : '');
-    parts.push(`<div class="wr${cls}" data-id="${id}"><b>${s}</b><span title="${esc(name + (miss ? ' (파일 없음)' : ''))}">${esc(name) || '—'}</span><i>${use.get(id) || ''}</i></div>`);
+    parts.push(`<div class="wr${cls}" data-id="${id}"><b>${s}</b><span title="${esc(name + (miss ? tr('list.missing') : ''))}">${esc(name) || '—'}</span><i>${use.get(id) || ''}</i></div>`);
   }
   const top = el.scrollTop;
   el.innerHTML = parts.join('');
   el.scrollTop = top;
-  $('#bmpCnt').textContent = `${A.st.bmps.size}개 정의`;
+  $('#bmpCnt').textContent = tr('list.defined', { n: A.st.bmps.size });
 }
 function markCurBmp(scroll) {
   const el = $('#bmpList');
@@ -244,9 +244,9 @@ function setPlayMode(m, quiet) {
   if (A.st) {
     refresh();
     const hiddenKeys = A.st.notes.filter((n) => n.lane[0] === 'K' && !A.laneMap.has(n.lane)).length;
-    const tail = hiddenKeys ? ` — 이 화면에 없는 레인의 노트 ${hiddenKeys}개는 보이지 않지만 그대로 저장됩니다` : '';
-    if (!quiet) toast((m === 'dp' ? 'DP 화면 (1P + 2P)' + (A.st.headers.get('PLAYER') !== '3' ? ' — 헤더의 플레이를 3 · DP로 바꾸는 것도 잊지 마세요' : '')
-      : m === 'pms' ? 'PMS 화면 (팝픈 9버튼)' : 'SP 화면') + tail, 4000);
+    const tail = hiddenKeys ? tr('toast.mode.hidden', { n: hiddenKeys }) : '';
+    if (!quiet) toast((m === 'dp' ? tr('toast.mode.dp') + (A.st.headers.get('PLAYER') !== '3' ? tr('toast.mode.dpPlayer') : '')
+      : m === 'pms' ? tr('toast.mode.pms') : tr('toast.mode.sp')) + tail, 4000);
   }
 }
 function setDP(on, quiet) { setPlayMode(on ? 'dp' : 'sp', quiet); }

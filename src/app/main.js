@@ -11,7 +11,7 @@ function init() {
     if (cfg.panels && id in cfg.panels) el.open = !!cfg.panels[id];
     el.addEventListener('toggle', () => { cfg.panels = cfg.panels || {}; cfg.panels[id] = el.open; saveCfg(); });
   }
-  if (!window.showDirectoryPicker) $('#eNote').textContent = '이 브라우저는 폴더에 바로 저장하는 기능이 없어 저장할 때 파일이 다운로드됩니다. 크롬이나 엣지를 권장합니다.';
+  if (!window.showDirectoryPicker) $('#eNote').textContent = tr('empty.noDirPicker');
 
   const click = (id, fn) => $(id).addEventListener('click', (e) => { fn(e); if (e.currentTarget.tagName === 'BUTTON' && $('#modal').hidden) A.sc.focus({ preventScroll: true }); });
   click('#bOpen', openFolder); click('#eOpen', openFolder);
@@ -47,7 +47,7 @@ function init() {
     if (!A.doc || enc === A.doc.enc) return;
     if (!(await confirmDiscard())) { e.target.value = A.doc.enc; return; }
     loadDoc(C.parse(A.doc.bytes, enc), A.fileName);
-    toast(`${C.ENC_LABEL[enc]}(으)로 다시 읽었습니다`);
+    toast(tr('toast.reread', { enc: C.ENC_LABEL[enc] }));
   });
   $('#dirIn').addEventListener('change', async (e) => {
     const files = [...e.target.files]; e.target.value = '';
@@ -55,15 +55,15 @@ function init() {
     const root = (files[0].webkitRelativePath || '').split('/')[0];
     const entries = files.map((f) => ({ path: (f.webkitRelativePath || f.name).split('/').slice(1).join('/') || f.name, file: f }));
     await useProvider(makeListProvider(entries, root));
-    toast(canPickDir() ? '처음 저장할 때 같은 폴더를 한 번 더 고르면 그 폴더에 바로 저장합니다' : '이 브라우저에서는 폴더에 바로 저장할 수 없어 저장 시 다운로드됩니다', 4500);
+    toast(canPickDir() ? tr('toast.pickAgainOnSave') : tr('toast.saveWillDownload'), 4500);
   });
 
   $('#filesIn').addEventListener('change', async (e) => {
     const files = [...e.target.files]; e.target.value = '';
     if (!files.length) return;
-    if (!files.some((f) => CHART_EXT.test(f.name))) { toast('BMS 파일(.bms .bme .bml .pms)도 같이 골라 주세요', 4500); return; }
+    if (!files.some((f) => CHART_EXT.test(f.name))) { toast(tr('toast.pickChartToo'), 4500); return; }
     await useProvider(makeListProvider(files.map((f) => ({ path: f.name, file: f })), ''));
-    toast('파일 선택으로 열어서 저장 시 다운로드됩니다', 4500);
+    toast(tr('toast.filesWillDownload'), 4500);
   });
   $('#hdrBd').addEventListener('change', onHeaderChange);
   $('#hdrBd').addEventListener('keydown', (e) => { if (e.key === 'Enter' && e.target.tagName === 'INPUT') e.target.blur(); });
@@ -93,14 +93,14 @@ function init() {
   $('#bDP').addEventListener('click', () => { setPlayMode(PLAY_MODES[(PLAY_MODES.indexOf(playMode()) + 1) % 3]); A.sc.focus({ preventScroll: true }); });
   const setKind = (k) => { A.noteKind = k; $('#kindSel').value = k; $('#mineVal').hidden = k !== 'm'; if (A.hover) A.hover.ghost = null; draw(); };
   $('#kindSel').addEventListener('change', (e) => { setKind(e.target.value); A.sc.focus({ preventScroll: true }); });
-  $('#mineVal').addEventListener('change', (e) => { const v = C.idParse(e.target.value.trim(), A.doc ? A.doc.base : 36); if (v > 0) A.mineVal = v; else { e.target.value = idS(A.mineVal || 1); toast(`지뢰 값은 01~${idS(C.idMax(A.doc ? A.doc.base : 36))}로 넣어 주세요`); } });
+  $('#mineVal').addEventListener('change', (e) => { const v = C.idParse(e.target.value.trim(), A.doc ? A.doc.base : 36); if (v > 0) A.mineVal = v; else { e.target.value = idS(A.mineVal || 1); toast(tr('toast.mineRange', { max: idS(C.idMax(A.doc ? A.doc.base : 36)) })); } });
   A.setKind = setKind;
   $('#wavQ').addEventListener('input', () => { clearTimeout(wavRenderT); wavRenderT = setTimeout(renderWavList, 120); });
   $('#wavDef').addEventListener('change', renderWavList);
   $('#beatList').addEventListener('click', onBeatClick);
   $('#bApply').addEventListener('click', () => {
     const n = Math.round(+$('#bN').value), d = Math.round(+$('#bD').value);
-    if (!(n >= 1 && d >= 1 && d <= 64 && n <= 999)) { toast('박자는 1~999 / 1~64 사이로 넣어 주세요'); return; }
+    if (!(n >= 1 && d >= 1 && d <= 64 && n <= 999)) { toast(tr('toast.beatRange')); return; }
     if (A.st) setMeasureLen(R(n, d));
   });
   $('#bReset').addEventListener('click', () => { if (A.st) setMeasureLen(R1); });
@@ -108,8 +108,8 @@ function init() {
   const applyBlock = (quiet) => {
     if (!A.st || !A.st.blocks.length) return;
     const i = A.blkIdx, before = A.st.blocks[i], after = $('#blkTx').value.replace(/\r\n?/g, '\n');
-    if (before === after) { if (!quiet) toast('바뀐 내용이 없습니다'); return; }
-    commit({ type: 'blk', i, before, after }); toast(`블록 ${i + 1}에 적용했습니다`);
+    if (before === after) { if (!quiet) toast(tr('toast.noChange')); return; }
+    commit({ type: 'blk', i, before, after }); toast(tr('toast.blk.applied', { n: i + 1 }));
   };
   $('#blkApply').addEventListener('click', () => applyBlock(false));
   $('#blkTx').addEventListener('change', () => applyBlock(true));
@@ -123,7 +123,7 @@ function init() {
     if (!A.st) return;
     const i = A.blkIdx, before = A.st.blocks[i];
     if (!before) return;
-    commit({ type: 'blk', i, before, after: '' }); toast(`블록 ${i + 1}을 비웠습니다 (저장하면 파일에서 사라집니다)`);
+    commit({ type: 'blk', i, before, after: '' }); toast(tr('toast.blk.cleared', { n: i + 1 }));
   });
 
   A.sc.addEventListener('scroll', onScroll);
@@ -137,12 +137,12 @@ function init() {
   document.addEventListener('copy', (e) => {
     if (isTyping(document.activeElement) || !$('#modal').hidden || !A.st || !A.sel.size) return;
     const t = copySel(); if (!t) return;
-    e.clipboardData.setData('text/plain', t); e.preventDefault(); toast(`노트 ${A.sel.size}개 복사`);
+    e.clipboardData.setData('text/plain', t); e.preventDefault(); toast(tr('toast.copy', { n: A.sel.size }));
   });
   document.addEventListener('cut', (e) => {
     if (isTyping(document.activeElement) || !$('#modal').hidden || !A.st || !A.sel.size) return;
     const t = copySel(); if (!t) return;
-    e.clipboardData.setData('text/plain', t); e.preventDefault(); const n = A.sel.size; deleteSel(); toast(`노트 ${n}개 잘라냄`);
+    e.clipboardData.setData('text/plain', t); e.preventDefault(); const n = A.sel.size; deleteSel(); toast(tr('toast.cut', { n }));
   });
   document.addEventListener('paste', (e) => {
     if (isTyping(document.activeElement) || !$('#modal').hidden || !A.st) return;
@@ -150,8 +150,8 @@ function init() {
     e.preventDefault(); pasteText(t);
   });
   window.addEventListener('beforeunload', (e) => { if (A.dirty) { e.preventDefault(); e.returnValue = ''; } });
-  window.addEventListener('error', (e) => toast('오류: ' + (e.message || e), 6000));
-  window.addEventListener('unhandledrejection', (e) => toast('오류: ' + ((e.reason && e.reason.message) || e.reason), 6000));
+  window.addEventListener('error', (e) => toast(tr('toast.error', { err: e.message || e }), 6000));
+  window.addEventListener('unhandledrejection', (e) => toast(tr('toast.error', { err: e.reason }), 6000));
   bindDrop();
   new ResizeObserver(resize).observe($('#ed'));
   resize();

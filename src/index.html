@@ -4,49 +4,49 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; media-src blob: data:; font-src data:; connect-src 'none'; form-action 'none'; base-uri 'none'">
-<title>BMS 웹 에디터</title>
+<title data-i18n="app.name"></title>
 <style>/*__CSS__*/</style>
 </head>
 <body>
 <div id="app">
   <header id="tb">
     <div class="g">
-      <button id="bOpen" title="곡 폴더 열기 (Ctrl+O)">폴더 열기</button>
-      <select id="fileSel" title="폴더 안의 패턴 파일" disabled><option>(폴더 없음)</option></select>
-      <button id="bNew" title="빈 패턴 만들기">새 파일</button>
-      <button id="bSave" class="pri" title="저장 (Ctrl+S)">저장</button>
-      <button id="bSaveAs" title="다른 이름으로 저장 (Ctrl+Shift+S)">다른 이름으로</button>
+      <button id="bOpen" data-i18n="tb.open" data-i18n-title="tb.open.tip"></button>
+      <select id="fileSel" data-i18n-title="tb.fileSel.tip" disabled><option data-i18n="file.noFolder"></option></select>
+      <button id="bNew" data-i18n="tb.new" data-i18n-title="tb.new.tip"></button>
+      <button id="bSave" class="pri" data-i18n="tb.save" data-i18n-title="tb.save.tip"></button>
+      <button id="bSaveAs" data-i18n="tb.saveAs" data-i18n-title="tb.saveAs.tip"></button>
     </div>
     <div class="g">
-      <button id="bUndo" class="ic" title="실행 취소 (Ctrl+Z)">↶</button>
-      <button id="bRedo" class="ic" title="다시 실행 (Ctrl+Y)">↷</button>
+      <button id="bUndo" class="ic" data-i18n-title="tb.undo.tip">↶</button>
+      <button id="bRedo" class="ic" data-i18n-title="tb.redo.tip">↷</button>
     </div>
     <div class="g">
-      <button id="bDP" title="SP → DP → PMS 화면 전환 — 파일을 열 때 .pms이거나 팝픈 9버튼 레인만 쓰면 PMS, #PLAYER 3이거나 2P 노트가 있으면 DP로 엽니다">SP</button>
+      <button id="bDP" data-i18n-title="tb.playMode.tip">SP</button>
     </div>
     <div class="g seg">
-      <button id="mSel" title="선택 모드 (F1)">선택 <kbd>F1</kbd></button>
-      <button id="mWrite" title="쓰기 모드 (F3)">쓰기 <kbd>F3</kbd></button>
+      <button id="mSel" data-i18n-title="tb.modeSelect.tip"><span data-i18n="tb.modeSelect"></span> <kbd>F1</kbd></button>
+      <button id="mWrite" data-i18n-title="tb.modeWrite.tip"><span data-i18n="tb.modeWrite"></span> <kbd>F3</kbd></button>
     </div>
     <div class="g">
-      <select id="kindSel" title="쓰기 모드에서 키 레인에 찍을 노트 종류 (N)"><option value="n">일반 노트</option><option value="h">숨김 노트</option><option value="m">지뢰</option></select>
-      <input id="mineVal" type="text" value="01" maxlength="2" title="새 지뢰의 값(피해량)" style="width:38px" hidden>
+      <select id="kindSel" data-i18n-title="tb.kind.tip"><option value="n" data-i18n="kind.long.n"></option><option value="h" data-i18n="kind.long.h"></option><option value="m" data-i18n="kind.long.m"></option></select>
+      <input id="mineVal" type="text" value="01" maxlength="2" data-i18n-title="tb.mineVal.tip" style="width:38px" hidden>
     </div>
     <div class="g">
-      <button id="pStart" title="처음부터 재생 (F5)">⏮ 처음부터</button>
-      <button id="pHere" title="화면 맨 아래 마디부터 재생 (F6, Space)">▶ 재생</button>
-      <button id="pStop" title="정지 (F7, Space)">■ 정지</button>
+      <button id="pStart" data-i18n-title="tb.playStart.tip">⏮ <span data-i18n="tb.playStart"></span></button>
+      <button id="pHere" data-i18n-title="tb.playHere.tip">▶ <span data-i18n="tb.playHere"></span></button>
+      <button id="pStop" data-i18n-title="tb.stop.tip">■ <span data-i18n="tb.stop"></span></button>
     </div>
     <div class="g">
-      <label>그리드 <select id="gridSel"></select></label>
-      <label class="chk" title="G"><input type="checkbox" id="snapChk"> 스냅</label>
-      <label class="chk" title="노트를 옮길 때 위아래로는 움직이지 않음 (H)"><input type="checkbox" id="lockChk"> 옆으로만</label>
+      <label><span data-i18n="tb.grid"></span> <select id="gridSel"></select></label>
+      <label class="chk" title="G"><input type="checkbox" id="snapChk"> <span data-i18n="tb.snap"></span></label>
+      <label class="chk" data-i18n-title="tb.lockH.tip"><input type="checkbox" id="lockChk"> <span data-i18n="tb.lockH"></span></label>
     </div>
-    <div class="g"><label title="세로 확대 (Ctrl+휠, + −)">세로 <input type="range" id="zoomR" min="0.25" max="8" step="0.25"></label><label title="가로 확대 (Ctrl+Shift+휠, [ ])">가로 <input type="range" id="zoomXR" min="0.4" max="4" step="0.05"></label></div>
-    <div class="g"><label>음량 <input type="range" id="volR" min="0" max="1" step="0.05"></label></div>
+    <div class="g"><label data-i18n-title="tb.zoomY.tip"><span data-i18n="tb.zoomY"></span> <input type="range" id="zoomR" min="0.25" max="8" step="0.25"></label><label data-i18n-title="tb.zoomX.tip"><span data-i18n="tb.zoomX"></span> <input type="range" id="zoomXR" min="0.4" max="4" step="0.05"></label></div>
+    <div class="g"><label><span data-i18n="tb.volume"></span> <input type="range" id="volR" min="0" max="1" step="0.05"></label></div>
     <div class="g end">
-      <span class="lock" title="파일은 이 브라우저 안에서만 읽고 씁니다. 외부로 나가는 통신은 보안 정책(CSP)으로 막혀 있습니다.">● 로컬 전용</span>
-      <button id="bHelp" title="도움말 · 단축키">?</button>
+      <span class="lock" data-i18n-title="tb.localOnly.tip">● <span data-i18n="tb.localOnly"></span></span>
+      <button id="bHelp" data-i18n-title="tb.help.tip">?</button>
     </div>
   </header>
   <main>
@@ -54,63 +54,63 @@
       <canvas id="cv"></canvas>
       <div id="sc" tabindex="0"><div id="sp"></div></div>
       <div id="empty">
-        <h2>BMS 웹 에디터</h2>
-        <p>BMS 곡 폴더를 열면 패턴 파일과 키음을 함께 불러옵니다.<br>폴더를 이 창으로 끌어다 놓아도 됩니다.</p>
-        <div class="row"><button id="eOpen" class="pri">폴더 열기</button><button id="eNew">새 파일</button></div>
-        <p class="dim">파일은 이 컴퓨터 안에서만 처리되고, 어디에도 업로드되지 않습니다.</p>
+        <h2 data-i18n="app.name"></h2>
+        <p data-i18n-html="empty.intro"></p>
+        <div class="row"><button id="eOpen" class="pri" data-i18n="tb.open"></button><button id="eNew" data-i18n="tb.new"></button></div>
+        <p class="dim" data-i18n="empty.privacy"></p>
         <p class="dim" id="eNote"></p>
       </div>
       <div id="ctxMenu" hidden></div>
-      <div id="drop" hidden>여기에 놓으면 폴더를 엽니다</div>
+      <div id="drop" hidden data-i18n="drop.hint"></div>
     </section>
-    <div id="split" title="끌어서 패널 너비 조절 · 더블클릭: 접기/펼치기"><button id="sideTgl" title="오른쪽 패널 접기/펼치기 (\\)">▶</button></div>
+    <div id="split" data-i18n-title="side.split.tip"><button id="sideTgl" data-i18n-title="side.toggle.tip">▶</button></div>
     <aside id="side">
-      <details id="pnHdr" open><summary>헤더</summary><div class="bd" id="hdrBd"></div></details>
+      <details id="pnHdr" open><summary data-i18n="pn.hdr"></summary><div class="bd" id="hdrBd"></div></details>
       <details id="pnWav" open><summary>WAV <span id="wavCnt" class="dim"></span></summary><div class="bd">
-        <div class="row"><input id="wavQ" type="search" placeholder="번호·파일명 검색" spellcheck="false"><label class="chk"><input type="checkbox" id="wavDef"> 정의된 것만</label></div>
+        <div class="row"><input id="wavQ" type="search" data-i18n-placeholder="pn.search.ph" spellcheck="false"><label class="chk"><input type="checkbox" id="wavDef"> <span data-i18n="pn.definedOnly"></span></label></div>
         <div id="wavList" class="list"></div>
-        <div class="hint">클릭: 쓰기 모드에서 찍을 키음 고르기 + 미리듣기 · 더블클릭: 파일명 바꾸기 · 빨간색: 파일 없음</div>
+        <div class="hint" data-i18n="pn.wav.hint"></div>
       </div></details>
       <details id="pnBmp"><summary>BMP (BGA) <span id="bmpCnt" class="dim"></span></summary><div class="bd">
-        <div class="row"><input id="bmpQ" type="search" placeholder="번호·파일명 검색" spellcheck="false"><label class="chk"><input type="checkbox" id="bmpDef" checked> 정의된 것만</label></div>
+        <div class="row"><input id="bmpQ" type="search" data-i18n-placeholder="pn.search.ph" spellcheck="false"><label class="chk"><input type="checkbox" id="bmpDef" checked> <span data-i18n="pn.definedOnly"></span></label></div>
         <div id="bmpList" class="list"></div>
-        <div class="hint">클릭: 쓰기 모드에서 BGA·LAYER·POOR 레인에 찍을 이미지 고르기 · 더블클릭: 파일명 바꾸기 · 빨간색: 파일 없음</div>
+        <div class="hint" data-i18n="pn.bmp.hint"></div>
       </div></details>
-      <details id="pnBeat"><summary>박자 (마디 길이)</summary><div class="bd">
-        <div class="row"><input id="bN" type="number" min="1" max="999" value="3"><span>/</span><input id="bD" type="number" min="1" max="64" value="4"><button id="bApply">선택 마디에 적용</button><button id="bReset" title="선택 마디를 4/4로">4/4</button></div>
+      <details id="pnBeat"><summary data-i18n="pn.beat"></summary><div class="bd">
+        <div class="row"><input id="bN" type="number" min="1" max="999" value="3"><span>/</span><input id="bD" type="number" min="1" max="64" value="4"><button id="bApply" data-i18n="pn.beat.apply"></button><button id="bReset" data-i18n-title="pn.beat.reset.tip">4/4</button></div>
         <div id="beatList" class="list"></div>
-        <div class="hint">마디를 클릭해서 고르고(Shift: 범위, Ctrl: 추가) 적용하세요. 노트는 제자리에 있고 마디선만 움직입니다.</div>
+        <div class="hint" data-i18n="pn.beat.hint"></div>
       </div></details>
-      <details id="pnExp"><summary>확장 코드 <span id="expCnt" class="dim"></span></summary><div class="bd">
+      <details id="pnExp"><summary><span data-i18n="pn.exp"></span> <span id="expCnt" class="dim"></span></summary><div class="bd">
         <div id="blkTabs" class="tabs"></div>
-        <textarea id="blkTx" spellcheck="false" placeholder="#RANDOM / #IF 블록"></textarea>
-        <div class="row"><button id="blkApply">적용</button><button id="blkNew">새 블록</button><button id="blkDel">이 블록 비우기</button></div>
-        <div class="hint">#RANDOM · #IF 블록은 파일 안 원래 자리에 그대로 저장됩니다. 블록 안 노트는 편집 화면에 회색 점선으로 보입니다(편집 불가).</div>
+        <textarea id="blkTx" spellcheck="false" data-i18n-placeholder="pn.exp.ph"></textarea>
+        <div class="row"><button id="blkApply" data-i18n="pn.exp.apply"></button><button id="blkNew" data-i18n="pn.exp.new"></button><button id="blkDel" data-i18n="pn.exp.clear"></button></div>
+        <div class="hint" data-i18n="pn.exp.hint"></div>
       </div></details>
-      <details id="pnView"><summary>보기 · 재생 · 저장</summary><div class="bd col">
-        <label class="chk"><input type="checkbox" id="oName"> 노트에 키음 파일명 표시</label>
-        <label class="chk" title="SP 화면에서 스크래치 레인을 7키 오른쪽에 둡니다. 보이는 순서만 바뀌고 파일은 그대로입니다."><input type="checkbox" id="oScRight"> SP: 스크래치를 오른쪽에</label>
-        <label class="chk" title="끄면 BGA·LAYER·POOR 레인을 숨깁니다(노트는 그대로 저장)"><input type="checkbox" id="oHideBga"> BGA 영역 보이기</label>
-        <label class="chk" title="끄면 BPM·STOP 레인을 숨깁니다(노트와 박자 계산은 그대로)"><input type="checkbox" id="oHideBpm"> BPM · STOP 영역 보이기</label>
-        <label class="chk"><input type="checkbox" id="oFollow"> 재생 중 화면 따라가기</label>
-        <label class="chk"><input type="checkbox" id="oBgm"> 재생: BGM 레인 소리</label>
-        <label class="chk"><input type="checkbox" id="oKeys"> 재생: 키 레인 소리</label>
-        <label class="chk"><input type="checkbox" id="oBackup"> 처음 덮어쓸 때 원본을 .bak으로 백업</label>
-        <label class="chk"><input type="checkbox" id="oConfirm"> 저장할 때 바뀐 줄 확인 창 보기</label>
-        <label title="안드로이드 크롬은 '폴더 직접 접근'으로 열면 키음을 읽는 데 몇 분씩 걸려서, 자동이면 '폴더 고르기' 방식으로 엽니다(10여 초). 이 방식은 처음 저장할 때 같은 폴더를 한 번 더 고릅니다.">폴더 열기 방식 <select id="oOpenMode"><option value="auto">자동 (안드로이드는 빠른 방식)</option><option value="direct">폴더 직접 접근</option><option value="pick">폴더 고르기 (빠름, 저장 시 폴더 한 번 더 선택)</option></select></label>
+      <details id="pnView"><summary data-i18n="pn.view"></summary><div class="bd col">
+        <label class="chk"><input type="checkbox" id="oName"> <span data-i18n="pn.view.name"></span></label>
+        <label class="chk" data-i18n-title="pn.view.scRight.tip"><input type="checkbox" id="oScRight"> <span data-i18n="pn.view.scRight"></span></label>
+        <label class="chk" data-i18n-title="pn.view.bga.tip"><input type="checkbox" id="oHideBga"> <span data-i18n="pn.view.bga"></span></label>
+        <label class="chk" data-i18n-title="pn.view.bpm.tip"><input type="checkbox" id="oHideBpm"> <span data-i18n="pn.view.bpm"></span></label>
+        <label class="chk"><input type="checkbox" id="oFollow"> <span data-i18n="pn.view.follow"></span></label>
+        <label class="chk"><input type="checkbox" id="oBgm"> <span data-i18n="pn.view.bgm"></span></label>
+        <label class="chk"><input type="checkbox" id="oKeys"> <span data-i18n="pn.view.keys"></span></label>
+        <label class="chk"><input type="checkbox" id="oBackup"> <span data-i18n="pn.view.backup"></span></label>
+        <label class="chk"><input type="checkbox" id="oConfirm"> <span data-i18n="pn.view.confirm"></span></label>
+        <label data-i18n-title="pn.view.openMode.tip"><span data-i18n="pn.view.openMode"></span> <select id="oOpenMode"><option value="auto" data-i18n="pn.view.openMode.auto"></option><option value="direct" data-i18n="pn.view.openMode.direct"></option><option value="pick" data-i18n="pn.view.openMode.pick"></option></select></label>
       </div></details>
-      <details id="pnInfo" open><summary>정보</summary><div class="bd" id="infoBd"></div></details>
-      <details id="pnDiag"><summary>키음 로딩 측정</summary><div class="bd">
+      <details id="pnInfo" open><summary data-i18n="pn.info"></summary><div class="bd" id="infoBd"></div></details>
+      <details id="pnDiag"><summary data-i18n="pn.diag"></summary><div class="bd">
         <pre id="diagBd"></pre>
-        <div class="row"><button id="diagRun">동시 처리 비교 테스트</button><button id="diagCopy">결과 복사</button></div>
-        <div class="hint">폴더를 열 때 키음을 불러오면서 단계별 시간을 잽니다. 비교 테스트는 키음 40개를 동시 1·2·4·8·16개로 다시 읽고 디코딩해서 걸린 시간을 비교합니다(편집 내용은 건드리지 않음). 결과 복사를 눌러 붙여넣어 주세요.</div>
+        <div class="row"><button id="diagRun" data-i18n="pn.diag.run"></button><button id="diagCopy" data-i18n="pn.diag.copy"></button></div>
+        <div class="hint" data-i18n="pn.diag.hint"></div>
       </div></details>
     </aside>
   </main>
   <footer id="stb">
     <span id="sPos"></span><span id="sNote"></span><span class="fill"></span>
     <span id="sLoad"></span>
-    <label title="파일을 읽을 때 쓸 인코딩. 글자가 깨져 보이면 바꿔 보세요">인코딩 <select id="encSel"></select></label>
+    <label data-i18n-title="stb.enc.tip"><span data-i18n="stb.enc"></span> <select id="encSel"></select></label>
     <span id="sFile"></span>
   </footer>
 </div>

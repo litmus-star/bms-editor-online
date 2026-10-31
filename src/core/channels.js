@@ -85,7 +85,7 @@ function parseRaw(data) {
 function makeLine(m, ch, entries, conflicts) {
   let res = 1;
   for (const e of entries) res = lcm(res, e.f.d);
-  if (!safe(res) || res > 200000) throw new RangeError(`#${pad3(m)}${ch}: 줄이 너무 길어 저장할 수 없습니다`);
+  if (!safe(res) || res > 200000) throw coreError('core.lineTooLong', { line: `#${pad3(m)}${ch}` }, RangeError);
   const arr = new Array(res).fill('00');
   for (const e of entries) {
     const i = e.f.n * (res / e.f.d);

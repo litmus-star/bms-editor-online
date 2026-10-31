@@ -6,7 +6,7 @@ function lcm(a, b) { return (a / gcd(a, b)) * b; }
 function bgcd(a, b) { if (a < 0n) a = -a; if (b < 0n) b = -b; while (b) { const t = a % b; a = b; b = t; } return a; }
 function R(n, d) {
   if (d === undefined) d = 1;
-  if (d === 0) throw new RangeError('분모가 0입니다');
+  if (d === 0) throw coreError('core.zeroDenominator', null, RangeError);
   if (d < 0) { n = -n; d = -d; }
   const g = gcd(n, d) || 1;
   return { n: n / g, d: d / g };
@@ -15,7 +15,7 @@ function RB(n, d) {
   if (d < 0n) { n = -n; d = -d; }
   const g = bgcd(n, d) || 1n; n /= g; d /= g;
   const a = Number(n), b = Number(d);
-  if (!safe(a) || !safe(b)) throw new RangeError('위치 계산 범위를 넘었습니다');
+  if (!safe(a) || !safe(b)) throw coreError('core.overflow', null, RangeError);
   return { n: a, d: b };
 }
 const R0 = { n: 0, d: 1 }, R1 = { n: 1, d: 1 }, R4 = { n: 4, d: 1 };
@@ -32,7 +32,7 @@ function rmul(a, b) {
   return RB(BigInt(a.n) * BigInt(b.n), BigInt(a.d) * BigInt(b.d));
 }
 function rdiv(a, b) {
-  if (b.n === 0) throw new RangeError('0으로 나눌 수 없습니다');
+  if (b.n === 0) throw coreError('core.divByZero', null, RangeError);
   return rmul(a, b.n < 0 ? { n: -b.d, d: -b.n } : { n: b.d, d: b.n });
 }
 function rcmp(a, b) {

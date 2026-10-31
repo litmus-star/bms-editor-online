@@ -95,7 +95,7 @@ t('A: 편집 없이 저장 → 바이트 동일', () => {
   const r = C.serialize(docA, C.stateFromDoc(docA));
   assert.strictEqual(hex(r.bytes), hex(A));
   assert.strictEqual(r.changed, 0);
-  assert.ok(r.verify.ok, r.verify.problems.join(';'));
+  assert.ok(r.verify.ok, JSON.stringify(r.verify.problems));
 });
 
 const B_TEXT = '#TITLE lnobj test\n#LNOBJ ZZ\n#WAV01 a.wav\n#WAVZZ end.wav\n#BPM 120\n#00011:01000000ZZ000000\n#00111:00ZZ\n#00211:ZZ'; // 마지막 줄바꿈 없음 + 짝 없는 끝표시
@@ -134,7 +134,7 @@ t('빈 파일 / 새 템플릿', () => {
   st.wavs.set(1, 'a.wav');
   st.notes.push(C.finalizeNote({ lane: 'K11', pos: C.R(4), v: 1 }));
   const r = C.serialize(d, st);
-  assert.ok(r.verify.ok, r.verify.problems.join(';'));
+  assert.ok(r.verify.ok, JSON.stringify(r.verify.problems));
   const txt = new TextDecoder('shift_jis').decode(r.bytes);
   assert.ok(txt.includes('#TITLE テスト\r\n'));
   assert.ok(/#LNTYPE 1\r\n#WAV01 a.wav\r\n/.test(txt), txt);
@@ -152,7 +152,7 @@ t('BGM 노트를 키 레인으로 이동 → 바뀐 줄만', () => {
     st.notes.splice(st.notes.indexOf(n), 1);
     st.notes.push(C.finalizeNote({ lane: 'K12', pos: n.pos, v: n.v }));
   });
-  assert.ok(r.verify.ok, r.verify.problems.join(';'));
+  assert.ok(r.verify.ok, JSON.stringify(r.verify.problems));
   const minus = r.diff.filter((x) => x.op === '-').map((x) => x.t);
   const plus = r.diff.filter((x) => x.op === '+').map((x) => x.t);
   assert.deepStrictEqual(minus, ['#00001:0000000A']);
@@ -161,7 +161,7 @@ t('BGM 노트를 키 레인으로 이동 → 바뀐 줄만', () => {
 });
 t('마디 길이 변경: 노트 박 위치 유지', () => {
   const { r, st } = edit((st) => { st.meas.set(0, { str: '0.5', r: C.R(1, 2) }); });
-  assert.ok(r.verify.ok, r.verify.problems.join(';'));
+  assert.ok(r.verify.ok, JSON.stringify(r.verify.problems));
   const plus = r.diff.filter((x) => x.op === '+').map((x) => x.t);
   assert.ok(plus.includes('#00002:0.5'));
   assert.ok(plus.length > 3); // 이후 마디의 노트 줄이 다시 계산됨
@@ -172,7 +172,7 @@ t('BPM 소수 → 새 #BPMxx 정의 / STOP 새 값', () => {
     st.notes.push(C.finalizeNote({ lane: 'BPM', pos: C.R(9), v: 180 }));
     st.notes.push(C.finalizeNote({ lane: 'STOP', pos: C.R(10), v: 48 }));
   });
-  assert.ok(r.verify.ok, r.verify.problems.join(';'));
+  assert.ok(r.verify.ok, JSON.stringify(r.verify.problems));
   assert.ok(txt.includes('#BPM01 175.5\r\n#BPM02 200.25\r\n#STOP01 96\r\n#STOP02 48\r\n'), txt.slice(0, 400));
   assert.ok(/#00203:00B4\r\n/.test(txt) || /#00203:00B40000/.test(txt) || txt.includes('#00203:'), '180 → 03 채널');
 });
@@ -189,12 +189,12 @@ t('한글 제목 → Shift-JIS 불가 경고, UTF-8 변환 저장', () => {
   assert.deepStrictEqual(r.badChars, ['한', '글']);
   assert.ok(!r.verify.ok);
   const r2 = C.serialize(d, st, { encoding: 'utf-8' });
-  assert.ok(r2.verify.ok, r2.verify.problems.join(';'));
+  assert.ok(r2.verify.ok, JSON.stringify(r2.verify.problems));
   assert.ok(new TextDecoder().decode(r2.bytes).includes('#GENRE テクノ'));
 });
 t('확장 블록 수정 / 새 블록', () => {
   const { r, txt } = edit((st) => { st.blocks[0] = st.blocks[0].replace('#00314:0102', '#00315:0102'); st.blocks.push('#RANDOM 2\n#IF 1\n#00516:01\n#ENDIF\n#ENDRANDOM'); });
-  assert.ok(r.verify.ok, r.verify.problems.join(';'));
+  assert.ok(r.verify.ok, JSON.stringify(r.verify.problems));
   assert.ok(txt.includes('#IF 2\r\n#00315:0102\r\n#ENDIF'));
   assert.ok(txt.endsWith('#ENDRANDOM\r\n'));
 });
@@ -205,19 +205,19 @@ t('LN 길이 바꾸기 + LNOBJ 파일에서 새 LN', () => {
   st.notes.splice(st.notes.indexOf(ln), 1);
   st.notes.push(C.finalizeNote(Object.assign({}, ln, { len: C.R(3) })));
   const r = C.serialize(d, st);
-  assert.ok(r.verify.ok, r.verify.problems.join(';'));
+  assert.ok(r.verify.ok, JSON.stringify(r.verify.problems));
   assert.ok(new TextDecoder().decode(r.bytes).includes('#00011:010000ZZ'));
 });
 t('모든 노트 삭제 → 관리 채널 줄만 사라짐', () => {
   const { r, txt } = edit((st) => { st.notes = st.notes.filter((n) => n.lane[0] === 'X' || n.lane[0] === 'G'); }); // 키음 노트만 지움
-  assert.ok(r.verify.ok, r.verify.problems.join(';'));
+  assert.ok(r.verify.ok, JSON.stringify(r.verify.problems));
   for (const keep of ['#00104:010000', '#00017:01', '#XYZ unknown command', '#00313:0102', '#BMP01 bga.bmp']) assert.ok(txt.includes(keep), keep);
   assert.ok(!txt.includes('#00011:'));
   assert.ok(txt.includes('#00001:00\r\n#00001:00\r\n#00001:00\r\n'), 'BGM 자리 채움 줄 유지');
 });
 t('겹친 노트 → 경고', () => {
   const { r } = edit((st) => { st.notes.push(C.finalizeNote({ lane: 'K11', pos: C.R(0), v: 3 })); });
-  assert.ok(r.warnings.some((w) => w.includes('겹친')));
+  assert.ok(r.warnings.some((w) => w.code === 'core.save.conflicts'));
   assert.ok(!r.verify.ok);
 });
 t('타이밍: BPM 변화와 STOP', () => {
@@ -266,7 +266,7 @@ t('마디 길이 변경: BGA·2P·지뢰·숨김·RANDOM 블록도 같은 박에
   const oldMeas = new Map(st.meas); st.meas.set(0, { str: '0.75', r: C.R(3, 4) });
   st.blocks = st.blocks.map((x) => C.retimeBlockText(x, oldMeas, st.meas));
   const r = C.serialize(d, st);
-  assert.ok(r.verify.ok, r.verify.problems.join(';'));
+  assert.ok(r.verify.ok, JSON.stringify(r.verify.problems));
   assert.deepStrictEqual(absObjs(r.bytes, 'shift_jis'), absObjs(src, 'shift_jis'));
 });
 t('짝 없는 #ENDIF가 다음 #IF 분기를 열지 않음', () => {
@@ -292,7 +292,7 @@ t('UTF-8 BOM은 맨 앞에 그대로', () => {
   const b1 = new Uint8Array([...bom, ...new TextEncoder().encode('#WAV01 킥.wav\r\n#00111:01\r\n')]);
   const d1 = C.parse(b1), s1 = C.stateFromDoc(d1); s1.headers.set('TITLE', '새 제목');
   const r1 = C.serialize(d1, s1);
-  assert.ok(r1.verify.ok, r1.verify.problems.join(';'));
+  assert.ok(r1.verify.ok, JSON.stringify(r1.verify.problems));
   assert.deepStrictEqual([...r1.bytes.slice(0, 10)], [...bom, ...new TextEncoder().encode('#TITLE ')]);
   const b2 = new Uint8Array([...bom, ...new TextEncoder().encode('#TITLE 옛 제목\r\n#00111:01\r\n')]);
   const d2 = C.parse(b2), s2 = C.stateFromDoc(d2); s2.headers.set('TITLE', '새 제목');
@@ -310,28 +310,28 @@ t('헤더를 비우면 줄을 지움 (#RANK만 남지 않게)', () => {
   const d = C.parse(sj(['#TITLE a', '#RANK 2', '#RANK 3', '#00111:01']));
   const st = C.stateFromDoc(d); st.headers.set('RANK', '');
   const r = C.serialize(d, st);
-  assert.ok(r.verify.ok, r.verify.problems.join(';'));
+  assert.ok(r.verify.ok, JSON.stringify(r.verify.problems));
   assert.strictEqual(new TextDecoder().decode(r.bytes), '#TITLE a\r\n#00111:01\r\n');
 });
 t('같은 번호 #WAV가 두 줄이면 지울 때 둘 다', () => {
   const d = C.parse(sj(['#WAV01 a.wav', '#WAV01 b.wav', '#00111:02']));
   const st = C.stateFromDoc(d); st.wavs.delete(1);
   const r = C.serialize(d, st);
-  assert.ok(r.verify.ok, r.verify.problems.join(';'));
+  assert.ok(r.verify.ok, JSON.stringify(r.verify.problems));
   assert.strictEqual(new TextDecoder().decode(r.bytes), '#00111:02\r\n');
 });
 t('저장 후 새 블록을 실행 취소(목록에서 빠짐) → 파일에서도 빠짐', () => {
   const d = C.parse(sj(['#00111:01', '#RANDOM 2', '#IF 1', '#00112:01', '#ENDIF', '#ENDRANDOM']));
   const st = C.stateFromDoc(d); st.blocks.pop();
   const r = C.serialize(d, st);
-  assert.ok(r.verify.ok, r.verify.problems.join(';'));
+  assert.ok(r.verify.ok, JSON.stringify(r.verify.problems));
   assert.strictEqual(new TextDecoder().decode(r.bytes), '#00111:01\r\n');
 });
 t('¥ 입력은 0x5C로 저장되고 확인도 통과', () => {
   const d = C.parse(sj(['#TITLE a', '#00111:01']));
   const st = C.stateFromDoc(d); st.headers.set('TITLE', '¥100');
   const r = C.serialize(d, st);
-  assert.ok(r.verify.ok, r.verify.problems.join(';'));
+  assert.ok(r.verify.ok, JSON.stringify(r.verify.problems));
   assert.ok(Buffer.from(r.bytes).includes(Buffer.from('#TITLE \\100')));
 });
 // ── DP · 숨김 · 지뢰 · BGA ──
@@ -361,7 +361,7 @@ t('DP 편집: 1P→2P 이동, 숨김·지뢰·BGA 추가, BMP 정의 추가', ()
   st.notes.push(C.finalizeNote({ lane: 'G07', pos: C.R(8), v: 3 }));
   st.bmps.set(3, 'c.png');
   const r = C.serialize(d, st);
-  assert.ok(r.verify.ok, r.verify.problems.join(';'));
+  assert.ok(r.verify.ok, JSON.stringify(r.verify.problems));
   const txt = new TextDecoder().decode(r.bytes);
   for (const l of ['#00129:01', '#00243:02', '#002D6:05', '#00207:03', '#BMP03 c.png']) assert.ok(txt.includes(l + '\r\n'), l);
   assert.ok(!txt.includes('#00111:'));

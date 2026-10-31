@@ -93,7 +93,7 @@ function scheduleLoadStatus() {
   loadT = setTimeout(() => {
     loadT = 0;
     const c = loadCounts();
-    $('#sLoad').textContent = !c.total ? '' : c.loading ? `키음 불러오는 중 ${c.ok + c.missing + c.fail}/${c.total}` : `키음 ${c.ok}/${c.total}` + (c.missing + c.fail ? ` · 문제 ${c.missing + c.fail}` : '');
+    $('#sLoad').textContent = !c.total ? '' : c.loading ? tr('stb.keysLoading', { n: c.ok + c.missing + c.fail, total: c.total }) : tr('stb.keysLoaded', { ok: c.ok, total: c.total }) + (c.missing + c.fail ? tr('stb.keysProblem', { n: c.missing + c.fail }) : '');
     if (!c.loading) { renderWavList(); renderInfo(); }
     renderDiag();
   }, 250);
@@ -112,8 +112,8 @@ async function play(fromBeat) {
   if (!A.st) return;
   stopPlay();
   const ctx = ensureCtx(true);
-  if (!ctx) { toast('이 브라우저는 오디오 재생을 지원하지 않습니다'); return; }
-  if (!A.fs.provider) toast('키음 폴더 없이 연 파일이라 소리가 나지 않습니다', 3500);
+  if (!ctx) { toast(tr('toast.noAudio')); return; }
+  if (!A.fs.provider) toast(tr('toast.noKeysoundFolder'), 3500);
   const T = A.timing, t0 = T.beatToTime(fromBeat);
   let evs = [];
   for (const n of A.st.notes) {
@@ -133,7 +133,7 @@ async function play(fromBeat) {
     const s = Au.state.get(wavKey(nm));
     if (s !== 'ok' && s !== 'missing' && s !== 'fail') pending.push(loadWav(nm));
   }
-  if (pending.length) { $('#sLoad').textContent = `재생 준비: 키음 ${pending.length}개 불러오는 중…`; await Promise.all(pending); scheduleLoadStatus(); }
+  if (pending.length) { $('#sLoad').textContent = tr('stb.playPrep', { n: pending.length }); await Promise.all(pending); scheduleLoadStatus(); }
   if (A.playToken !== token) return;
   const P = { evs, i: 0, start: ctx.currentTime + 0.12, t0, fromBeat, last: new Map(), srcs: new Set(), endT: evs.length ? Math.max(0, evs[evs.length - 1].t) : 0 };
   Au.play = P;

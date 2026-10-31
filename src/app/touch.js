@@ -161,7 +161,7 @@ function longPress() {
     const cur = [...T.pts.values()][0] || { x: s.x, y: s.y };
     s.lx = cur.x; s.ly = cur.y;
     if (navigator.vibrate) try { navigator.vibrate(15); } catch (err) { /* 무시 */ }
-    showTip(A.mode === 'select' ? '떼면 메뉴 · 끌면 범위 선택' : '떼면 메뉴', s.x, s.y);
+    showTip(A.mode === 'select' ? tr('tip.hold.select') : tr('tip.hold.write'), s.x, s.y);
   }
 }
 // 길게 누르는 동안 손가락 위에 띄우는 짧은 안내

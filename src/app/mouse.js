@@ -173,7 +173,7 @@ function onUp() {
     const act = { del: d.copy ? [] : [...A.sel], add: d.preview };
     const nd = resolveConflicts(act, 'displace');
     commit(act); A.sel = new Set(d.preview); draw();
-    if (nd) toast(`겹친 노트 ${nd}개를 빈 BGM 레인으로 옮겼습니다`);
+    if (nd) toast(tr('toast.overlapMoved', { n: nd }));
     return;
   }
   if (d.kind === 'place') {
