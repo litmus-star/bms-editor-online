@@ -57,7 +57,6 @@ main { flex: 1; display: flex; min-height: 0; }
 #empty .row { justify-content: center; margin: 10px 0; }
 #empty button { padding: 7px 16px; font-size: 14px; }
 #sc, #cv { touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; } /* 길게 누를 때 브라우저의 글자 선택·메뉴가 끼어들지 않게 */
-  background: rgba(29, 31, 36, .96); border: 1px solid #454a54; border-radius: 10px; padding: 6px 8px; box-shadow: 0 6px 24px rgba(0,0,0,.5); z-index: 5; max-width: calc(100% - 20px); flex-wrap: wrap; justify-content: center; }
 #ctxMenu { position: fixed; z-index: 15; display: flex; flex-direction: column; min-width: 190px; background: #24272d; border: 1px solid #555b66; border-radius: 8px; padding: 4px; box-shadow: 0 8px 28px rgba(0,0,0,.6); }
 #ctxMenu button { display: flex; justify-content: space-between; align-items: center; gap: 18px; text-align: left; background: none; border: none; border-radius: 4px; padding: 5px 10px; font-size: 13px; }
 #ctxMenu button:hover:not(:disabled) { background: #33415e; }
@@ -3081,7 +3080,7 @@ function toast(msg, ms) {
    펜과 손가락은 따로 모드가 없다: 손가락은 늘 위의 동작, 펜은 그 위에 마우스처럼 얹힌다.
    펜이 화면에 닿아 있는 동안만 새로 닿는 손가락을 무시한다(펜 쥔 손바닥 오작동 방지). */
 const T = { pts: new Map(), st: null, pinch: null, lp: 0, mousePid: null };
-const TAP_MOVE = 8, LONG_MS = 500;
+const TAP_MOVE = 12, LONG_MS = 450; // 안드로이드 기본 터치 흔들림 허용치(약 8dp)보다 넉넉하게, 길게 누르기는 크롬 자체 길게 누르기(약 500ms)보다 먼저
 
 /* 관성 스크롤: 손가락으로 빈 곳을 끌다 놓으면 그 속도로 미끄러지다 서서히 멈춘다.
    FLING_FRICTION: 1ms마다 속도에 곱하는 값. 1에 가까울수록 오래 미끄러짐 (0.9985 ≈ 0.67초마다 속도가 1/e로, 1이면 영영 안 멈춤) */
@@ -3153,6 +3152,7 @@ function onPointerUp(e) {
 /* 손가락 */
 function touchDown(e) {
   e.preventDefault();
+  dbg('down ' + e.pointerId + ' ' + Math.round(e.clientX) + ',' + Math.round(e.clientY));
   if (A.penDown) return; // 펜으로 편집하는 중에 닿은 손가락(손바닥)은 무시
   setTouchUI(true);
   T.pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
@@ -3196,6 +3196,7 @@ function touchMove(e) {
   }
 }
 function touchUp(e) {
+  dbg(e.type + ' ' + e.pointerId + (T.st ? ' ' + T.st.phase : ''));
   if (!T.pts.has(e.pointerId)) return;
   T.pts.delete(e.pointerId);
   clearTimeout(T.lp);
@@ -3209,7 +3210,9 @@ function touchUp(e) {
   }
 }
 function longPress() {
+  clearTimeout(T.lp);
   const s = T.st; if (!s) return;
+  dbg('longPress ' + s.phase);
   if (s.phase === 'note') { // 노트 길게 누르기: 이동을 취소하고 메뉴
     if (A.drag && A.drag.moved) return;
     A.drag = null; s.phase = 'menu'; draw();
@@ -3254,6 +3257,21 @@ function setTouchUI(on) {
   A.touchUI = on;
   document.body.classList.toggle('touch', on);
 }
+// 크롬이 손가락 길게 누르기를 먼저 알아채면 contextmenu 이벤트가 온다: 그때도 같은 길게 누르기 처리
+function onTouchContextMenu(e) {
+  e.preventDefault();
+  dbg('contextmenu ' + (T.st ? T.st.phase : '-'));
+  if (A.lastPtr === 'touch' && T.st && (T.st.phase === 'note' || T.st.phase === 'pending')) longPress();
+}
+// 터치 문제 진단용: 주소 끝에 ?debug=touch 를 붙이면 화면 왼쪽 위에 최근 터치 이벤트를 표시
+const DBG = /[?&]debug=touch/.test(location.search) ? [] : null;
+function dbg(msg) {
+  if (!DBG) return;
+  DBG.push(Math.round(performance.now()) % 100000 + ' ' + msg); if (DBG.length > 14) DBG.shift();
+  let el = document.getElementById('touchDbg');
+  if (!el) { el = document.createElement('pre'); el.id = 'touchDbg'; el.style.cssText = 'position:fixed;left:4px;top:4px;z-index:99;margin:0;padding:4px 6px;background:rgba(0,0,0,.8);color:#9f9;font:11px monospace;pointer-events:none'; document.body.appendChild(el); }
+  el.textContent = DBG.join('\n');
+}
 function bindTouch() {
   const sc = A.sc;
   sc.addEventListener('pointerdown', onPointerDown);
@@ -3291,6 +3309,7 @@ function openMenu(items, x, y, touch) {
   if (touch && top < 8) top = y + 24;
   m.style.left = Math.min(W - r.width - 8, Math.max(8, left)) + 'px';
   m.style.top = Math.min(H - r.height - 8, Math.max(8, top)) + 'px';
+  dbg(`menu ${m.style.left},${m.style.top} ${Math.round(r.width)}x${Math.round(r.height)} 화면 ${W}x${H}`);
 }
 // 노트를 우클릭: 선택 안 된 노트면 그것만 선택하고, 선택된 노트면 선택 전체에 적용
 function showCtx(n, x, y, touch) {
@@ -3582,7 +3601,7 @@ function init() {
   });
 
   A.sc.addEventListener('scroll', onScroll);
-  A.sc.addEventListener('contextmenu', (e) => e.preventDefault());
+  A.sc.addEventListener('contextmenu', onTouchContextMenu);
   A.sc.addEventListener('auxclick', (e) => { if (e.button === 1) e.preventDefault(); });
   A.sc.addEventListener('wheel', onWheel, { passive: false });
   bindTouch();

@@ -127,7 +127,7 @@ function init() {
   });
 
   A.sc.addEventListener('scroll', onScroll);
-  A.sc.addEventListener('contextmenu', (e) => e.preventDefault());
+  A.sc.addEventListener('contextmenu', onTouchContextMenu);
   A.sc.addEventListener('auxclick', (e) => { if (e.button === 1) e.preventDefault(); });
   A.sc.addEventListener('wheel', onWheel, { passive: false });
   bindTouch();

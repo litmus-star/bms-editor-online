@@ -19,7 +19,10 @@ const { chromium } = require('playwright'); const path = require('path');
   const txt = () => page.evaluate(() => new TextDecoder().decode(BMSApp.serialize().bytes));
   const out = {};
   let p = await xy('K11', 4); await page.mouse.click(p.x, p.y, { button: 'right' });
-  out.noteMenu = await items(); out.selAfterRight = await page.evaluate(() => BMSApp.A.sel.size);
+  out.noteMenu = await items();
+  // 메뉴가 실제로 화면에 보이는지 (스타일이 적용돼 떠 있는지): 위치 고정 · 메뉴 한가운데를 찍으면 메뉴의 버튼이 잡혀야 함
+  out.menuVisible = await page.evaluate(() => { const m = document.getElementById('ctxMenu'), r = m.getBoundingClientRect(), t = document.elementFromPoint(r.left + r.width / 2, r.top + 12);
+    return getComputedStyle(m).position === 'fixed' && r.width < 400 && !!t && m.contains(t); }); out.selAfterRight = await page.evaluate(() => BMSApp.A.sel.size);
   await click('WAV 목록에서 보기'); out.wavView = await page.evaluate(() => ({ cur: BMSApp.A.curWav, sideOff: document.body.classList.contains('side-off'), open: document.getElementById('pnWav').open }));
   // Shift+우클릭: 메뉴 없이 키음 목록 이동
   await page.evaluate(() => { BMSApp.A.curWav = 1; });
@@ -47,7 +50,9 @@ const { chromium } = require('playwright'); const path = require('path');
   p = await xy('K11', 4); const before = await notes();
   await T('touchStart', [[p.x, p.y]]);
   for (const [dx, dy] of [[3, 1], [-2, 4], [5, -3], [1, 2], [-4, -1]]) { await page.waitForTimeout(100); await T('touchMove', [[p.x + dx, p.y + dy]]); }
-  await page.waitForTimeout(250); out.touchMenu = await items(); await T('touchEnd', []);
+  await page.waitForTimeout(250); out.touchMenu = await items();
+  out.touchMenuVisible = await page.evaluate(() => { const m = document.getElementById('ctxMenu'), r = m.getBoundingClientRect(), t = document.elementFromPoint(r.left + r.width / 2, r.top + 12); return getComputedStyle(m).position === 'fixed' && !!t && m.contains(t); });
+  await T('touchEnd', []);
   out.touchJitterNoMove = before === await notes();
   await page.evaluate(() => { document.getElementById('ctxMenu').hidden = true; BMSApp.A.sel = new Set(); });
   p = await xy('K13', 6); await page.mouse.click(p.x, p.y, { button: 'right' }); await click('삭제'); out.afterDelete = await notes();

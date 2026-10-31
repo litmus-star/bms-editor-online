@@ -23,6 +23,7 @@ function openMenu(items, x, y, touch) {
   if (touch && top < 8) top = y + 24;
   m.style.left = Math.min(W - r.width - 8, Math.max(8, left)) + 'px';
   m.style.top = Math.min(H - r.height - 8, Math.max(8, top)) + 'px';
+  dbg(`menu ${m.style.left},${m.style.top} ${Math.round(r.width)}x${Math.round(r.height)} 화면 ${W}x${H}`);
 }
 // 노트를 우클릭: 선택 안 된 노트면 그것만 선택하고, 선택된 노트면 선택 전체에 적용
 function showCtx(n, x, y, touch) {

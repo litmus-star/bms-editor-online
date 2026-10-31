@@ -5,7 +5,7 @@
    펜과 손가락은 따로 모드가 없다: 손가락은 늘 위의 동작, 펜은 그 위에 마우스처럼 얹힌다.
    펜이 화면에 닿아 있는 동안만 새로 닿는 손가락을 무시한다(펜 쥔 손바닥 오작동 방지). */
 const T = { pts: new Map(), st: null, pinch: null, lp: 0, mousePid: null };
-const TAP_MOVE = 8, LONG_MS = 500;
+const TAP_MOVE = 12, LONG_MS = 450; // 안드로이드 기본 터치 흔들림 허용치(약 8dp)보다 넉넉하게, 길게 누르기는 크롬 자체 길게 누르기(약 500ms)보다 먼저
 
 /* 관성 스크롤: 손가락으로 빈 곳을 끌다 놓으면 그 속도로 미끄러지다 서서히 멈춘다.
    FLING_FRICTION: 1ms마다 속도에 곱하는 값. 1에 가까울수록 오래 미끄러짐 (0.9985 ≈ 0.67초마다 속도가 1/e로, 1이면 영영 안 멈춤) */
@@ -77,6 +77,7 @@ function onPointerUp(e) {
 /* 손가락 */
 function touchDown(e) {
   e.preventDefault();
+  dbg('down ' + e.pointerId + ' ' + Math.round(e.clientX) + ',' + Math.round(e.clientY));
   if (A.penDown) return; // 펜으로 편집하는 중에 닿은 손가락(손바닥)은 무시
   setTouchUI(true);
   T.pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
@@ -120,6 +121,7 @@ function touchMove(e) {
   }
 }
 function touchUp(e) {
+  dbg(e.type + ' ' + e.pointerId + (T.st ? ' ' + T.st.phase : ''));
   if (!T.pts.has(e.pointerId)) return;
   T.pts.delete(e.pointerId);
   clearTimeout(T.lp);
@@ -133,7 +135,9 @@ function touchUp(e) {
   }
 }
 function longPress() {
+  clearTimeout(T.lp);
   const s = T.st; if (!s) return;
+  dbg('longPress ' + s.phase);
   if (s.phase === 'note') { // 노트 길게 누르기: 이동을 취소하고 메뉴
     if (A.drag && A.drag.moved) return;
     A.drag = null; s.phase = 'menu'; draw();
@@ -177,6 +181,21 @@ function setTouchUI(on) {
   if (A.touchUI === on) return;
   A.touchUI = on;
   document.body.classList.toggle('touch', on);
+}
+// 크롬이 손가락 길게 누르기를 먼저 알아채면 contextmenu 이벤트가 온다: 그때도 같은 길게 누르기 처리
+function onTouchContextMenu(e) {
+  e.preventDefault();
+  dbg('contextmenu ' + (T.st ? T.st.phase : '-'));
+  if (A.lastPtr === 'touch' && T.st && (T.st.phase === 'note' || T.st.phase === 'pending')) longPress();
+}
+// 터치 문제 진단용: 주소 끝에 ?debug=touch 를 붙이면 화면 왼쪽 위에 최근 터치 이벤트를 표시
+const DBG = /[?&]debug=touch/.test(location.search) ? [] : null;
+function dbg(msg) {
+  if (!DBG) return;
+  DBG.push(Math.round(performance.now()) % 100000 + ' ' + msg); if (DBG.length > 14) DBG.shift();
+  let el = document.getElementById('touchDbg');
+  if (!el) { el = document.createElement('pre'); el.id = 'touchDbg'; el.style.cssText = 'position:fixed;left:4px;top:4px;z-index:99;margin:0;padding:4px 6px;background:rgba(0,0,0,.8);color:#9f9;font:11px monospace;pointer-events:none'; document.body.appendChild(el); }
+  el.textContent = DBG.join('\n');
 }
 function bindTouch() {
   const sc = A.sc;
