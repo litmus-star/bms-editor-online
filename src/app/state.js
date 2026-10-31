@@ -34,7 +34,7 @@ const A = {
   view: { bottom: 0, left: 0 }, ppb: PPB * cfg.zoom, W: 0, H: 0, dpr: 1,
   lanes: [], laneMap: new Map(), sound: [], totalW: 0, bgmCount: 8,
   by: new Map(), maxLen: new Map(), ms: null, timing: null, ghosts: [], extentM: 64, usage: new Map(), conflicts: 0, muri: [],
-  drag: null, hover: null, playBeat: null, playMark: null, playToken: null,
+  drag: null, hover: null, playBeat: null, playToken: null,
   fs: { provider: null, files: [] }, backedUp: new Set(), clip: null,
   blkIdx: 0, beatSel: new Set(), beatAnchor: -1,
 };

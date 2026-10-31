@@ -50,12 +50,7 @@ function onDown(e) {
     A.sc.style.cursor = 'grabbing'; return;
   }
   if (e.button !== 0) return;
-  if (h.lane && h.lane.type === 'meas') {
-    const m = measureAt(Math.max(0, h.beat)), b = A.ms.Sf[m];
-    A.playMark = A.playMark === b ? null : b;
-    toast(A.playMark == null ? '재생 시작선을 지웠습니다' : `재생 시작선: 마디 ${C.pad3(m)}`);
-    draw(); return;
-  }
+  if (h.lane && h.lane.type === 'meas') return;
   if (A.mode === 'write') downWrite(e, h, n); else downSelect(e, h, n);
 }
 function downWrite(e, h, n) {
@@ -144,7 +139,7 @@ function onMove(e) {
     const kMin = Math.ceil(-minB / sf - 1e-9), kMax = Math.floor((A.ms.Sf[1000] - maxE) / sf - 1e-9);
     if (k < kMin) k = kMin;
     if (k > kMax) k = kMax;
-    d.delta = rmul(st, R(k)); d.dSi = dSi; d.moved = true; d.copy = e.ctrlKey || e.altKey || e.metaKey || !!A.copyMode;
+    d.delta = rmul(st, R(k)); d.dSi = dSi; d.moved = true; d.copy = e.ctrlKey || e.altKey || e.metaKey;
     d.preview = sel.map((n) => movedNote(n, d.delta, dSi, grp));
     d.hide = d.copy ? null : new Set(sel);
     A.sc.style.cursor = d.copy ? 'copy' : 'move';

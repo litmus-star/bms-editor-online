@@ -182,7 +182,7 @@ async function openChart(name, enc) {
 function loadDoc(doc, name) {
   stopPlay();
   A.doc = doc; A.st = C.stateFromDoc(doc); A.fileName = name;
-  A.undo = []; A.redo = []; A.sel = new Set(); A.blkIdx = 0; A.beatSel = new Set(); A.playMark = null; A.drag = null; A.hover = null;
+  A.undo = []; A.redo = []; A.sel = new Set(); A.blkIdx = 0; A.beatSel = new Set(); A.drag = null; A.hover = null;
   A.curWav = A.st.wavs.size ? Math.min(...A.st.wavs.keys()) : 1;
   A.curBmp = [...A.st.bmps.keys()].filter((k) => k > 0).sort((a, b) => a - b)[0] || 1;
   A.view.bottom = 0; A.view.left = 0;

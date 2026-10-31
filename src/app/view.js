@@ -156,10 +156,6 @@ function paint() {
   if (d && (d.kind === 'place' || d.kind === 'resize') && d.preview) pv(d.preview);
   if (!d && A.mode === 'write' && A.hover && A.hover.ghost) { ctx.globalAlpha = 0.5; pv(A.hover.ghost); ctx.globalAlpha = 1; }
 
-  if (A.playMark != null) {
-    const y = Math.round(yOf(A.playMark));
-    if (y >= HEAD_H && y <= H) { ctx.fillStyle = '#3fd36b'; ctx.fillRect(MEAS_W, y, gx1 - MEAS_W, 1); }
-  }
   if (d && d.kind === 'band') {
     const xa = Math.min(d.x0, d.x1), xb = Math.max(d.x0, d.x1);
     const ya = yOf(Math.max(d.b0, d.b1)), yb = yOf(Math.min(d.b0, d.b1));
@@ -180,12 +176,6 @@ function paint() {
     const g = A.st.meas.get(m);
     if (g) { ctx.fillStyle = '#7fb0ff'; ctx.font = '10px Consolas, Menlo, monospace'; ctx.fillText(beatLabel(g.r), 6, y - 17); }
   }
-  if (A.playMark != null) {
-    const y = Math.round(yOf(A.playMark));
-    if (y >= HEAD_H && y <= H) {
-      ctx.fillStyle = '#3fd36b'; ctx.beginPath(); ctx.moveTo(MEAS_W - 11, y - 6); ctx.lineTo(MEAS_W - 1, y); ctx.lineTo(MEAS_W - 11, y + 6); ctx.fill();
-    }
-  }
   if (A.playBeat != null) { const y = Math.round(yOf(A.playBeat)); ctx.fillStyle = '#ff3355'; ctx.fillRect(0, y - 1, W, 2); }
 
   ctx.fillStyle = '#1a1b1f'; ctx.fillRect(0, 0, W, HEAD_H);
@@ -198,5 +188,4 @@ function paint() {
   }
   ctx.fillStyle = '#1a1b1f'; ctx.fillRect(0, 0, MEAS_W, HEAD_H - 1);
   ctx.fillStyle = '#9a9a9a'; ctx.fillText('마디', MEAS_W / 2, HEAD_H / 2);
-  updateSelBar();
 }

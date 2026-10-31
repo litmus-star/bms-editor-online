@@ -29,15 +29,15 @@ const { chromium } = require('playwright'); const path = require('path'), fs = r
   const n = await noteXY(); out.note = n;
   const cnt0 = await page.evaluate(() => BMSApp.A.st.notes.length);
   await T('touchStart', [[n.x, n.y]]); for (let i = 1; i <= 5; i++) { await T('touchMove', [[n.x + i * 14, n.y + 2]]); } await T('touchEnd', []);
-  out.move = await page.evaluate((n) => ({ dirty: BMSApp.A.dirty, at: BMSApp.A.st.notes.filter((x) => Math.abs(x.b - n.b) < 1e-6).map((x) => x.lane), sel: BMSApp.A.sel.size, bar: !document.getElementById('selBar').hidden, cnt: BMSApp.A.st.notes.length }), n);
+  out.move = await page.evaluate((n) => ({ dirty: BMSApp.A.dirty, at: BMSApp.A.st.notes.filter((x) => Math.abs(x.b - n.b) < 1e-6).map((x) => x.lane), sel: BMSApp.A.sel.size, cnt: BMSApp.A.st.notes.length }), n);
   out.moveCountSame = out.move.cnt === cnt0;
   // 3. 길게 누르기 노트 = 메뉴
   const n2 = await noteXY();
   await T('touchStart', [[n2.x, n2.y]]); await wait(650);
-  out.ctx = await page.evaluate(() => [...document.querySelectorAll('#ctxMenu button')].map((b) => b.textContent).join('|') + ' hidden=' + document.getElementById('ctxMenu').hidden);
+  out.ctx = await page.evaluate(() => [...document.querySelectorAll('#ctxMenu button')].map((b) => b.querySelector('span').textContent).join('|') + ' hidden=' + document.getElementById('ctxMenu').hidden);
   await T('touchEnd', []);
   out.ctxAfterUp = await page.evaluate(() => document.getElementById('ctxMenu').hidden);
-  await page.click('#ctxMenu button:first-child'); // 삭제
+  await page.evaluate(() => [...document.querySelectorAll('#ctxMenu button')].find((x) => x.textContent.startsWith('삭제')).click());
   out.afterDel = await page.evaluate(() => BMSApp.A.st.notes.length);
   // 4. 핀치 (세로 벌리기)
   const z0 = await page.evaluate(() => BMSApp.cfg.zoom);

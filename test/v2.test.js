@@ -26,7 +26,7 @@ const { chromium } = require('playwright'); const path = require('path'), fs = r
   const moved = await page.evaluate(() => ({ k13: BMSApp.A.st.notes.filter((n) => n.lane === 'K13').map((n) => n.b), left: BMSApp.A.view.left }));
   await page.screenshot({ path: path.join(__dirname, 'shot-7-fixed.png') });
   // 재생: 2마디(박 8)부터 → 박 0의 60초짜리 BGM이 4초 지점부터 울려야
-  await page.evaluate(() => { BMSApp.A.playMark = 8; BMSApp.play(8); });
+  await page.evaluate(() => { BMSApp.play(8); });
   await page.waitForTimeout(600);
   const play = await page.evaluate(() => { const P = BMSApp.Au.play; return { evs: P.evs.map((e) => [e.id, +e.t.toFixed(3)]), playing: P.srcs.size }; });
   await page.evaluate(() => BMSApp.stopPlay());

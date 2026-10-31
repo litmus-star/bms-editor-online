@@ -57,12 +57,7 @@ main { flex: 1; display: flex; min-height: 0; }
 #empty .row { justify-content: center; margin: 10px 0; }
 #empty button { padding: 7px 16px; font-size: 14px; }
 #sc { touch-action: none; }
-#selBar { position: absolute; left: 50%; bottom: calc(14px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); display: flex; gap: 4px; align-items: center;
   background: rgba(29, 31, 36, .96); border: 1px solid #454a54; border-radius: 10px; padding: 6px 8px; box-shadow: 0 6px 24px rgba(0,0,0,.5); z-index: 5; max-width: calc(100% - 20px); flex-wrap: wrap; justify-content: center; }
-#selBar button { min-width: 40px; min-height: 38px; padding: 4px 10px; font-size: 14px; }
-#selBar button.danger { color: #ffb0b0; }
-#selBar .sep { width: 1px; height: 26px; background: #454a54; margin: 0 2px; }
-#tbCount { font-size: 12px; min-width: 52px; text-align: center; }
 #ctxMenu { position: fixed; z-index: 15; display: flex; flex-direction: column; min-width: 190px; background: #24272d; border: 1px solid #555b66; border-radius: 8px; padding: 4px; box-shadow: 0 8px 28px rgba(0,0,0,.6); }
 #ctxMenu button { display: flex; justify-content: space-between; align-items: center; gap: 18px; text-align: left; background: none; border: none; border-radius: 4px; padding: 5px 10px; font-size: 13px; }
 #ctxMenu button:hover:not(:disabled) { background: #33415e; }
@@ -186,7 +181,7 @@ body.side-off #side { display: none; }
     </div>
     <div class="g">
       <button id="pStart" title="처음부터 재생 (F5)">⏮ 처음부터</button>
-      <button id="pHere" title="시작선부터 재생 · 시작선이 없으면 화면 맨 아래 마디부터 (F6, Space)">▶ 재생</button>
+      <button id="pHere" title="화면 맨 아래 마디부터 재생 (F6, Space)">▶ 재생</button>
       <button id="pStop" title="정지 (F7, Space)">■ 정지</button>
     </div>
     <div class="g">
@@ -211,19 +206,6 @@ body.side-off #side { display: none; }
         <div class="row"><button id="eOpen" class="pri">폴더 열기</button><button id="eNew">새 파일</button></div>
         <p class="dim">파일은 이 컴퓨터 안에서만 처리되고, 어디에도 업로드되지 않습니다.</p>
         <p class="dim" id="eNote"></p>
-      </div>
-      <div id="selBar" hidden>
-        <button id="tbUndo" title="실행 취소">↶</button><button id="tbRedo" title="다시 실행">↷</button>
-        <span class="sep"></span>
-        <button id="tbUp" data-need-sel title="한 칸 위로">▲</button><button id="tbDown" data-need-sel title="한 칸 아래로">▼</button>
-        <button id="tbLeft" data-need-sel title="왼쪽 레인으로">◀</button><button id="tbRight" data-need-sel title="오른쪽 레인으로">▶</button>
-        <span class="sep"></span>
-        <button id="tbCopy" data-need-sel>복사</button><button id="tbPaste">붙여넣기</button><button id="tbDel" data-need-sel class="danger">삭제</button>
-        <span class="sep"></span>
-        <button id="tbCopyMode" title="켜면 노트를 끌 때 복사 (Ctrl+드래그 대신)">복사 모드</button>
-        <button id="tbNoSnap" title="켜면 그리드를 무시하고 1/192 단위로 (Shift 대신)">그리드 무시</button>
-        <span id="tbCount" class="dim"></span>
-        <button id="tbTouchOff" title="이 막대 숨기기 (다시 터치하면 나타남)">✕</button>
       </div>
       <div id="ctxMenu" hidden></div>
       <div id="drop" hidden>여기에 놓으면 폴더를 엽니다</div>
@@ -1308,7 +1290,7 @@ const A = {
   view: { bottom: 0, left: 0 }, ppb: PPB * cfg.zoom, W: 0, H: 0, dpr: 1,
   lanes: [], laneMap: new Map(), sound: [], totalW: 0, bgmCount: 8,
   by: new Map(), maxLen: new Map(), ms: null, timing: null, ghosts: [], extentM: 64, usage: new Map(), conflicts: 0, muri: [],
-  drag: null, hover: null, playBeat: null, playMark: null, playToken: null,
+  drag: null, hover: null, playBeat: null, playToken: null,
   fs: { provider: null, files: [] }, backedUp: new Set(), clip: null,
   blkIdx: 0, beatSel: new Set(), beatAnchor: -1,
 };
@@ -1386,7 +1368,7 @@ function measureAt(beat) {
   while (lo < hi) { const mid = (lo + hi + 1) >> 1; if (Sf[mid] <= beat + 1e-9) lo = mid; else hi = mid - 1; }
   return lo;
 }
-function stepR(noSnap) { return (noSnap || A.noSnap || !cfg.snap) ? R(1, 48) : R(4, cfg.grid); }
+function stepR(noSnap) { return (noSnap || !cfg.snap) ? R(1, 48) : R(4, cfg.grid); }
 function snap(beat, mode, noSnap) {
   beat = Math.max(0, beat);
   const S = A.ms.S, Sf = A.ms.Sf, m = Math.min(999, measureAt(beat));
@@ -1644,10 +1626,6 @@ function paint() {
   if (d && (d.kind === 'place' || d.kind === 'resize') && d.preview) pv(d.preview);
   if (!d && A.mode === 'write' && A.hover && A.hover.ghost) { ctx.globalAlpha = 0.5; pv(A.hover.ghost); ctx.globalAlpha = 1; }
 
-  if (A.playMark != null) {
-    const y = Math.round(yOf(A.playMark));
-    if (y >= HEAD_H && y <= H) { ctx.fillStyle = '#3fd36b'; ctx.fillRect(MEAS_W, y, gx1 - MEAS_W, 1); }
-  }
   if (d && d.kind === 'band') {
     const xa = Math.min(d.x0, d.x1), xb = Math.max(d.x0, d.x1);
     const ya = yOf(Math.max(d.b0, d.b1)), yb = yOf(Math.min(d.b0, d.b1));
@@ -1668,12 +1646,6 @@ function paint() {
     const g = A.st.meas.get(m);
     if (g) { ctx.fillStyle = '#7fb0ff'; ctx.font = '10px Consolas, Menlo, monospace'; ctx.fillText(beatLabel(g.r), 6, y - 17); }
   }
-  if (A.playMark != null) {
-    const y = Math.round(yOf(A.playMark));
-    if (y >= HEAD_H && y <= H) {
-      ctx.fillStyle = '#3fd36b'; ctx.beginPath(); ctx.moveTo(MEAS_W - 11, y - 6); ctx.lineTo(MEAS_W - 1, y); ctx.lineTo(MEAS_W - 11, y + 6); ctx.fill();
-    }
-  }
   if (A.playBeat != null) { const y = Math.round(yOf(A.playBeat)); ctx.fillStyle = '#ff3355'; ctx.fillRect(0, y - 1, W, 2); }
 
   ctx.fillStyle = '#1a1b1f'; ctx.fillRect(0, 0, W, HEAD_H);
@@ -1686,7 +1658,6 @@ function paint() {
   }
   ctx.fillStyle = '#1a1b1f'; ctx.fillRect(0, 0, MEAS_W, HEAD_H - 1);
   ctx.fillStyle = '#9a9a9a'; ctx.fillText('마디', MEAS_W / 2, HEAD_H / 2);
-  updateSelBar();
 }
 
 /* ── app/history.js ── */
@@ -1822,12 +1793,7 @@ function onDown(e) {
     A.sc.style.cursor = 'grabbing'; return;
   }
   if (e.button !== 0) return;
-  if (h.lane && h.lane.type === 'meas') {
-    const m = measureAt(Math.max(0, h.beat)), b = A.ms.Sf[m];
-    A.playMark = A.playMark === b ? null : b;
-    toast(A.playMark == null ? '재생 시작선을 지웠습니다' : `재생 시작선: 마디 ${C.pad3(m)}`);
-    draw(); return;
-  }
+  if (h.lane && h.lane.type === 'meas') return;
   if (A.mode === 'write') downWrite(e, h, n); else downSelect(e, h, n);
 }
 function downWrite(e, h, n) {
@@ -1916,7 +1882,7 @@ function onMove(e) {
     const kMin = Math.ceil(-minB / sf - 1e-9), kMax = Math.floor((A.ms.Sf[1000] - maxE) / sf - 1e-9);
     if (k < kMin) k = kMin;
     if (k > kMax) k = kMax;
-    d.delta = rmul(st, R(k)); d.dSi = dSi; d.moved = true; d.copy = e.ctrlKey || e.altKey || e.metaKey || !!A.copyMode;
+    d.delta = rmul(st, R(k)); d.dSi = dSi; d.moved = true; d.copy = e.ctrlKey || e.altKey || e.metaKey;
     d.preview = sel.map((n) => movedNote(n, d.delta, dSi, grp));
     d.hide = d.copy ? null : new Set(sel);
     A.sc.style.cursor = d.copy ? 'copy' : 'move';
@@ -2090,7 +2056,6 @@ function copySel() {
   return text;
 }
 function hereBeat() {
-  if (A.playMark != null) return A.playMark;
   const Sf = A.ms.Sf, m = measureAt(A.view.bottom + 1e-6);
   return Sf[m] >= A.view.bottom - 1e-6 ? Sf[m] : Sf[Math.min(999, m + 1)];
 }
@@ -2562,13 +2527,13 @@ function showHelp() {
 <tr><td>Delete</td><td>선택한 노트 지우기</td></tr>
 <tr><td>↑ ↓ / ← →</td><td>선택한 노트를 그리드 한 칸 위아래로 (Shift: 1/192) / 옆 레인으로</td></tr>
 <tr><td>PageUp · PageDown · Home · End</td><td>한 마디씩 · 처음 · 끝으로 스크롤</td></tr>
-<tr><td>F5 / F6, Space / F7</td><td>처음부터 재생 / 시작선부터 재생 / 정지</td></tr>
+<tr><td>F5 / F6, Space / F7</td><td>처음부터 재생 / 화면 맨 아래 마디부터 재생 / 정지</td></tr>
 <tr><td>\\</td><td>오른쪽 패널 접기/펼치기 (패널 왼쪽 경계를 끌면 너비 조절)</td></tr>
 <tr><td>G · H · N</td><td>스냅 켜고 끄기 · 옆으로만 이동 · 쓸 노트 종류(일반→숨김→지뢰)</td></tr>
 <tr><td>+ − · Ctrl+휠</td><td>세로 확대 축소</td></tr>
 <tr><td>[ ] · Ctrl+Shift+휠</td><td>가로 확대 축소</td></tr></table>
 <h4>DP · PMS · BGA · 숨김 · 지뢰</h4><p>#PLAYER 3이거나 2P 노트가 있으면 DP 화면으로, 확장자가 .pms이거나 팝픈 9버튼 레인(1P 1~5키 + 2P 2~5키)만 쓰면 PMS 화면으로 엽니다. 툴바의 SP/DP/PMS 버튼을 누를 때마다 바뀝니다. PMS 레인 색은 팝픈뮤직 버튼 색(흰·노·초·파·빨·파·초·노·흰)을 따릅니다. PMS 화면에서는 무리배치(완전히 같은 타이밍의 동시치기를 두 손으로 나눴을 때 한 손이 연속된 버튼 3개 범위를 넘는 경우, 누르고 있는 롱노트 포함)를 주황 점선으로 표시하고 정보 칸에 위치 목록을 보여 줍니다. 가로 스크롤하면 플레이 영역은 고정되고 BGA·LAYER·POOR와 BGM 칼럼이 함께 움직입니다. BGA 레인에는 BMP 목록에서 고른 번호가 찍히고, BGA 노트는 BGA 레인끼리만 옮겨집니다. 숨김 노트는 흐리게, 지뢰는 진한 빨강(✕)으로 보이며 키 레인 안에서만 옮길 수 있습니다.</p>
-<h4>태블릿 (손가락 · S펜)</h4><ul><li>손가락: 노트를 끌면 이동, 빈 곳을 끌면 화면 이동(빠르게 쓸고 놓으면 관성으로 미끄러지고, 그때 탭하면 멈춤), 두 손가락을 벌리고 오므리면 확대·축소(세로로 벌리면 세로, 가로로 벌리면 가로)</li><li>탭: 노트 선택 · 빈 곳은 선택 해제 · 쓰기 모드에서는 노트 찍기</li><li>길게 누르기: 빈 곳은 범위 선택 시작, 노트는 우클릭과 같은 메뉴</li><li>안드로이드에서는 폴더를 빠른 방식(폴더 고르기)으로 엽니다. 처음 저장할 때 같은 폴더를 한 번 더 골라 주면 그 뒤로는 그 폴더에 바로 저장합니다. '보기 · 재생 · 저장' 칸에서 방식을 바꿀 수 있습니다.</li><li>S펜: 마우스와 똑같이 편집합니다(펜 옆 버튼 = 우클릭 메뉴). 손가락 조작은 펜을 쓴 뒤에도 그대로이고, 펜이 화면에 닿아 있는 동안만 손가락을 무시합니다(손바닥 오작동 방지).</li><li>아래 도구 막대: 실행 취소 · ▲▼◀▶ 한 칸 옮기기 · 복사 · 붙여넣기 · 삭제 · 복사 모드(끌면 복사, Ctrl 대신) · 그리드 무시(Shift 대신)</li></ul><h4>재생</h4><p>마디 번호 칸을 클릭하면 재생 시작선(초록)이 생깁니다. F6·Space는 시작선부터, 시작선이 없으면 화면 맨 아래 마디부터 재생합니다. 같은 키음이 다시 울리면 앞 소리는 끊깁니다(BMS 플레이어와 같은 방식). BPM 변화와 STOP도 반영합니다.</p>
+<h4>태블릿 (손가락 · S펜)</h4><ul><li>손가락: 노트를 끌면 이동, 빈 곳을 끌면 화면 이동(빠르게 쓸고 놓으면 관성으로 미끄러지고, 그때 탭하면 멈춤), 두 손가락을 벌리고 오므리면 확대·축소(세로로 벌리면 세로, 가로로 벌리면 가로)</li><li>탭: 노트 선택 · 빈 곳은 선택 해제 · 쓰기 모드에서는 노트 찍기</li><li>길게 누르기: 빈 곳은 범위 선택 시작, 노트는 우클릭과 같은 메뉴</li><li>안드로이드에서는 폴더를 빠른 방식(폴더 고르기)으로 엽니다. 처음 저장할 때 같은 폴더를 한 번 더 골라 주면 그 뒤로는 그 폴더에 바로 저장합니다. '보기 · 재생 · 저장' 칸에서 방식을 바꿀 수 있습니다.</li><li>S펜: 마우스와 똑같이 편집합니다(펜 옆 버튼 = 우클릭 메뉴). 손가락 조작은 펜을 쓴 뒤에도 그대로이고, 펜이 화면에 닿아 있는 동안만 손가락을 무시합니다(손바닥 오작동 방지).</li></ul><h4>재생</h4><p>F6·Space는 화면 맨 아래 마디부터 재생합니다. 같은 키음이 다시 울리면 앞 소리는 끊깁니다(BMS 플레이어와 같은 방식). BPM 변화와 STOP도 반영합니다.</p>
 <h4>저장</h4><p>편집한 채널(BGM · BPM · STOP · 1P 키 · 롱노트 · 마디 길이)과 고친 헤더 · WAV 줄만 다시 쓰고, 나머지 줄(BGA, 2P, 숨김 노트, 지뢰, 주석, 모르는 명령, #RANDOM 블록)은 원본 바이트 그대로 둡니다. 저장 직전에 결과를 다시 읽어 편집 내용과 일치하는지 확인하고, 바뀐 줄을 보여 줍니다. 기본 인코딩은 Shift-JIS입니다.</p>
 <h4>복사 · 붙여넣기</h4><p>iBMSC 클립보드 형식("iBMSC Clipboard Data")을 씁니다. iBMSC에서 복사한 노트나 ibmsc_clip.py가 만든 텍스트를 붙여넣을 수 있고, 여기서 복사한 노트를 iBMSC에 붙여넣을 수도 있습니다. 위치는 마우스가 있는 마디의 시작점 기준입니다.</p>
 <h4>로컬 전용</h4><p>이 페이지는 파일 하나로 동작하며 서버가 없습니다. 패턴과 키음은 브라우저 안에서만 읽고 쓰고, 외부로 나가는 통신은 페이지의 보안 정책(CSP)으로 막혀 있습니다. 폴더에 바로 저장하려면 크롬이나 엣지를 쓰세요. 다른 브라우저에서는 저장할 때 파일이 다운로드됩니다.</p>
@@ -2760,7 +2725,7 @@ async function openChart(name, enc) {
 function loadDoc(doc, name) {
   stopPlay();
   A.doc = doc; A.st = C.stateFromDoc(doc); A.fileName = name;
-  A.undo = []; A.redo = []; A.sel = new Set(); A.blkIdx = 0; A.beatSel = new Set(); A.playMark = null; A.drag = null; A.hover = null;
+  A.undo = []; A.redo = []; A.sel = new Set(); A.blkIdx = 0; A.beatSel = new Set(); A.drag = null; A.hover = null;
   A.curWav = A.st.wavs.size ? Math.min(...A.st.wavs.keys()) : 1;
   A.curBmp = [...A.st.bmps.keys()].filter((k) => k > 0).sort((a, b) => a - b)[0] || 1;
   A.view.bottom = 0; A.view.left = 0;
@@ -3237,7 +3202,7 @@ function touchUp(e) {
   if (!s) return;
   if (s.phase === 'note' || s.phase === 'band') { onUp(fakeMouse(e)); return; }
   if (s.phase === 'pan') { A.userScroll = false; if (e.type !== 'pointercancel') startFling(s, e.timeStamp || performance.now()); return; }
-  if (s.phase === 'pending' && !s.stopTap) { // 빈 곳 탭: 선택 해제 / 쓰기 모드는 노트 찍기 / 마디 칸은 재생 시작선
+  if (s.phase === 'pending' && !s.stopTap) { // 빈 곳 탭: 선택 해제 / 쓰기 모드는 노트 찍기
     onDown(fakeMouse(s.ev)); onUp(fakeMouse(s.ev));
   }
 }
@@ -3281,23 +3246,11 @@ function fakeMouse(e) {
 }
 
 
-/* 선택 도구 막대 (터치·펜을 쓰면 표시) */
+/* 터치·펜을 쓰면 툴바 버튼을 크게 */
 function setTouchUI(on) {
   if (A.touchUI === on) return;
   A.touchUI = on;
   document.body.classList.toggle('touch', on);
-  updateSelBar();
-}
-function updateSelBar() {
-  const bar = $('#selBar'); if (!bar) return;
-  bar.hidden = !(A.touchUI && A.st);
-  if (bar.hidden) return;
-  const has = A.sel.size > 0;
-  for (const b of bar.querySelectorAll('[data-need-sel]')) b.disabled = !has;
-  $('#tbPaste').disabled = !A.clip;
-  $('#tbCopyMode').classList.toggle('on', !!A.copyMode);
-  $('#tbNoSnap').classList.toggle('on', !!A.noSnap);
-  $('#tbCount').textContent = has ? `${A.sel.size}개 선택` : '';
 }
 function bindTouch() {
   const sc = A.sc;
@@ -3308,16 +3261,6 @@ function bindTouch() {
   window.addEventListener('pointercancel', onPointerUp);
   sc.addEventListener('pointerleave', (e) => { if (e.pointerType !== 'touch' && !A.drag && A.hover) { A.hover = null; statusPos(null); statusNote(); draw(); } });
   document.addEventListener('pointerdown', (e) => { if (!e.target.closest('#ctxMenu')) hideCtx(); }, true);
-  const act = (id, fn) => $(id).addEventListener('click', () => { fn(); updateSelBar(); });
-  act('#tbDel', deleteSel);
-  act('#tbCopy', () => { copySel(); toast(`노트 ${A.sel.size}개 복사`); });
-  act('#tbPaste', () => { if (A.clip) pasteText(A.clip.text); });
-  act('#tbUndo', undo); act('#tbRedo', redo);
-  act('#tbUp', () => nudge(1, 0, false)); act('#tbDown', () => nudge(-1, 0, false));
-  act('#tbLeft', () => nudge(0, -1, false)); act('#tbRight', () => nudge(0, 1, false));
-  act('#tbCopyMode', () => { A.copyMode = !A.copyMode; toast(A.copyMode ? '복사 모드: 끌면 복사됩니다' : '복사 모드 끔'); });
-  act('#tbNoSnap', () => { A.noSnap = !A.noSnap; toast(A.noSnap ? '그리드 무시 (1/192 단위)' : '그리드 맞춤'); });
-  act('#tbTouchOff', () => setTouchUI(false));
 }
 
 /* ── app/ctxmenu.js ── */

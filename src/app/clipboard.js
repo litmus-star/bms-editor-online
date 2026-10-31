@@ -22,7 +22,6 @@ function copySel() {
   return text;
 }
 function hereBeat() {
-  if (A.playMark != null) return A.playMark;
   const Sf = A.ms.Sf, m = measureAt(A.view.bottom + 1e-6);
   return Sf[m] >= A.view.bottom - 1e-6 ? Sf[m] : Sf[Math.min(999, m + 1)];
 }

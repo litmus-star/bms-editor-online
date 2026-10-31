@@ -126,7 +126,7 @@ function touchUp(e) {
   if (!s) return;
   if (s.phase === 'note' || s.phase === 'band') { onUp(fakeMouse(e)); return; }
   if (s.phase === 'pan') { A.userScroll = false; if (e.type !== 'pointercancel') startFling(s, e.timeStamp || performance.now()); return; }
-  if (s.phase === 'pending' && !s.stopTap) { // 빈 곳 탭: 선택 해제 / 쓰기 모드는 노트 찍기 / 마디 칸은 재생 시작선
+  if (s.phase === 'pending' && !s.stopTap) { // 빈 곳 탭: 선택 해제 / 쓰기 모드는 노트 찍기
     onDown(fakeMouse(s.ev)); onUp(fakeMouse(s.ev));
   }
 }
@@ -170,23 +170,11 @@ function fakeMouse(e) {
 }
 
 
-/* 선택 도구 막대 (터치·펜을 쓰면 표시) */
+/* 터치·펜을 쓰면 툴바 버튼을 크게 */
 function setTouchUI(on) {
   if (A.touchUI === on) return;
   A.touchUI = on;
   document.body.classList.toggle('touch', on);
-  updateSelBar();
-}
-function updateSelBar() {
-  const bar = $('#selBar'); if (!bar) return;
-  bar.hidden = !(A.touchUI && A.st);
-  if (bar.hidden) return;
-  const has = A.sel.size > 0;
-  for (const b of bar.querySelectorAll('[data-need-sel]')) b.disabled = !has;
-  $('#tbPaste').disabled = !A.clip;
-  $('#tbCopyMode').classList.toggle('on', !!A.copyMode);
-  $('#tbNoSnap').classList.toggle('on', !!A.noSnap);
-  $('#tbCount').textContent = has ? `${A.sel.size}개 선택` : '';
 }
 function bindTouch() {
   const sc = A.sc;
@@ -197,14 +185,4 @@ function bindTouch() {
   window.addEventListener('pointercancel', onPointerUp);
   sc.addEventListener('pointerleave', (e) => { if (e.pointerType !== 'touch' && !A.drag && A.hover) { A.hover = null; statusPos(null); statusNote(); draw(); } });
   document.addEventListener('pointerdown', (e) => { if (!e.target.closest('#ctxMenu')) hideCtx(); }, true);
-  const act = (id, fn) => $(id).addEventListener('click', () => { fn(); updateSelBar(); });
-  act('#tbDel', deleteSel);
-  act('#tbCopy', () => { copySel(); toast(`노트 ${A.sel.size}개 복사`); });
-  act('#tbPaste', () => { if (A.clip) pasteText(A.clip.text); });
-  act('#tbUndo', undo); act('#tbRedo', redo);
-  act('#tbUp', () => nudge(1, 0, false)); act('#tbDown', () => nudge(-1, 0, false));
-  act('#tbLeft', () => nudge(0, -1, false)); act('#tbRight', () => nudge(0, 1, false));
-  act('#tbCopyMode', () => { A.copyMode = !A.copyMode; toast(A.copyMode ? '복사 모드: 끌면 복사됩니다' : '복사 모드 끔'); });
-  act('#tbNoSnap', () => { A.noSnap = !A.noSnap; toast(A.noSnap ? '그리드 무시 (1/192 단위)' : '그리드 맞춤'); });
-  act('#tbTouchOff', () => setTouchUI(false));
 }

@@ -50,12 +50,7 @@ main { flex: 1; display: flex; min-height: 0; }
 #empty .row { justify-content: center; margin: 10px 0; }
 #empty button { padding: 7px 16px; font-size: 14px; }
 #sc { touch-action: none; }
-#selBar { position: absolute; left: 50%; bottom: calc(14px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); display: flex; gap: 4px; align-items: center;
   background: rgba(29, 31, 36, .96); border: 1px solid #454a54; border-radius: 10px; padding: 6px 8px; box-shadow: 0 6px 24px rgba(0,0,0,.5); z-index: 5; max-width: calc(100% - 20px); flex-wrap: wrap; justify-content: center; }
-#selBar button { min-width: 40px; min-height: 38px; padding: 4px 10px; font-size: 14px; }
-#selBar button.danger { color: #ffb0b0; }
-#selBar .sep { width: 1px; height: 26px; background: #454a54; margin: 0 2px; }
-#tbCount { font-size: 12px; min-width: 52px; text-align: center; }
 #ctxMenu { position: fixed; z-index: 15; display: flex; flex-direction: column; min-width: 190px; background: #24272d; border: 1px solid #555b66; border-radius: 8px; padding: 4px; box-shadow: 0 8px 28px rgba(0,0,0,.6); }
 #ctxMenu button { display: flex; justify-content: space-between; align-items: center; gap: 18px; text-align: left; background: none; border: none; border-radius: 4px; padding: 5px 10px; font-size: 13px; }
 #ctxMenu button:hover:not(:disabled) { background: #33415e; }
