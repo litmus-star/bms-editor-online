@@ -53,7 +53,8 @@ const path = require('path'), fs = require('fs');
   p = await pt('K13', 6.5, -3); q = await pt('K13', 7.5, -3); // 롱노트 윗끝 손잡이
   await page.mouse.move(p.x, p.y); await page.mouse.down(); await page.mouse.move(q.x, q.y, { steps: 6 }); await page.mouse.up();
   p = await pt('K15', 5);
-  await page.mouse.dblclick(p.x, p.y);
+  await page.mouse.click(p.x, p.y, { button: 'right' }); // 노트 우클릭 메뉴 → 값 바꾸기 (더블클릭으로 값 바꾸기는 우클릭 메뉴로 옮겨짐)
+  await page.evaluate(() => [...document.querySelectorAll('#ctxMenu button')].find((b) => b.textContent.startsWith(BMSApp.i18n.tr('ctx.editValue'))).click());
   await page.waitForSelector('#modal:not([hidden])'); await page.fill('#ptIn', '0z'); await page.keyboard.press('Enter');
   const st = await page.evaluate(() => BMSApp.A.st.notes.map((n) => [n.lane, n.b, n.lb, n.lane === 'BPM' || n.lane === 'STOP' ? n.v : BMSCore.idStr(n.v, 36)]).sort((a, b) => a[1] - b[1] || (a[0] < b[0] ? -1 : 1)));
   console.log('new chart notes', JSON.stringify(st));

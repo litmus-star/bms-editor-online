@@ -105,7 +105,12 @@ const out = (f) => path.join(__dirname, f);
   await page.keyboard.press('Control+s');
   await page.waitForSelector('#modal:not([hidden])');
   await page.screenshot({ path: out('shot-2-save.png') });
-  const [dl] = await Promise.all([page.waitForEvent('download'), page.click('#mBtns .pri')]);
+  const dlP = page.waitForEvent('download');
+  await page.click('#mBtns .pri'); // 저장 확인 → 저장
+  // 파일 목록 방식으로 연 폴더는 쓰기 권한이 없어서 '저장할 폴더 고르기' 창이 한 번 더 뜸 → 다운로드로 저장
+  await page.waitForFunction((t) => !document.getElementById('modal').hidden && document.getElementById('mTitle').textContent === t, await page.evaluate(() => BMSApp.i18n.tr('dlg.pickSave.title')));
+  await page.click('#mBtns button:first-child');
+  const dl = await dlP;
   const dpath = await dl.path();
   const saved = fs.readFileSync(dpath);
   fs.writeFileSync(out('saved.bme'), saved);
