@@ -30,7 +30,7 @@ function onKey(e) {
   if (ctrl) return;
   switch (k) {
     case 'Delete': case 'Backspace': e.preventDefault(); deleteSel(); return;
-    case 'Escape': if (A.drag) { A.drag = null; } else A.sel = new Set(); statusNote(); draw(); return;
+    case 'Escape': if (!$('#ctxMenu').hidden) { hideCtx(); return; } if (A.drag) { A.drag = null; } else A.sel = new Set(); statusNote(); draw(); return;
     case ' ': e.preventDefault(); if (Au.play || A.playToken) stopPlay(); else play(hereBeat()); return;
     case 'ArrowUp': case 'ArrowDown': {
       e.preventDefault();

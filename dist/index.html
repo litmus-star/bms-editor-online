@@ -63,8 +63,15 @@ main { flex: 1; display: flex; min-height: 0; }
 #selBar button.danger { color: #ffb0b0; }
 #selBar .sep { width: 1px; height: 26px; background: #454a54; margin: 0 2px; }
 #tbCount { font-size: 12px; min-width: 52px; text-align: center; }
-#ctxMenu { position: fixed; z-index: 15; display: flex; gap: 4px; background: #24272d; border: 1px solid #555b66; border-radius: 10px; padding: 6px; box-shadow: 0 8px 28px rgba(0,0,0,.6); }
-#ctxMenu button { min-height: 42px; min-width: 64px; font-size: 15px; }
+#ctxMenu { position: fixed; z-index: 15; display: flex; flex-direction: column; min-width: 190px; background: #24272d; border: 1px solid #555b66; border-radius: 8px; padding: 4px; box-shadow: 0 8px 28px rgba(0,0,0,.6); }
+#ctxMenu button { display: flex; justify-content: space-between; align-items: center; gap: 18px; text-align: left; background: none; border: none; border-radius: 4px; padding: 5px 10px; font-size: 13px; }
+#ctxMenu button:hover:not(:disabled) { background: #33415e; }
+#ctxMenu button.on span::before { content: "✓ "; color: var(--acc); }
+#ctxMenu button kbd { font-size: 11px; }
+#ctxMenu .sep { height: 1px; background: #3c4049; margin: 4px 6px; }
+#ctxMenu.touchmenu button { padding: 10px 14px; font-size: 15px; }
+.wr.flash { animation: flash .9s; }
+@keyframes flash { 0%, 40% { background: #6a5714; } }
 body.touch #tb button, body.touch #tb select { min-height: 36px; }
 body.touch #split { width: 14px; }
 #diagBd { margin: 0 0 8px; white-space: pre-wrap; word-break: break-all; font: 11.5px/1.5 Consolas, Menlo, monospace; color: var(--text); }
@@ -1801,7 +1808,15 @@ function onDown(e) {
   e.preventDefault();
   A.sc.focus({ preventScroll: true });
   const n = noteAt(h);
-  if (e.button === 2) { if (n) commit({ del: [n], add: [] }); return; }
+  if (e.button === 2) { // 우클릭(S펜 옆 버튼 포함): 노트 메뉴 / 빈 곳 메뉴
+    if (h.lane && h.lane.type === 'meas') return;
+    if (n && e.shiftKey) { // Shift+우클릭: 메뉴 없이 키음(BMP) 목록에서 그 번호로 바로 이동 (iBMSC처럼)
+      if (n.lane[0] === 'G') showInList('bmp', n.v); else if (isSound(n.lane) && n.kind !== 'm') showInList('wav', n.v);
+      return;
+    }
+    if (n) showCtx(n, e.clientX, e.clientY, false); else showBlankCtx(h, e.clientX, e.clientY);
+    return;
+  }
   if (e.button === 1) { // 가운데 버튼 드래그: 화면 잡고 끌기 (애프터이펙트 손 도구처럼)
     A.drag = { kind: 'pan', sx: e.clientX, sy: e.clientY, b0: A.view.bottom, l0: A.view.left, lockX: h.mx < A.fixW }; // 플레이 영역에서 시작하면 세로로만
     A.sc.style.cursor = 'grabbing'; return;
@@ -1984,6 +1999,7 @@ function hoverUpdate(h, e) {
 }
 function onWheel(e) {
   if (!A.st) return;
+  hideCtx();
   stopFling();
   if ((e.ctrlKey || e.metaKey) && e.shiftKey) { // Ctrl+Shift+휠: 가로 확대
     e.preventDefault();
@@ -2172,7 +2188,7 @@ function onKey(e) {
   if (ctrl) return;
   switch (k) {
     case 'Delete': case 'Backspace': e.preventDefault(); deleteSel(); return;
-    case 'Escape': if (A.drag) { A.drag = null; } else A.sel = new Set(); statusNote(); draw(); return;
+    case 'Escape': if (!$('#ctxMenu').hidden) { hideCtx(); return; } if (A.drag) { A.drag = null; } else A.sel = new Set(); statusNote(); draw(); return;
     case ' ': e.preventDefault(); if (Au.play || A.playToken) stopPlay(); else play(hereBeat()); return;
     case 'ArrowUp': case 'ArrowDown': {
       e.preventDefault();
@@ -2534,10 +2550,10 @@ async function confirmDiscard() {
 function showHelp() {
   modal('도움말', `<div class="help">
 <h4>모드</h4><ul>
-<li><b>선택 (F1)</b> — 클릭: 선택 · 빈 곳 드래그: 범위 선택 · 노트 드래그: 이동 (좌우로 끌면 레인 이동, BGM ↔ 키 레인 포함) · Ctrl+드래그: 복사 · 롱노트 윗끝 드래그: 길이 조절 · 더블클릭: 값 바꾸기</li>
+<li><b>선택 (F1)</b> — 클릭: 선택 · 빈 곳 드래그: 범위 선택 · 노트 드래그: 이동 (좌우로 끌면 레인 이동, BGM ↔ 키 레인 포함) · Ctrl+드래그: 복사 · 롱노트 윗끝 드래그: 길이 조절</li>
 <li><b>쓰기 (F3)</b> — 클릭: WAV 목록에서 고른 키음으로 노트 찍기 · 키 레인에서 위로 끌기: 롱노트 · 기존 노트 클릭: 그 키음을 집어오기 (위로 끌면 롱노트로) · BPM/STOP 레인 클릭: 값 입력</li>
 <li>가운데 버튼 드래그: 화면을 잡고 위아래·옆으로 끌기 (BGM 칼럼 가로 스크롤 포함)</li>
-<li>오른쪽 클릭: 노트 지우기 · Shift를 누른 채 조작: 그리드 무시 (1/192 단위)</li>
+<li>노트 우클릭: 메뉴(값 바꾸기 · 잘라내기 · 복사 · 삭제 · WAV/BMP 목록에서 보기 · 일반/숨김/지뢰 바꾸기 · 롱노트 풀기, 선택된 노트를 누르면 선택 전체에 적용) · 빈 곳 우클릭: 여기에 붙여넣기 · 모두 선택 · Shift+노트 우클릭: 키음(BMP) 목록에서 그 번호로 이동 · Shift를 누른 채 조작: 그리드 무시 (1/192 단위)</li>
 <li>이동하다 같은 자리에 노트가 겹치면, 원래 있던 노트는 지워지지 않고 빈 BGM 레인으로 옮겨집니다.</li></ul>
 <h4>키보드</h4><table>
 <tr><td>Ctrl+O / Ctrl+S</td><td>폴더 열기 / 저장 (Ctrl+Shift+S: 다른 이름으로)</td></tr>
@@ -2552,7 +2568,7 @@ function showHelp() {
 <tr><td>+ − · Ctrl+휠</td><td>세로 확대 축소</td></tr>
 <tr><td>[ ] · Ctrl+Shift+휠</td><td>가로 확대 축소</td></tr></table>
 <h4>DP · PMS · BGA · 숨김 · 지뢰</h4><p>#PLAYER 3이거나 2P 노트가 있으면 DP 화면으로, 확장자가 .pms이거나 팝픈 9버튼 레인(1P 1~5키 + 2P 2~5키)만 쓰면 PMS 화면으로 엽니다. 툴바의 SP/DP/PMS 버튼을 누를 때마다 바뀝니다. PMS 레인 색은 팝픈뮤직 버튼 색(흰·노·초·파·빨·파·초·노·흰)을 따릅니다. PMS 화면에서는 무리배치(완전히 같은 타이밍의 동시치기를 두 손으로 나눴을 때 한 손이 연속된 버튼 3개 범위를 넘는 경우, 누르고 있는 롱노트 포함)를 주황 점선으로 표시하고 정보 칸에 위치 목록을 보여 줍니다. 가로 스크롤하면 플레이 영역은 고정되고 BGA·LAYER·POOR와 BGM 칼럼이 함께 움직입니다. BGA 레인에는 BMP 목록에서 고른 번호가 찍히고, BGA 노트는 BGA 레인끼리만 옮겨집니다. 숨김 노트는 흐리게, 지뢰는 진한 빨강(✕)으로 보이며 키 레인 안에서만 옮길 수 있습니다.</p>
-<h4>태블릿 (손가락 · S펜)</h4><ul><li>손가락: 노트를 끌면 이동, 빈 곳을 끌면 화면 이동(빠르게 쓸고 놓으면 관성으로 미끄러지고, 그때 탭하면 멈춤), 두 손가락을 벌리고 오므리면 확대·축소(세로로 벌리면 세로, 가로로 벌리면 가로)</li><li>탭: 노트 선택 · 빈 곳은 선택 해제 · 쓰기 모드에서는 노트 찍기</li><li>길게 누르기: 빈 곳은 범위 선택 시작, 노트는 메뉴(삭제 · 값 바꾸기 · 복사)</li><li>안드로이드에서는 폴더를 빠른 방식(폴더 고르기)으로 엽니다. 처음 저장할 때 같은 폴더를 한 번 더 골라 주면 그 뒤로는 그 폴더에 바로 저장합니다. '보기 · 재생 · 저장' 칸에서 방식을 바꿀 수 있습니다.</li><li>S펜: 마우스와 똑같이 편집합니다(펜 옆 버튼 = 오른쪽 클릭 = 삭제). 손가락 조작은 펜을 쓴 뒤에도 그대로이고, 펜이 화면에 닿아 있는 동안만 손가락을 무시합니다(손바닥 오작동 방지).</li><li>아래 도구 막대: 실행 취소 · ▲▼◀▶ 한 칸 옮기기 · 복사 · 붙여넣기 · 삭제 · 복사 모드(끌면 복사, Ctrl 대신) · 그리드 무시(Shift 대신)</li></ul><h4>재생</h4><p>마디 번호 칸을 클릭하면 재생 시작선(초록)이 생깁니다. F6·Space는 시작선부터, 시작선이 없으면 화면 맨 아래 마디부터 재생합니다. 같은 키음이 다시 울리면 앞 소리는 끊깁니다(BMS 플레이어와 같은 방식). BPM 변화와 STOP도 반영합니다.</p>
+<h4>태블릿 (손가락 · S펜)</h4><ul><li>손가락: 노트를 끌면 이동, 빈 곳을 끌면 화면 이동(빠르게 쓸고 놓으면 관성으로 미끄러지고, 그때 탭하면 멈춤), 두 손가락을 벌리고 오므리면 확대·축소(세로로 벌리면 세로, 가로로 벌리면 가로)</li><li>탭: 노트 선택 · 빈 곳은 선택 해제 · 쓰기 모드에서는 노트 찍기</li><li>길게 누르기: 빈 곳은 범위 선택 시작, 노트는 우클릭과 같은 메뉴</li><li>안드로이드에서는 폴더를 빠른 방식(폴더 고르기)으로 엽니다. 처음 저장할 때 같은 폴더를 한 번 더 골라 주면 그 뒤로는 그 폴더에 바로 저장합니다. '보기 · 재생 · 저장' 칸에서 방식을 바꿀 수 있습니다.</li><li>S펜: 마우스와 똑같이 편집합니다(펜 옆 버튼 = 우클릭 메뉴). 손가락 조작은 펜을 쓴 뒤에도 그대로이고, 펜이 화면에 닿아 있는 동안만 손가락을 무시합니다(손바닥 오작동 방지).</li><li>아래 도구 막대: 실행 취소 · ▲▼◀▶ 한 칸 옮기기 · 복사 · 붙여넣기 · 삭제 · 복사 모드(끌면 복사, Ctrl 대신) · 그리드 무시(Shift 대신)</li></ul><h4>재생</h4><p>마디 번호 칸을 클릭하면 재생 시작선(초록)이 생깁니다. F6·Space는 시작선부터, 시작선이 없으면 화면 맨 아래 마디부터 재생합니다. 같은 키음이 다시 울리면 앞 소리는 끊깁니다(BMS 플레이어와 같은 방식). BPM 변화와 STOP도 반영합니다.</p>
 <h4>저장</h4><p>편집한 채널(BGM · BPM · STOP · 1P 키 · 롱노트 · 마디 길이)과 고친 헤더 · WAV 줄만 다시 쓰고, 나머지 줄(BGA, 2P, 숨김 노트, 지뢰, 주석, 모르는 명령, #RANDOM 블록)은 원본 바이트 그대로 둡니다. 저장 직전에 결과를 다시 읽어 편집 내용과 일치하는지 확인하고, 바뀐 줄을 보여 줍니다. 기본 인코딩은 Shift-JIS입니다.</p>
 <h4>복사 · 붙여넣기</h4><p>iBMSC 클립보드 형식("iBMSC Clipboard Data")을 씁니다. iBMSC에서 복사한 노트나 ibmsc_clip.py가 만든 텍스트를 붙여넣을 수 있고, 여기서 복사한 노트를 iBMSC에 붙여넣을 수도 있습니다. 위치는 마우스가 있는 마디의 시작점 기준입니다.</p>
 <h4>로컬 전용</h4><p>이 페이지는 파일 하나로 동작하며 서버가 없습니다. 패턴과 키음은 브라우저 안에서만 읽고 쓰고, 외부로 나가는 통신은 페이지의 보안 정책(CSP)으로 막혀 있습니다. 폴더에 바로 저장하려면 크롬이나 엣지를 쓰세요. 다른 브라우저에서는 저장할 때 파일이 다운로드됩니다.</p>
@@ -3231,7 +3247,7 @@ function longPress() {
     if (A.drag && A.drag.moved) return;
     A.drag = null; s.phase = 'menu'; draw();
     if (navigator.vibrate) try { navigator.vibrate(15); } catch (err) { /* 무시 */ }
-    showCtx(s.note, s.x, s.y);
+    showCtx(s.note, s.x, s.y, true);
     return;
   }
   if (s.phase === 'pending' && A.mode === 'select') { // 빈 곳 길게 누르기: 범위 선택 시작
@@ -3264,23 +3280,6 @@ function fakeMouse(e) {
   return { clientX: e.clientX, clientY: e.clientY, button: 0, buttons: 1, shiftKey: false, ctrlKey: false, altKey: false, metaKey: false, preventDefault() {} };
 }
 
-/* 노트 메뉴 (손가락으로 길게 누르기) */
-function showCtx(n, x, y) {
-  const m = $('#ctxMenu');
-  m.innerHTML = '';
-  const add = (label, fn) => { const b = document.createElement('button'); b.textContent = label; b.addEventListener('click', () => { hideCtx(); fn(); }); m.appendChild(b); };
-  if (!A.sel.has(n)) A.sel = new Set([n]);
-  const sel = [...A.sel];
-  add(sel.length > 1 ? `삭제 (${sel.length}개)` : '삭제', deleteSel);
-  add('값 바꾸기', () => { const kind = (x2) => (isSound(x2.lane) ? 's' : x2.lane); editValue([n, ...sel.filter((x2) => x2 !== n && kind(x2) === kind(n))]); });
-  add('복사', () => { copySel(); toast(`노트 ${A.sel.size}개 복사`); });
-  m.hidden = false;
-  const r = m.getBoundingClientRect();
-  m.style.left = Math.min(window.innerWidth - r.width - 8, Math.max(8, x - r.width / 2)) + 'px';
-  m.style.top = Math.max(8, y - r.height - 24) + 'px';
-  statusNote(); draw();
-}
-function hideCtx() { const m = $('#ctxMenu'); if (m) m.hidden = true; }
 
 /* 선택 도구 막대 (터치·펜을 쓰면 표시) */
 function setTouchUI(on) {
@@ -3319,6 +3318,112 @@ function bindTouch() {
   act('#tbCopyMode', () => { A.copyMode = !A.copyMode; toast(A.copyMode ? '복사 모드: 끌면 복사됩니다' : '복사 모드 끔'); });
   act('#tbNoSnap', () => { A.noSnap = !A.noSnap; toast(A.noSnap ? '그리드 무시 (1/192 단위)' : '그리드 맞춤'); });
   act('#tbTouchOff', () => setTouchUI(false));
+}
+
+/* ── app/ctxmenu.js ── */
+/* ───────── 우클릭 메뉴 (마우스 우클릭 · S펜 옆 버튼 · 손가락 길게 누르기) ─────────
+   노트: 값 바꾸기 · 잘라내기 · 복사 · 삭제 · 목록에서 보기 · 노트 종류 · 롱노트 풀기
+   빈 곳: 여기에 붙여넣기 · 모두 선택 */
+function hideCtx() { const m = $('#ctxMenu'); if (m) m.hidden = true; }
+function openMenu(items, x, y, touch) {
+  const m = $('#ctxMenu');
+  m.innerHTML = ''; m.classList.toggle('touchmenu', !!touch);
+  for (const it of items) {
+    if (it === '-') { if (m.lastChild && m.lastChild.tagName === 'BUTTON') { const hr = document.createElement('div'); hr.className = 'sep'; m.appendChild(hr); } continue; }
+    const b = document.createElement('button');
+    b.innerHTML = `<span>${esc(it.label)}</span>${it.key ? `<kbd>${esc(it.key)}</kbd>` : ''}`;
+    if (it.on) b.classList.add('on');
+    if (it.disabled) b.disabled = true;
+    b.addEventListener('click', () => { hideCtx(); it.fn(); A.sc.focus({ preventScroll: true }); });
+    m.appendChild(b);
+  }
+  if (m.lastChild && m.lastChild.className === 'sep') m.lastChild.remove();
+  m.hidden = false;
+  const r = m.getBoundingClientRect(), W = window.innerWidth, H = window.innerHeight;
+  // 마우스: 누른 곳 오른쪽 아래로 / 손가락: 손가락에 가리지 않게 위로
+  let left = touch ? x - r.width / 2 : x + 2, top = touch ? y - r.height - 24 : y + 2;
+  if (!touch && top + r.height > H - 8) top = y - r.height - 2;
+  if (touch && top < 8) top = y + 24;
+  m.style.left = Math.min(W - r.width - 8, Math.max(8, left)) + 'px';
+  m.style.top = Math.min(H - r.height - 8, Math.max(8, top)) + 'px';
+}
+// 노트를 우클릭: 선택 안 된 노트면 그것만 선택하고, 선택된 노트면 선택 전체에 적용
+function showCtx(n, x, y, touch) {
+  if (!A.sel.has(n)) A.sel = new Set([n]);
+  const sel = [...A.sel], cnt = sel.length > 1 ? ` (${sel.length}개)` : '';
+  const items = [];
+  items.push({ label: '값 바꾸기…', fn: () => { const kind = (x2) => (isSound(x2.lane) ? 's' : x2.lane); editValue([n, ...sel.filter((x2) => x2 !== n && kind(x2) === kind(n))]); } });
+  items.push('-');
+  items.push({ label: '잘라내기' + cnt, key: 'Ctrl+X', fn: () => { menuCopy(); const c = A.sel.size; deleteSel(); toast(`노트 ${c}개 잘라냄`); } });
+  items.push({ label: '복사' + cnt, key: 'Ctrl+C', fn: () => { menuCopy(); toast(`노트 ${A.sel.size}개 복사`); } });
+  items.push({ label: '삭제' + cnt, key: 'Del', fn: deleteSel });
+  items.push('-');
+  if (n.lane[0] === 'G') items.push({ label: 'BMP 목록에서 보기', fn: () => showInList('bmp', n.v) });
+  else if (isSound(n.lane) && n.kind !== 'm') items.push({ label: 'WAV 목록에서 보기', fn: () => showInList('wav', n.v) });
+  // 노트 종류: 키 레인의 롱노트가 아닌 노트만 (숨김·지뢰 롱노트 채널은 없음)
+  const kindable = sel.filter((x2) => isKey(x2.lane) && !(x2.lb > 0));
+  if (kindable.length) {
+    items.push('-');
+    const cur = new Set(kindable.map((x2) => x2.kind || 'n'));
+    for (const [k, label] of [['n', '일반 노트'], ['h', '숨김 노트'], ['m', '지뢰']]) {
+      items.push({ label, on: cur.size === 1 && cur.has(k), fn: () => setKindOf(kindable, k) });
+    }
+  }
+  const lns = sel.filter((x2) => x2.lb > 0);
+  if (lns.length) { items.push('-'); items.push({ label: '롱노트 풀기' + (lns.length > 1 ? ` (${lns.length}개)` : ''), fn: () => unLN(lns) }); }
+  openMenu(items, x, y, touch);
+  statusNote(); draw();
+}
+// 빈 곳을 우클릭: h는 우클릭한 위치(붙여넣기 기준 마디)
+function showBlankCtx(h, x, y) {
+  A.hover = { note: null, ghost: null, h };
+  const canPaste = !!A.clip || !!(navigator.clipboard && navigator.clipboard.readText);
+  openMenu([
+    { label: '여기에 붙여넣기', key: 'Ctrl+V', disabled: !canPaste, fn: () => pasteHere(h) },
+    { label: '모두 선택', key: 'Ctrl+A', fn: selectAll },
+  ], x, y, false);
+}
+async function pasteHere(h) {
+  A.hover = { note: null, ghost: null, h };
+  let text = null;
+  try { if (navigator.clipboard && navigator.clipboard.readText) text = await navigator.clipboard.readText(); } catch (e) { /* 권한 없음: 편집기 안 클립보드 사용 */ }
+  if (!text || !/^iBMSC Clipboard Data/.test(text)) text = A.clip ? A.clip.text : text;
+  if (!text) { toast('붙여넣을 노트가 없습니다'); return; }
+  A.hover = { note: null, ghost: null, h };
+  pasteText(text);
+}
+function menuCopy() {
+  const t = copySel(); if (!t) return;
+  try { if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).catch(() => {}); } catch (e) { /* 편집기 안 클립보드만 */ }
+}
+// 오른쪽 목록에서 그 번호를 보여 주기 (패널이 접혀 있으면 펼침)
+function showInList(which, id) {
+  if (cfg.sideOff && A.toggleSide) A.toggleSide();
+  const pn = $(which === 'wav' ? '#pnWav' : '#pnBmp'); pn.open = true;
+  const q = $(which === 'wav' ? '#wavQ' : '#bmpQ'), def = $(which === 'wav' ? '#wavDef' : '#bmpDef');
+  if (which === 'wav') { A.curWav = id; if (q.value) q.value = ''; if (def.checked && !A.st.wavs.get(id)) def.checked = false; renderWavList(); markCurWav(true); }
+  else { A.curBmp = id; if (q.value) q.value = ''; if (def.checked && !A.st.bmps.get(id)) def.checked = false; renderBmpList(); markCurBmp(true); }
+  const row = $(which === 'wav' ? '#wavList' : '#bmpList').querySelector(`.wr[data-id="${id}"]`);
+  if (row) { row.scrollIntoView({ block: 'center' }); row.classList.add('flash'); setTimeout(() => row.classList.remove('flash'), 900); }
+}
+// 노트 종류 바꾸기: 일반 ↔ 숨김 ↔ 지뢰 (지뢰의 값은 피해량이라, 지뢰로 바꿀 땐 지뢰 값, 지뢰에서 바꿀 땐 지금 고른 키음)
+function setKindOf(notes, k) {
+  const targets = notes.filter((x) => (x.kind || 'n') !== k);
+  if (!targets.length) return;
+  const add = targets.map((x) => {
+    const v = k === 'm' ? (A.mineVal || 1) : x.kind === 'm' ? A.curWav : x.v;
+    const o = cloneNote(x, { v, kind: k === 'n' ? undefined : k });
+    if (!o.kind) delete o.kind;
+    return o;
+  });
+  const keep = [...A.sel].filter((x) => !targets.includes(x));
+  commit({ del: targets, add }); A.sel = new Set(keep.concat(add)); statusNote(); draw();
+  toast(`노트 ${targets.length}개를 ${({ n: '일반 노트', h: '숨김 노트', m: '지뢰' })[k]}(으)로 바꿨습니다`);
+}
+function unLN(notes) {
+  const add = notes.map((x) => cloneNote(x, { len: null }));
+  const keep = [...A.sel].filter((x) => !notes.includes(x));
+  commit({ del: notes, add }); A.sel = new Set(keep.concat(add)); statusNote(); draw();
 }
 
 /* ── app/diag.js ── */
@@ -3534,14 +3639,6 @@ function init() {
   A.sc.addEventListener('scroll', onScroll);
   A.sc.addEventListener('contextmenu', (e) => e.preventDefault());
   A.sc.addEventListener('auxclick', (e) => { if (e.button === 1) e.preventDefault(); });
-  A.sc.addEventListener('dblclick', (e) => {
-    if (A.lastPtr === 'touch') return; // 손가락 두 번 탭은 값 바꾸기 안 함
-    if (!A.st || A.mode !== 'select') return;
-    const n = noteAt(hitAt(e)); if (!n) return;
-    const kind = (x) => (isSound(x.lane) ? 's' : x.lane);
-    const targets = A.sel.has(n) ? [n, ...[...A.sel].filter((x) => x !== n && kind(x) === kind(n))] : [n];
-    editValue(targets);
-  });
   A.sc.addEventListener('wheel', onWheel, { passive: false });
   bindTouch();
   bindDiag();

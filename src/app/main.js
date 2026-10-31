@@ -129,14 +129,6 @@ function init() {
   A.sc.addEventListener('scroll', onScroll);
   A.sc.addEventListener('contextmenu', (e) => e.preventDefault());
   A.sc.addEventListener('auxclick', (e) => { if (e.button === 1) e.preventDefault(); });
-  A.sc.addEventListener('dblclick', (e) => {
-    if (A.lastPtr === 'touch') return; // 손가락 두 번 탭은 값 바꾸기 안 함
-    if (!A.st || A.mode !== 'select') return;
-    const n = noteAt(hitAt(e)); if (!n) return;
-    const kind = (x) => (isSound(x.lane) ? 's' : x.lane);
-    const targets = A.sel.has(n) ? [n, ...[...A.sel].filter((x) => x !== n && kind(x) === kind(n))] : [n];
-    editValue(targets);
-  });
   A.sc.addEventListener('wheel', onWheel, { passive: false });
   bindTouch();
   bindDiag();

@@ -36,7 +36,15 @@ function onDown(e) {
   e.preventDefault();
   A.sc.focus({ preventScroll: true });
   const n = noteAt(h);
-  if (e.button === 2) { if (n) commit({ del: [n], add: [] }); return; }
+  if (e.button === 2) { // 우클릭(S펜 옆 버튼 포함): 노트 메뉴 / 빈 곳 메뉴
+    if (h.lane && h.lane.type === 'meas') return;
+    if (n && e.shiftKey) { // Shift+우클릭: 메뉴 없이 키음(BMP) 목록에서 그 번호로 바로 이동 (iBMSC처럼)
+      if (n.lane[0] === 'G') showInList('bmp', n.v); else if (isSound(n.lane) && n.kind !== 'm') showInList('wav', n.v);
+      return;
+    }
+    if (n) showCtx(n, e.clientX, e.clientY, false); else showBlankCtx(h, e.clientX, e.clientY);
+    return;
+  }
   if (e.button === 1) { // 가운데 버튼 드래그: 화면 잡고 끌기 (애프터이펙트 손 도구처럼)
     A.drag = { kind: 'pan', sx: e.clientX, sy: e.clientY, b0: A.view.bottom, l0: A.view.left, lockX: h.mx < A.fixW }; // 플레이 영역에서 시작하면 세로로만
     A.sc.style.cursor = 'grabbing'; return;
@@ -219,6 +227,7 @@ function hoverUpdate(h, e) {
 }
 function onWheel(e) {
   if (!A.st) return;
+  hideCtx();
   stopFling();
   if ((e.ctrlKey || e.metaKey) && e.shiftKey) { // Ctrl+Shift+휠: 가로 확대
     e.preventDefault();

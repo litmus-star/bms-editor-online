@@ -56,8 +56,15 @@ main { flex: 1; display: flex; min-height: 0; }
 #selBar button.danger { color: #ffb0b0; }
 #selBar .sep { width: 1px; height: 26px; background: #454a54; margin: 0 2px; }
 #tbCount { font-size: 12px; min-width: 52px; text-align: center; }
-#ctxMenu { position: fixed; z-index: 15; display: flex; gap: 4px; background: #24272d; border: 1px solid #555b66; border-radius: 10px; padding: 6px; box-shadow: 0 8px 28px rgba(0,0,0,.6); }
-#ctxMenu button { min-height: 42px; min-width: 64px; font-size: 15px; }
+#ctxMenu { position: fixed; z-index: 15; display: flex; flex-direction: column; min-width: 190px; background: #24272d; border: 1px solid #555b66; border-radius: 8px; padding: 4px; box-shadow: 0 8px 28px rgba(0,0,0,.6); }
+#ctxMenu button { display: flex; justify-content: space-between; align-items: center; gap: 18px; text-align: left; background: none; border: none; border-radius: 4px; padding: 5px 10px; font-size: 13px; }
+#ctxMenu button:hover:not(:disabled) { background: #33415e; }
+#ctxMenu button.on span::before { content: "✓ "; color: var(--acc); }
+#ctxMenu button kbd { font-size: 11px; }
+#ctxMenu .sep { height: 1px; background: #3c4049; margin: 4px 6px; }
+#ctxMenu.touchmenu button { padding: 10px 14px; font-size: 15px; }
+.wr.flash { animation: flash .9s; }
+@keyframes flash { 0%, 40% { background: #6a5714; } }
 body.touch #tb button, body.touch #tb select { min-height: 36px; }
 body.touch #split { width: 14px; }
 #diagBd { margin: 0 0 8px; white-space: pre-wrap; word-break: break-all; font: 11.5px/1.5 Consolas, Menlo, monospace; color: var(--text); }

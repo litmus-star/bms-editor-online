@@ -136,7 +136,7 @@ function longPress() {
     if (A.drag && A.drag.moved) return;
     A.drag = null; s.phase = 'menu'; draw();
     if (navigator.vibrate) try { navigator.vibrate(15); } catch (err) { /* 무시 */ }
-    showCtx(s.note, s.x, s.y);
+    showCtx(s.note, s.x, s.y, true);
     return;
   }
   if (s.phase === 'pending' && A.mode === 'select') { // 빈 곳 길게 누르기: 범위 선택 시작
@@ -169,23 +169,6 @@ function fakeMouse(e) {
   return { clientX: e.clientX, clientY: e.clientY, button: 0, buttons: 1, shiftKey: false, ctrlKey: false, altKey: false, metaKey: false, preventDefault() {} };
 }
 
-/* 노트 메뉴 (손가락으로 길게 누르기) */
-function showCtx(n, x, y) {
-  const m = $('#ctxMenu');
-  m.innerHTML = '';
-  const add = (label, fn) => { const b = document.createElement('button'); b.textContent = label; b.addEventListener('click', () => { hideCtx(); fn(); }); m.appendChild(b); };
-  if (!A.sel.has(n)) A.sel = new Set([n]);
-  const sel = [...A.sel];
-  add(sel.length > 1 ? `삭제 (${sel.length}개)` : '삭제', deleteSel);
-  add('값 바꾸기', () => { const kind = (x2) => (isSound(x2.lane) ? 's' : x2.lane); editValue([n, ...sel.filter((x2) => x2 !== n && kind(x2) === kind(n))]); });
-  add('복사', () => { copySel(); toast(`노트 ${A.sel.size}개 복사`); });
-  m.hidden = false;
-  const r = m.getBoundingClientRect();
-  m.style.left = Math.min(window.innerWidth - r.width - 8, Math.max(8, x - r.width / 2)) + 'px';
-  m.style.top = Math.max(8, y - r.height - 24) + 'px';
-  statusNote(); draw();
-}
-function hideCtx() { const m = $('#ctxMenu'); if (m) m.hidden = true; }
 
 /* 선택 도구 막대 (터치·펜을 쓰면 표시) */
 function setTouchUI(on) {
