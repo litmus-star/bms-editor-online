@@ -56,7 +56,7 @@ main { flex: 1; display: flex; min-height: 0; }
 #empty h2 { margin: 0 0 4px; font-size: 22px; }
 #empty .row { justify-content: center; margin: 10px 0; }
 #empty button { padding: 7px 16px; font-size: 14px; }
-#sc { touch-action: none; }
+#sc, #cv { touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; } /* 길게 누를 때 브라우저의 글자 선택·메뉴가 끼어들지 않게 */
   background: rgba(29, 31, 36, .96); border: 1px solid #454a54; border-radius: 10px; padding: 6px 8px; box-shadow: 0 6px 24px rgba(0,0,0,.5); z-index: 5; max-width: calc(100% - 20px); flex-wrap: wrap; justify-content: center; }
 #ctxMenu { position: fixed; z-index: 15; display: flex; flex-direction: column; min-width: 190px; background: #24272d; border: 1px solid #555b66; border-radius: 8px; padding: 4px; box-shadow: 0 8px 28px rgba(0,0,0,.6); }
 #ctxMenu button { display: flex; justify-content: space-between; align-items: center; gap: 18px; text-align: left; background: none; border: none; border-radius: 4px; padding: 5px 10px; font-size: 13px; }
@@ -3183,6 +3183,8 @@ function touchMove(e) {
   const s = T.st; if (!s) return;
   const moved = Math.hypot(e.clientX - s.x, e.clientY - s.y) > TAP_MOVE;
   if (moved) clearTimeout(T.lp);
+  // 노트를 누른 손가락은 TAP_MOVE 넘게 움직여야 이동 시작 (실제 손가락은 가만히 있어도 몇 px씩 흔들려서, 그대로 두면 길게 누르기 메뉴가 안 뜸)
+  if (s.phase === 'note' && !s.dragging) { if (!moved) return; s.dragging = true; }
   if (s.phase === 'note' || s.phase === 'band') { onMove(fakeMouse(e)); return; }
   if (s.phase === 'pending' && moved) { s.phase = 'pan'; A.userScroll = true; }
   if (s.phase === 'pan') {

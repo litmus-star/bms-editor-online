@@ -43,7 +43,12 @@ const { chromium } = require('playwright'); const path = require('path');
     // 손가락 길게 누르기 → 같은 메뉴
   const T = (type, pts) => cdp.send('Input.dispatchTouchEvent', { type, touchPoints: pts.map(([x, y], i) => ({ x, y, id: i })) });
   await page.evaluate(() => { BMSApp.A.sel = new Set(); });
-  p = await xy('K11', 4); await T('touchStart', [[p.x, p.y]]); await page.waitForTimeout(650); out.touchMenu = await items(); await T('touchEnd', []);
+  // 실제 손가락처럼 몇 px씩 흔들리면서 길게 눌러도 메뉴가 떠야 하고, 노트는 움직이지 않아야 함
+  p = await xy('K11', 4); const before = await notes();
+  await T('touchStart', [[p.x, p.y]]);
+  for (const [dx, dy] of [[3, 1], [-2, 4], [5, -3], [1, 2], [-4, -1]]) { await page.waitForTimeout(100); await T('touchMove', [[p.x + dx, p.y + dy]]); }
+  await page.waitForTimeout(250); out.touchMenu = await items(); await T('touchEnd', []);
+  out.touchJitterNoMove = before === await notes();
   await page.evaluate(() => { document.getElementById('ctxMenu').hidden = true; BMSApp.A.sel = new Set(); });
   p = await xy('K13', 6); await page.mouse.click(p.x, p.y, { button: 'right' }); await click('삭제'); out.afterDelete = await notes();
   // 더블클릭: 값 바꾸기 창이 안 떠야 함

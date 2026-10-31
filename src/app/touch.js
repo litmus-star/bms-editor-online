@@ -107,6 +107,8 @@ function touchMove(e) {
   const s = T.st; if (!s) return;
   const moved = Math.hypot(e.clientX - s.x, e.clientY - s.y) > TAP_MOVE;
   if (moved) clearTimeout(T.lp);
+  // 노트를 누른 손가락은 TAP_MOVE 넘게 움직여야 이동 시작 (실제 손가락은 가만히 있어도 몇 px씩 흔들려서, 그대로 두면 길게 누르기 메뉴가 안 뜸)
+  if (s.phase === 'note' && !s.dragging) { if (!moved) return; s.dragging = true; }
   if (s.phase === 'note' || s.phase === 'band') { onMove(fakeMouse(e)); return; }
   if (s.phase === 'pending' && moved) { s.phase = 'pan'; A.userScroll = true; }
   if (s.phase === 'pan') {
