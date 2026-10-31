@@ -164,6 +164,9 @@ function paint() {
   }
 
   if (A.view.left > 0) { ctx.fillStyle = 'rgba(0,0,0,.6)'; ctx.fillRect(A.fixW - 8, HEAD_H, 8, H - HEAD_H); }
+  // 영역 구분선: BPM·STOP | 플레이 영역 | BGA·BGM 영역 (머리줄까지 이어서)
+  ctx.fillStyle = SEP_COL;
+  for (const sx of A.sepX || []) ctx.fillRect(sx - 1, 0, 2, H);
   // 마디 번호 칸 (가로 스크롤해도 고정)
   ctx.fillStyle = '#060606'; ctx.fillRect(0, HEAD_H, MEAS_W, H - HEAD_H);
   ctx.fillStyle = '#2c2c2c'; ctx.fillRect(MEAS_W - 1, HEAD_H, 1, H - HEAD_H);
@@ -188,4 +191,6 @@ function paint() {
   }
   ctx.fillStyle = '#1a1b1f'; ctx.fillRect(0, 0, MEAS_W, HEAD_H - 1);
   ctx.fillStyle = '#9a9a9a'; ctx.fillText('마디', MEAS_W / 2, HEAD_H / 2);
+  ctx.fillStyle = SEP_COL;
+  for (const sx of A.sepX || []) ctx.fillRect(sx - 1, 0, 2, HEAD_H); // 머리줄 위에도
 }

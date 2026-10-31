@@ -8,6 +8,7 @@ function layout() {
     add({ key: 'BPM', type: 'bpm', col: 'bpm', w: 56, label: 'BPM' });
     add({ key: 'STOP', type: 'stop', col: 'stop', w: 48, label: 'STOP' });
   }
+  A.sepX = [x + 4]; // 영역 구분선(틈 한가운데): BPM·STOP | 플레이 영역
   x += 8;
   if (A.pms) C.PMS_LANES.forEach((k) => add({ key: k.key, type: 'key', p: 0, col: k.col, w: 42, label: k.label }));
   else {
@@ -19,6 +20,7 @@ function layout() {
     x += 8;
     C.KEY_LANES.filter((k) => k.p === 2).forEach((k, i) => add({ key: k.key, type: 'key', p: 2, col: i === 7 ? 'sc' : (i % 2 ? 'b' : 'w'), w: i === 7 ? 54 : 42, label: k.label }));
   }
+  A.sepX.push(x + 4); // 플레이 영역 | BGA·BGM 영역
   x += 8;
   A.fixW = x; // 여기까지(플레이 영역)는 가로 스크롤해도 고정, 이후 BGA+BGM이 함께 스크롤
   if (!cfg.hideBga) { // BGA·LAYER·POOR 영역 숨기기 (보기만)

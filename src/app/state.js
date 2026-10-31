@@ -19,6 +19,7 @@ const NOTE_COL = { bga: '#c08cff', sc: '#ff5b5b', w: '#e8e8e8', b: '#5c88ff', bg
   pw: '#ececec', py: '#ffd83a', pg: '#45d65f', pb: '#4a8cff', pr: '#ff4646' };
 const NOTE_TXT = { bga: '#1d0a33', sc: '#fff', w: '#111', b: '#fff', bgm: '#111', bpm: '#06200c', stop: '#2a1300',
   pw: '#111', py: '#2a2000', pg: '#03200a', pb: '#fff', pr: '#fff' };
+const SEP_COL = '#a8a8a8'; // 영역 구분선 색 (BPM·STOP | 플레이 | BGA·BGM)
 const LANE_BG = { bga: '#120c1a', bpm: '#08130b', stop: '#150c06', sc: '#1b0808', w: '#111111', b: '#0b0e1d', bgm: '#0d0d0d',
   pw: '#141414', py: '#17140a', pg: '#0a160c', pb: '#0b0f1d', pr: '#1b0909' };
 const GRIDS = [4, 8, 12, 16, 24, 32, 48, 64, 96, 192];
