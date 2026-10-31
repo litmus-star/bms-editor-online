@@ -131,7 +131,7 @@
   "info.preserved.v": "{lines} unedited data line(s) · {blocks} control block(s)",
   "info.muri.more": "{n} more",
   "warn.conflicts": "{n} overlapping note(s) (red outline). Please resolve them before saving.",
-  "warn.muri": "{n} impossible chord(s) found.",
+  "warn.muri": "{n} impossible chord(s) found. (orange outline)",
   "warn.pmsOffLanes": "{n} note(s) are on lanes PMS doesn't use (scratch, keys 6 and 7, 2P key 1, etc.). They aren't shown but are saved as they are.",
   "warn.p2InSp": "This chart has 2P notes, but you're in SP view. Use the DP button on the toolbar to see the 2P lanes.",
   "warn.lntype2": "This is a #LNTYPE 2 file. Long note channels are not edited and are kept as in the original.",
