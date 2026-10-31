@@ -249,7 +249,7 @@
   "toast.redo": "다시 실행",
   "toast.noTimeSelect": "시간 선택 모드는 아직 없습니다",
   "toast.writeKind": "쓰기 노트 종류: {kind}",
-  "toast.lockH.on": "노트 이동: 옆으로만",
+  "toast.lockH.on": "노트 이동: 수직 고정",
   "toast.lockH.off": "노트 이동: 위아래·옆 모두",
   "toast.snap.on": "스냅 켬",
   "toast.snap.off": "스냅 끔 (1/192 단위)",
